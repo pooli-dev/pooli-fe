@@ -1,73 +1,146 @@
-# React + TypeScript + Vite
+# 🐙 POOLI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript 기반의 POOLI 프론트엔드 팀 프로젝트입니다.
+코드 품질 관리와 자동 리뷰·CI가 포함된 기본 개발 환경을 제공합니다.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# 🛠️ Tech Stack
 
-## React Compiler
+**Core**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* React
+* TypeScript
 
-## Expanding the ESLint configuration
+**Styling**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* Tailwind CSS
+* shadcn/ui
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**State**
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* Zustand
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Code Quality**
+
+* ESLint + Prettier
+* Husky (Git Hook)
+
+**CI / Review**
+
+* GitHub Actions
+* CodeRabbit
+
+---
+
+# 🚨 Push 전 체크리스트
+
+PR 올리기 전 반드시 실행:
+
+```bash
+git checkout develop
+git pull origin develop
+npm run lint
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+✔ lint 통과
+✔ build 성공
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+그 후 feature 브랜치에서 push & PR 생성.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+# 🧹 ESLint + Prettier
+
+코드 스타일과 오류를 자동으로 검사합니다.
+
+### ✔ lint 검사
+
+```bash
+npm run lint
 ```
+
+* unused 변수
+* React Hook 규칙 위반
+* Tailwind class 순서 문제
+
+등을 검사합니다.
+
+---
+
+### ✔ 자동 수정
+
+```bash
+npm run lint --fix
+```
+
+또는
+
+```bash
+npx prettier --write .
+```
+
+코드 포맷을 자동 정리합니다.
+
+---
+
+# 🪝 Husky Git Hook
+
+commit 전에 자동으로 lint를 실행하여
+에러 코드가 저장소에 들어오는 것을 방지합니다.
+
+### ✔ 동작 흐름
+
+1. 개발자가 commit 실행
+2. Husky가 pre-commit hook 실행
+3. lint 실패 시 commit 중단
+
+Hook 위치:
+
+```
+.husky/pre-commit
+```
+
+예시:
+
+```bash
+npm run lint
+```
+
+👉 lint 실패하면 commit 자체가 막힙니다.
+
+---
+
+# 🤖 CodeRabbit 리뷰
+
+PR 생성 시 자동 코드 리뷰가 실행됩니다.
+
+플랫폼 👉 GitHub
+리뷰 봇 👉 CodeRabbit
+
+### ✔ 리뷰 내용 예시
+
+* 성능 개선 제안
+* 코드 스타일 문제
+* 잠재적 버그
+* 리팩토링 제안
+
+리뷰 반영 후 다시 push하면 자동으로 재검사됩니다.
+
+---
+
+# 🔄 브랜치 전략
+
+* `main` → 배포용
+* `develop` → 통합 개발
+* `feature/*` → 기능 개발
+
+예시:
+
+```
+feature/login-ui
+feature/data-chart
+```
+
+PR은 항상 `develop` 대상으로 생성합니다.
