@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAlarmStore } from '../store/alarmStore';
 import logo from '../assets/img/logo.svg';
 import alramIcon from '../assets/icon/alram-icon.png';
 import settingIcon from '../assets/icon/setting-icon.png';
@@ -6,12 +7,12 @@ import settingIcon from '../assets/icon/setting-icon.png';
 interface HeaderProps {
   showAlarm?: boolean;
   showSetting?: boolean;
-  alarmCount?: number;
 }
 
-export default function Header({ showAlarm = true, showSetting = true, alarmCount = 0 }: HeaderProps) {
+export default function Header({ showAlarm = true, showSetting = true }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const unreadCount = useAlarmStore(state => state.getUnreadCount());
 
   const isHome = location.pathname === '/';
   const isAlarm = location.pathname === '/alarm';
@@ -63,9 +64,9 @@ export default function Header({ showAlarm = true, showSetting = true, alarmCoun
             onClick={() => navigate('/alarm')}
           >
             <img src={alramIcon} alt="알림" className="w-6 h-6" />
-            {alarmCount > 0 && (
+            {unreadCount > 0 && (
               <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-[#FF0000] rounded-full flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold leading-none">{alarmCount > 99 ? '99+' : alarmCount}</span>
+                <span className="text-white text-[10px] font-bold leading-none">{unreadCount > 99 ? '99+' : unreadCount}</span>
               </div>
             )}
           </button>

@@ -14,7 +14,7 @@ export default function Router() {
     <BrowserRouter>
       <Layout>
         <StatusBar />
-        <Header alarmCount={3} />
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/support" element={<Support />} />
