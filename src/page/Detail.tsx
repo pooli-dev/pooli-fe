@@ -75,7 +75,10 @@ const getAppColor = (appName: string, index: number): string => {
 };
 
 export default function Detail() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 1)); // 2026년 2월
+  const today = new Date();
+  const currentMonthLimit = new Date(today.getFullYear(), today.getMonth());
+  
+  const [currentDate, setCurrentDate] = useState(currentMonthLimit);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isFamilyPublic, setIsFamilyPublic] = useState(true);
   const [dataAnimated, setDataAnimated] = useState(false);
@@ -202,9 +205,8 @@ export default function Detail() {
 
   const handleNextMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
-    const now = new Date(2026, 1); // 현재 날짜 (2026년 2월)
     // 현재 달보다 미래로 갈 수 없음
-    if (newDate > now) {
+    if (newDate > currentMonthLimit) {
       return;
     }
     setCurrentDate(newDate);
@@ -282,9 +284,10 @@ export default function Detail() {
                 {Array.from({ length: 27 }, (_, i) => {
                   const year = 2024 + Math.floor(i / 12);
                   const month = i % 12;
-                  // 2026년 2월까지만 표시
-                  if (year > 2026 || (year === 2026 && month > 1)) return null;
-                  const shortYear = year.toString().slice(2); // 앞의 20 제거
+                  const itemDate = new Date(year, month);
+                  // 현재 달까지만 표시
+                  if (itemDate > currentMonthLimit) return null;
+                  const shortYear = year.toString().slice(2);
                   return (
                     <button
                       key={i}
@@ -445,6 +448,8 @@ export default function Detail() {
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 256 256">
                     {(() => {
                       const total = appUsage.totalUsedAmount;
+                      if (total === 0) return null; // 0으로 나누기 방지
+                      
                       const radius = 96;
                       const circumference = 2 * Math.PI * radius;
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Home from "../page/Home";
 import Support from "../page/Support";
@@ -23,6 +23,7 @@ export default function Router() {
           <Route path="/alarm" element={<Alarm />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/detail" element={<Detail />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomBar />
       </Layout>

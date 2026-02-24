@@ -10,5 +10,4 @@ reviews:
     - develop
 
 chat:
-  enabled: true
   auto_reply: true

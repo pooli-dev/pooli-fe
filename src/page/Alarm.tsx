@@ -97,7 +97,15 @@ export default function Alarm() {
         {filteredAlarms.map(alarm => (
           <div
             key={alarm.id}
+            role="button"
+            tabIndex={0}
             onClick={() => markAsRead(alarm.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                markAsRead(alarm.id);
+              }
+            }}
             className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
               alarm.isRead ? 'bg-[#FAFAFA]' : 'bg-white shadow-sm'
             }`}

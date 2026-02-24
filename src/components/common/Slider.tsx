@@ -99,8 +99,8 @@ export default function Slider({
           const y2 = height - nextHeight - 32;
           
           // 애니메이션: 시작점에서 끝점으로
-          const animY1 = isAnimated ? y1 : height - 32;
-          const animY2 = isAnimated ? y2 : height - 32;
+          const animY1 = isAnimated ? y1 : (animated ? height - 32 : y1);
+          const animY2 = isAnimated ? y2 : (animated ? height - 32 : y2);
           
           return (
             <line
@@ -127,7 +127,7 @@ export default function Slider({
           const y = height - currentHeight - 32;
           
           // 애니메이션: 아래에서 위로
-          const animY = isAnimated ? y : height - 32;
+          const animY = isAnimated ? y : (animated ? height - 32 : y);
           
           return (
             <circle

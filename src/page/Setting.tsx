@@ -9,10 +9,14 @@ const InfoTooltip = ({ text }: { text: string }) => {
   return (
     <div className="relative inline-block">
       <button
+        type="button"
+        aria-label="정보"
         className="w-5 h-5 rounded-full bg-[#CCCCCC] flex items-center justify-center text-white cursor-help"
         style={{ fontSize: '0.75em' }}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
       >
         i
       </button>
@@ -30,6 +34,10 @@ const InfoTooltip = ({ text }: { text: string }) => {
 const DarkModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="다크 모드"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-200 ${
         checked ? 'bg-[#4A5568]' : 'bg-[#E0E0E0]'
@@ -61,6 +69,10 @@ const DarkModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (ch
 const LargeTextToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="큰글씨 모드"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-200 ${
         checked ? 'bg-[#7B9EFF]' : 'bg-[#E0E0E0]'
@@ -81,6 +93,10 @@ const LargeTextToggle = ({ checked, onChange }: { checked: boolean; onChange: (c
 const ChildModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="어린이 모드"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-200 ${
         checked ? 'bg-[#7B9EFF]' : 'bg-[#E0E0E0]'

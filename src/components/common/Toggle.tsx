@@ -15,16 +15,20 @@ interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
 }
 
-export default function Toggle({ checked, onChange, disabled = false }: ToggleProps) {
+export default function Toggle({ checked, onChange, disabled = false, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby }: ToggleProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
       disabled={disabled}
-      onClick={() => !disabled && onChange(!checked)}
+      onClick={() => onChange(!checked)}
       className={`
         relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ease-in-out
         ${checked ? 'bg-[#7B9EFF]' : 'bg-[#E0E0E0]'}
