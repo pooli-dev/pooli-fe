@@ -30,6 +30,8 @@ export default function Header({ showAlarm = true, showSetting = true }: HeaderP
         return '알림';
       case '/setting':
         return '설정';
+      case '/detail':
+        return '상세페이지';
       default:
         return '';
     }

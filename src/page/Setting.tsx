@@ -122,10 +122,16 @@ export default function Setting() {
   // 알림 설정
   const [familyDataNotification, setFamilyDataNotification] = useState(false);
   const [personalDataNotification, setPersonalDataNotification] = useState(false);
+  const [personalDataThresholdEnabled, setPersonalDataThresholdEnabled] = useState(true);
+  const [personalDataThreshold, setPersonalDataThreshold] = useState(500); // MB 단위
   const [policyChangeNotification, setPolicyChangeNotification] = useState(true);
   const [policyActivityNotification, setPolicyActivityNotification] = useState(true);
   const [permissionChangeNotification, setPermissionChangeNotification] = useState(false);
   const [inquiryNotification, setInquiryNotification] = useState(false);
+
+  const handleThresholdChange = (value: number) => {
+    setPersonalDataThreshold(Math.max(0, Math.min(10000, value))); // 0-10000 MB 범위
+  };
 
   return (
     <div className="relative h-[calc(100vh-106px-100px)] overflow-y-auto mt-[106px] mb-[100px]">
@@ -200,6 +206,57 @@ export default function Setting() {
                 <div className="scale-90">
                   <Toggle checked={personalDataNotification} onChange={setPersonalDataNotification} />
                 </div>
+              </div>
+              
+              {/* 개인 데이터 임계치 */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>개인 데이터 임계치 알림</span>
+                  <div className="scale-90">
+                    <Toggle checked={personalDataThresholdEnabled} onChange={setPersonalDataThresholdEnabled} />
+                  </div>
+                </div>
+                
+                {personalDataThresholdEnabled && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 relative">
+                        <input
+                          type="range"
+                          min="0"
+                          max="10000"
+                          step="50"
+                          value={personalDataThreshold}
+                          onChange={(e) => handleThresholdChange(Number(e.target.value))}
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer slider-custom"
+                          style={{
+                            background: `linear-gradient(to right, #678BF7 0%, #9A9CEA ${(personalDataThreshold / 10000) * 100}%, #E0E0E0 ${(personalDataThreshold / 10000) * 100}%, #E0E0E0 100%)`
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center ml-3">
+                        <input
+                          type="number"
+                          value={personalDataThreshold}
+                          onChange={(e) => handleThresholdChange(Number(e.target.value))}
+                          className="w-16 px-2 py-1.5 border border-[#678BF7] rounded-l-lg text-center text-[#678BF7] font-medium border-r-0 number-input-small"
+                          style={{ 
+                            fontSize: '0.875em',
+                            backgroundColor: 'rgba(103, 139, 247, 0.1)'
+                          }}
+                          min="0"
+                          max="10000"
+                        />
+                        <div className="py-1.5 pl-1 pr-2 border border-[#678BF7] rounded-r-lg text-[#818181] border-l-0 whitespace-nowrap flex items-center justify-start" style={{ 
+                          fontSize: '0.875em',
+                          backgroundColor: 'rgba(103, 139, 247, 0.1)'
+                        }}>
+                          MB
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

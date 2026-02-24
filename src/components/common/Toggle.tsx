@@ -1,3 +1,16 @@
+/**
+ * 토글 스위치 컴포넌트
+ * 
+ * @example
+ * // 기본 사용
+ * const [isOn, setIsOn] = useState(false);
+ * <Toggle checked={isOn} onChange={setIsOn} />
+ * 
+ * @example
+ * // 비활성화 상태
+ * <Toggle checked={true} onChange={() => {}} disabled />
+ */
+
 interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;

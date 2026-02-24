@@ -6,6 +6,8 @@ reviews:
   high_level_summary: true
   poem: false
   review_status: true
+  base_branches:
+    - develop
 
 chat:
   enabled: true

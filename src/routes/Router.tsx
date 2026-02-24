@@ -5,6 +5,7 @@ import Support from "../page/Support";
 import Policy from "../page/Policy";
 import Alarm from "../page/Alarm";
 import Setting from "../page/Setting";
+import Detail from "../page/Detail";
 import StatusBar from "../components/StatusBar";
 import Header from "../components/Header";
 import BottomBar from "../components/BottomBar";
@@ -21,6 +22,7 @@ export default function Router() {
           <Route path="/policy" element={<Policy />} />
           <Route path="/alarm" element={<Alarm />} />
           <Route path="/setting" element={<Setting />} />
+          <Route path="/detail" element={<Detail />} />
         </Routes>
         <BottomBar />
       </Layout>
