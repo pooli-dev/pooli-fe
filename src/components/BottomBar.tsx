@@ -26,10 +26,13 @@ export default function BottomBar() {
   return (
     <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full flex justify-around items-center py-2 bg-white/60 backdrop-blur-[10px] pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-[100] ${darkMode ? 'invert' : ''}`}>
       {navItems.map(({ path, icon, label }) => {
-        const isActive = location.pathname === path;
+        const isActive = path === '/' 
+          ? location.pathname === '/' 
+          : location.pathname.startsWith(path);
         return (
           <button 
             key={path}
+            type="button"
             className="flex flex-col items-center justify-center gap-0.5 bg-transparent border-none cursor-pointer w-20 h-16" 
             onClick={() => navigate(path)}
           >

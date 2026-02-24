@@ -16,7 +16,7 @@
  * />
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 
 interface SliderProps {
   data: Array<{
@@ -39,6 +39,7 @@ export default function Slider({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isAnimated, setIsAnimated] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+  const gradientId = useId();
 
   // Intersection Observer로 애니메이션 트리거
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function Slider({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsAnimated(true);
+            observer.disconnect();
           }
         });
       },
@@ -77,7 +79,7 @@ export default function Slider({
       {/* SVG로 라인과 포인트 그리기 */}
       <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', paddingBottom: '32px' }}>
         <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor="#9A9CEA" />
           </linearGradient>
@@ -109,7 +111,7 @@ export default function Slider({
               y1={animY1}
               x2={`${x2}%`}
               y2={animY2}
-              stroke="url(#lineGradient)"
+              stroke={`url(#${gradientId})`}
               strokeWidth="2.5"
               strokeLinecap="round"
               className="transition-all duration-1000 ease-out"

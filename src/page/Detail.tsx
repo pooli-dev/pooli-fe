@@ -90,7 +90,7 @@ export default function Detail() {
   
   const [currentDate, setCurrentDate] = useState(currentMonthLimit);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isFamilyPublic, setIsFamilyPublic] = useState(true);
+  const [isFamilyPublic, setIsFamilyPublic] = useState(dummyAppUsage.isPublic);
   const [dataAnimated, setDataAnimated] = useState(false);
   const [chartAnimated, setChartAnimated] = useState(false);
   const [hoveredAppIndex, setHoveredAppIndex] = useState<number | null>(null);
@@ -213,7 +213,7 @@ export default function Detail() {
   const handlePrevMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
     // 2024년 1월보다 이전으로 갈 수 없음
-    if (newDate.getFullYear() < 2024 || (newDate.getFullYear() === 2024 && newDate.getMonth() < 0)) {
+    if (newDate.getFullYear() < 2024) {
       return;
     }
     setCurrentDate(newDate);
@@ -305,27 +305,34 @@ export default function Detail() {
             <div className="bg-white rounded-2xl p-6 m-4 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-lg font-semibold mb-4 text-center">날짜 선택</h3>
               <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
-                {Array.from({ length: 27 }, (_, i) => {
-                  const year = 2024 + Math.floor(i / 12);
-                  const month = i % 12;
-                  const itemDate = new Date(year, month);
-                  // 현재 달까지만 표시
-                  if (itemDate > currentMonthLimit) return null;
-                  const shortYear = year.toString().slice(2);
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleDateSelect(year, month)}
-                      className={`p-3 rounded-lg ${
-                        currentDate.getFullYear() === year && currentDate.getMonth() === month
-                          ? 'bg-[#678BF7] text-white'
-                          : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                    >
-                      {shortYear}년 {month + 1}월
-                    </button>
-                  );
-                })}
+                {(() => {
+                  const startYear = 2024;
+                  const startMonth = 0; // 1월
+                  const endYear = currentMonthLimit.getFullYear();
+                  const endMonth = currentMonthLimit.getMonth();
+                  
+                  const totalMonths = (endYear - startYear) * 12 + (endMonth - startMonth) + 1;
+                  
+                  return Array.from({ length: totalMonths }, (_, i) => {
+                    const year = startYear + Math.floor((startMonth + i) / 12);
+                    const month = (startMonth + i) % 12;
+                    const shortYear = year.toString().slice(2);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleDateSelect(year, month)}
+                        className={`p-3 rounded-lg ${
+                          currentDate.getFullYear() === year && currentDate.getMonth() === month
+                            ? 'bg-[#678BF7] text-white'
+                            : 'bg-gray-100 hover:bg-gray-200'
+                        }`}
+                      >
+                        {shortYear}년 {month + 1}월
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>

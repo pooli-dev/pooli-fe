@@ -238,13 +238,13 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>가족 데이터 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={familyDataNotification} onChange={setFamilyDataNotification} />
+                  <Toggle checked={familyDataNotification} onChange={setFamilyDataNotification} aria-label="가족 데이터 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>개인 데이터 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={personalDataNotification} onChange={setPersonalDataNotification} />
+                  <Toggle checked={personalDataNotification} onChange={setPersonalDataNotification} aria-label="개인 데이터 알림" />
                 </div>
               </div>
               
@@ -253,7 +253,7 @@ export default function Setting() {
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>개인 데이터 임계치 알림</span>
                   <div className="scale-90">
-                    <Toggle checked={personalDataThresholdEnabled} onChange={setPersonalDataThresholdEnabled} />
+                    <Toggle checked={personalDataThresholdEnabled} onChange={setPersonalDataThresholdEnabled} aria-label="개인 데이터 임계치 알림" />
                   </div>
                 </div>
                 
@@ -310,13 +310,13 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>정책 변경 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={policyChangeNotification} onChange={setPolicyChangeNotification} />
+                  <Toggle checked={policyChangeNotification} onChange={setPolicyChangeNotification} aria-label="정책 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>정책 활동 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={policyActivityNotification} onChange={setPolicyActivityNotification} />
+                  <Toggle checked={policyActivityNotification} onChange={setPolicyActivityNotification} aria-label="정책 활동 알림" />
                 </div>
               </div>
             </div>
@@ -331,13 +331,13 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>권한 변경 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={permissionChangeNotification} onChange={setPermissionChangeNotification} />
+                  <Toggle checked={permissionChangeNotification} onChange={setPermissionChangeNotification} aria-label="권한 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>문의사항 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={inquiryNotification} onChange={setInquiryNotification} />
+                  <Toggle checked={inquiryNotification} onChange={setInquiryNotification} aria-label="문의사항 알림" />
                 </div>
               </div>
             </div>
