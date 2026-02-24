@@ -6,6 +6,12 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+/**
+ * 레이아웃 컴포넌트
+ * 전체 페이지 레이아웃과 배경을 제공합니다.
+ * @param children - 자식 컴포넌트
+ * @returns 레이아웃 JSX
+ */
 export default function Layout({ children }: LayoutProps) {
   const darkMode = useSettingStore(state => state.darkMode);
   const largeTextMode = useSettingStore(state => state.largeTextMode);

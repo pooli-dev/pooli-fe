@@ -2,7 +2,12 @@ import { useState } from 'react';
 import type { AlarmCategory } from '../types/alarm';
 import { useAlarmStore } from '../store/alarmStore';
 
-// 카테고리별 아이콘 SVG
+/**
+ * 카테고리별 아이콘 컴포넌트
+ * @param category - 알림 카테고리 (data, policy, permission, etc)
+ * @param isRead - 읽음 여부
+ * @returns 카테고리에 맞는 아이콘 JSX
+ */
 const CategoryIcon = ({ category, isRead }: { category: Exclude<AlarmCategory, 'all'>; isRead: boolean }) => {
   const iconColor = isRead ? '#CCCCCC' : '#FF6B6B';
   const bgColor = isRead ? '#F5F5F5' : '#FFE8E8';
@@ -46,6 +51,11 @@ const CategoryIcon = ({ category, isRead }: { category: Exclude<AlarmCategory, '
   }
 };
 
+/**
+ * 알림 페이지 컴포넌트
+ * 카테고리별 알림 필터링 및 읽음 처리 기능을 제공합니다.
+ * @returns 알림 페이지 JSX
+ */
 export default function Alarm() {
   const [selectedCategory, setSelectedCategory] = useState<AlarmCategory>('all');
   const { alarms, markAsRead, markAllAsRead } = useAlarmStore();

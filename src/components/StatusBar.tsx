@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * 상태 바 컴포넌트
+ * 현재 시간, 와이파이, 배터리 상태를 표시합니다.
+ * @returns 상태 바 JSX
+ */
 export default function StatusBar() {
   const [currentTime, setCurrentTime] = useState('');
 

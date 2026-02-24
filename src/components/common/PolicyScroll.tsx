@@ -32,7 +32,11 @@ export default function PolicyScroll({ policies, title = '현재 적용중인 �
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // 정책 타입별 아이콘
+  /**
+   * 정책 타입별 아이콘을 반환
+   * @param type - 정책 타입 (한도, 시간, 앱)
+   * @returns 정책 타입에 맞는 아이콘 JSX
+   */
   const getPolicyIcon = (type: string) => {
     switch (type) {
       case '한도':
@@ -62,7 +66,9 @@ export default function PolicyScroll({ policies, title = '현재 적용중인 �
     }
   };
 
-  // 마우스 드래그 스크롤
+  /**
+   * 마우스 드래그 시작 핸들러
+   */
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsDragging(true);
@@ -70,6 +76,9 @@ export default function PolicyScroll({ policies, title = '현재 적용중인 �
     setScrollLeft(scrollRef.current.scrollLeft);
   };
 
+  /**
+   * 마우스 드래그 이동 핸들러
+   */
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
     e.preventDefault();

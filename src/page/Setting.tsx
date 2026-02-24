@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useSettingStore } from '../store/settingStore';
 import Toggle from '../components/common/Toggle';
 
-// 툴팁 컴포넌트
+/**
+ * 정보 툴팁 컴포넌트
+ * @param text - 툴팁에 표시할 텍스트
+ * @returns 툴팁 JSX
+ */
 const InfoTooltip = ({ text }: { text: string }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -30,7 +34,12 @@ const InfoTooltip = ({ text }: { text: string }) => {
   );
 };
 
-// 다크모드 토글 (달 ↔ 해)
+/**
+ * 다크모드 토글 컴포넌트 (달 ↔ 해)
+ * @param checked - 다크모드 활성화 여부
+ * @param onChange - 상태 변경 핸들러
+ * @returns 다크모드 토글 JSX
+ */
 const DarkModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
@@ -65,7 +74,12 @@ const DarkModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (ch
   );
 };
 
-// 큰글씨 모드 토글 (a ↔ A)
+/**
+ * 큰글씨 모드 토글 컴포넌트 (a ↔ A)
+ * @param checked - 큰글씨 모드 활성화 여부
+ * @param onChange - 상태 변경 핸들러
+ * @returns 큰글씨 모드 토글 JSX
+ */
 const LargeTextToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
@@ -89,7 +103,12 @@ const LargeTextToggle = ({ checked, onChange }: { checked: boolean; onChange: (c
   );
 };
 
-// 어린이 모드 토글 (아기 얼굴)
+/**
+ * 어린이 모드 토글 컴포넌트 (아기 얼굴)
+ * @param checked - 어린이 모드 활성화 여부
+ * @param onChange - 상태 변경 핸들러
+ * @returns 어린이 모드 토글 JSX
+ */
 const ChildModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) => {
   return (
     <button
@@ -126,6 +145,11 @@ const ChildModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (c
   );
 };
 
+/**
+ * 설정 페이지 컴포넌트
+ * 모드 설정(다크/큰글씨/어린이)과 알림 설정을 제공합니다.
+ * @returns 설정 페이지 JSX
+ */
 export default function Setting() {
   // 전역 상태에서 모드 가져오기
   const darkMode = useSettingStore(state => state.darkMode);

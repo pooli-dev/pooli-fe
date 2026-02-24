@@ -69,11 +69,21 @@ const defaultColors = [
   "#FFDAC1"  // 연한 살구
 ];
 
-// 앱 색상 가져오기 함수
+/**
+ * 앱 색상을 가져오는 함수
+ * @param appName - 앱 이름
+ * @param index - 앱 인덱스
+ * @returns 앱에 해당하는 색상 코드
+ */
 const getAppColor = (appName: string, index: number): string => {
   return appColorMap[appName] || defaultColors[index % defaultColors.length];
 };
 
+/**
+ * 상세 페이지 컴포넌트
+ * 데이터 사용량, 정책, 앱별 사용량 등을 표시합니다.
+ * @returns 상세 페이지 JSX
+ */
 export default function Detail() {
   const today = new Date();
   const currentMonthLimit = new Date(today.getFullYear(), today.getMonth());
@@ -127,7 +137,10 @@ export default function Detail() {
     };
   }, []);
 
-  // 월별 사용량 데이터를 차트 데이터로 변환
+  /**
+   * 월별 사용량 데이터를 차트 데이터로 변환
+   * @returns 차트에 표시할 사용량 데이터 배열
+   */
   const getUsageData = () => {
     const month = currentDate.getMonth(); // 0-11
     const year = currentDate.getFullYear();
@@ -194,6 +207,9 @@ export default function Detail() {
 
   const usageData = getUsageData();
 
+  /**
+   * 이전 달로 이동
+   */
   const handlePrevMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
     // 2024년 1월보다 이전으로 갈 수 없음
@@ -203,6 +219,9 @@ export default function Detail() {
     setCurrentDate(newDate);
   };
 
+  /**
+   * 다음 달로 이동 (현재 달까지만 가능)
+   */
   const handleNextMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
     // 현재 달보다 미래로 갈 수 없음
@@ -212,6 +231,11 @@ export default function Detail() {
     setCurrentDate(newDate);
   };
 
+  /**
+   * 날짜 선택 핸들러
+   * @param year - 선택한 연도
+   * @param month - 선택한 월 (0-11)
+   */
   const handleDateSelect = (year: number, month: number) => {
     setCurrentDate(new Date(year, month));
     setShowDatePicker(false);

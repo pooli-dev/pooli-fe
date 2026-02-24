@@ -1,5 +1,9 @@
 import { PAGE_PADDING } from '../constants/layout';
 
+/**
+ * 홈 페이지 컴포넌트
+ * @returns 홈 페이지 JSX
+ */
 export default function Home() {
   return (
     <div style={{ padding: PAGE_PADDING }}>

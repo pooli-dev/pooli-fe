@@ -13,6 +13,11 @@ const navItems = [
   { path: '/policy', icon: { on: policyOn, off: policyOff }, label: 'Policy' },
 ];
 
+/**
+ * 하단 네비게이션 바 컴포넌트
+ * Support, Home, Policy 페이지 간 이동을 제공합니다.
+ * @returns 하단 네비게이션 바 JSX
+ */
 export default function BottomBar() {
   const location = useLocation();
   const navigate = useNavigate();

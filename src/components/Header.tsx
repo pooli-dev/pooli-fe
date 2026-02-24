@@ -10,6 +10,13 @@ interface HeaderProps {
   showSetting?: boolean;
 }
 
+/**
+ * 헤더 컴포넌트
+ * 로고, 페이지 제목, 알림, 설정 아이콘을 표시합니다.
+ * @param showAlarm - 알림 아이콘 표시 여부
+ * @param showSetting - 설정 아이콘 표시 여부
+ * @returns 헤더 JSX
+ */
 export default function Header({ showAlarm = true, showSetting = true }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,6 +27,10 @@ export default function Header({ showAlarm = true, showSetting = true }: HeaderP
   const isAlarm = location.pathname === '/alarm';
   const isSetting = location.pathname === '/setting';
 
+  /**
+   * 현재 경로에 따른 페이지 제목 반환
+   * @returns 페이지 제목
+   */
   const getPageTitle = () => {
     switch (location.pathname) {
       case '/support':
