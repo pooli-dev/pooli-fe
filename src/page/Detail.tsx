@@ -9,6 +9,8 @@ interface DataBalanceResponse {
   sharedDataRemaining: number; // MB 단위
   personalDataRemaining: number; // MB 단위
   planName: string;
+  personalDataTotal: number; // MB 단위 (기본 데이터 한도)
+  sharedDataTotal: number; // MB 단위 (공유 데이터 한도)
 }
 
 interface AppUsageResponse {
@@ -25,7 +27,9 @@ const dummyDataBalance: DataBalanceResponse = {
   userName: "홍길동",
   sharedDataRemaining: 1600, // 1.6GB
   personalDataRemaining: 5000, // 5GB
-  planName: "5G 프리미엄"
+  planName: "5G 프리미엄",
+  personalDataTotal: 5000, // 5GB
+  sharedDataTotal: 5000, // 5GB
 };
 
 const dummyAppUsage: AppUsageResponse = {
@@ -182,12 +186,12 @@ export default function Detail() {
       const monthNum = date.getMonth() + 1;
       const yearNum = date.getFullYear();
       const key = `${yearNum}-${monthNum}`;
-      const mbValue = dummyData[key] || 3000;
+      const mbValue = dummyData[key] ?? 3000;
       const gbValue = mbValue / 1000;
       
       months.push({
         label: `${monthNum}월`,
-        value: (gbValue / 5) * 100, // 5GB 기준으로 퍼센트 계산
+        value: (gbValue / (dataBalance.personalDataTotal / 1000)) * 100, // 플랜 한도 기준으로 퍼센트 계산
         gb: parseFloat(gbValue.toFixed(2)),
         isCurrent: i === 0
       });
@@ -197,7 +201,7 @@ export default function Detail() {
     const avgGb = months.reduce((sum, m) => sum + m.gb, 0) / months.length;
     months.push({
       label: '평균',
-      value: (avgGb / 5) * 100,
+      value: (avgGb / (dataBalance.personalDataTotal / 1000)) * 100,
       gb: parseFloat(avgGb.toFixed(2)),
       isCurrent: false
     });
@@ -349,18 +353,16 @@ export default function Detail() {
             <div className="flex justify-between items-center mb-2">
               <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>기본 데이터</span>
               <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>
-                {(dataBalance.personalDataRemaining / 1000).toFixed(1)}GB / 5GB
+                {(dataBalance.personalDataRemaining / 1000).toFixed(1)}GB / {(dataBalance.personalDataTotal / 1000).toFixed(1)}GB
               </span>
             </div>
             <div className="w-full h-3 rounded-full overflow-hidden relative" style={{
-              background: 'white',
-              border: '1px solid',
-              borderImage: 'linear-gradient(to right, #FFFFFF, #EDEDED) 1'
+              background: '#EDEDED',
             }}>
               <div 
                 className="h-full rounded-full transition-all duration-1000 ease-out" 
                 style={{ 
-                  width: dataAnimated ? `${(dataBalance.personalDataRemaining / 5000) * 100}%` : '0%',
+                  width: dataAnimated ? `${(dataBalance.personalDataRemaining / dataBalance.personalDataTotal) * 100}%` : '0%',
                   background: 'linear-gradient(to right, rgba(33, 155, 228, 0.4) 0%, rgba(33, 155, 228, 0.6) 50%, rgba(33, 155, 228, 1) 100%)',
                   boxShadow: '0 2px 4px rgba(33, 155, 228, 0.3)'
                 }}
@@ -372,18 +374,16 @@ export default function Detail() {
             <div className="flex justify-between items-center mb-2">
               <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>공유 데이터</span>
               <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>
-                {(dataBalance.sharedDataRemaining / 1000).toFixed(1)}GB / 5GB
+                {(dataBalance.sharedDataRemaining / 1000).toFixed(1)}GB / {(dataBalance.sharedDataTotal / 1000).toFixed(1)}GB
               </span>
             </div>
             <div className="w-full h-3 rounded-full overflow-hidden relative" style={{
-              background: 'white',
-              border: '1px solid',
-              borderImage: 'linear-gradient(to right, #FFFFFF, #EDEDED) 1'
+              background: '#EDEDED',
             }}>
               <div 
                 className="h-full rounded-full transition-all duration-1000 ease-out" 
                 style={{ 
-                  width: dataAnimated ? `${(dataBalance.sharedDataRemaining / 5000) * 100}%` : '0%',
+                  width: dataAnimated ? `${(dataBalance.sharedDataRemaining / dataBalance.sharedDataTotal) * 100}%` : '0%',
                   background: 'linear-gradient(to right, #FFB84D 0%, #F4E87C 50%, #A8E063 100%)',
                   boxShadow: '0 2px 4px rgba(168, 224, 99, 0.3)'
                 }}
@@ -396,35 +396,46 @@ export default function Detail() {
         <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
           <h3 className="font-semibold text-[#333333] mb-4" style={{ fontSize: '1.125em' }}>구성원별 한도 배분</h3>
           
-          <div className="w-full h-8 rounded-full overflow-hidden flex mb-4" style={{
-            background: 'linear-gradient(to right, #FFFFFF 0%, #EDEDED 100%)',
-            border: '1px solid transparent',
-            backgroundClip: 'padding-box'
-          }}>
-            <div className="h-full" style={{ width: '25%', backgroundColor: 'rgba(200, 230, 201, 0.6)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}></div>
-            <div className="h-full" style={{ width: '25%', backgroundColor: 'rgba(179, 229, 252, 0.6)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}></div>
-            <div className="h-full" style={{ width: '25%', backgroundColor: 'rgba(255, 204, 188, 0.6)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}></div>
-            <div className="h-full" style={{ width: '25%', backgroundColor: 'rgba(209, 196, 233, 0.6)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}></div>
-          </div>
+          {(() => {
+            // 더미 데이터 (API 연동 시 교체)
+            const memberQuotas = [
+              { name: '김영희', percentage: 25, color: 'rgba(200, 230, 201, 0.6)' },
+              { name: '김철수', percentage: 25, color: 'rgba(179, 229, 252, 0.6)' },
+              { name: '김옥자', percentage: 25, color: 'rgba(255, 204, 188, 0.6)' },
+              { name: '김민우', percentage: 25, color: 'rgba(209, 196, 233, 0.6)' },
+            ];
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(200, 230, 201, 0.6)' }}></div>
-              <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>김영희 25%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(179, 229, 252, 0.6)' }}></div>
-              <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>김철수 25%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(255, 204, 188, 0.6)' }}></div>
-              <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>김옥자 25%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(209, 196, 233, 0.6)' }}></div>
-              <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>김민우 25%</span>
-            </div>
-          </div>
+            return (
+              <>
+                <div className="w-full h-8 rounded-full overflow-hidden flex mb-4" style={{
+                  background: 'linear-gradient(to right, #FFFFFF 0%, #EDEDED 100%)',
+                  border: '1px solid transparent',
+                  backgroundClip: 'padding-box'
+                }}>
+                  {memberQuotas.map((member) => (
+                    <div 
+                      key={member.name}
+                      className="h-full" 
+                      style={{ 
+                        width: `${member.percentage}%`, 
+                        backgroundColor: member.color, 
+                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' 
+                      }}
+                    ></div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {memberQuotas.map((member) => (
+                    <div key={member.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: member.color }}></div>
+                      <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>{member.name} {member.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* 최근 3개월간 사용량 추이 */}
@@ -446,7 +457,7 @@ export default function Detail() {
             <div className="flex items-center gap-2">
               <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>가족 공개</span>
               <div className="scale-90">
-                <Toggle checked={isFamilyPublic} onChange={setIsFamilyPublic} />
+                <Toggle checked={isFamilyPublic} onChange={setIsFamilyPublic} aria-label="가족 공개" />
               </div>
             </div>
           </div>
