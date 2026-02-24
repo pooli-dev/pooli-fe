@@ -3,6 +3,7 @@ import Layout from "../layout/Layout";
 import Home from "../page/Home";
 import Support from "../page/Support";
 import Policy from "../page/Policy";
+import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
 import Setting from "../page/Setting";
 import Detail from "../page/Detail";
@@ -20,6 +21,7 @@ export default function Router() {
           <Route path="/" element={<Home />} />
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />
+          <Route path="/main" element={<Main />} />
           <Route path="/alarm" element={<Alarm />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/detail" element={<Detail />} />
