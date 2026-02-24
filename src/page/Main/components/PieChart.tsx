@@ -1,21 +1,36 @@
+import { motion } from "framer-motion";
+import GlassChip from "./Chip";
+
 type Props = {
   value: number; // 0~100, 그래프의 값
   size?: number; // px, 그래프의 사이즈
   strokeWidth?: number; // px, 그래프의 두께
+  usedData?: string; // 사용된 데이터 (예: "5.2GB")
+  totalData?: string; // 전체 데이터 (예: "8GB")
+  basicData?: string; // 기본 데이터 (예: "5GB")
+  additionalData?: string; // 추가 데이터 (예: "3GB")
 };
 
 export default function CircleProgress({
   value,
   size = 260,
   strokeWidth = 20,
+  usedData = "5.2GB",
+  totalData = "8GB",
+  basicData = "5GB",
+  additionalData = "3GB",
 }: Props) {
   const clamped = Math.max(0, Math.min(100, value)); // value가 0~100 사이일 수 있도록
   const r = (size - strokeWidth - 10) / 2; // 원의 반지름
   const c = 2 * Math.PI * r;
   const offset = c * (1 - clamped / 100); //원형 그래프에서 회색 처리될 부분
 
+  // 물결 애니메이션을 위한 내부 원 크기
+  const innerCircleSize = size - strokeWidth * 2 - 10;
+  const waveHeight = (innerCircleSize * clamped) / 100;
+
   return (
-    <div className="w-fit">
+    <div className="relative w-fit">
       <svg width={size} height={size} className="block">
         {/* 전체 영역 */}
         <circle
@@ -31,17 +46,12 @@ export default function CircleProgress({
         <defs>
           {/* 그라데이션 */}
           <linearGradient id="myGradient">
-            <stop offset="0%" stop-color="#9A9CEA" />
-            <stop offset="100%" stop-color="#219BE4" />
+            <stop offset="0%" stopColor="#9A9CEA" />
+            <stop offset="100%" stopColor="#219BE4" />
           </linearGradient>
           {/* 네온 효과 */}
           <filter id="shadow">
-            <feDropShadow
-              dx="0"
-              dy="0"
-              stdDeviation="3"
-              flood-color="#A2B9EE"
-            />
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#A2B9EE" />
           </filter>
         </defs>
 
@@ -60,19 +70,141 @@ export default function CircleProgress({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           className="transition-[stroke-dashoffset] duration-500 ease-out"
         />
-
-        {/* 중앙 텍스트 (Tailwind 테스트용) */}
-        <text
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          className="fill-black font-bold"
-          style={{ fontSize: 55 }}
-        >
-          {Math.round(clamped)}%
-        </text>
       </svg>
+
+      {/* 물결 애니메이션 레이어 */}
+      <div
+        className="absolute overflow-hidden rounded-full pointer-events-none"
+        style={{
+          width: innerCircleSize,
+          height: innerCircleSize,
+          top: strokeWidth + 5,
+          left: strokeWidth + 5,
+          clipPath: `circle(${innerCircleSize / 2}px at center)`,
+        }}
+      >
+        {/* 물결 레이어 1 - 파랑색 */}
+        <motion.div
+          className="absolute w-[200%] h-[200%] rounded-[45%]"
+          style={{
+            background: "rgba(196, 236, 254, 0.3)",
+            left: "-50%",
+          }}
+          animate={{
+            y: [
+              innerCircleSize - waveHeight + 5,
+              innerCircleSize - waveHeight + 15,
+              innerCircleSize - waveHeight + 5,
+            ],
+            rotate: [0, 360],
+          }}
+          transition={{
+            y: {
+              duration: 2.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+            rotate: {
+              duration: 8,
+              repeat: Infinity,
+              ease: "linear",
+            },
+          }}
+        />
+
+        {/* 물결 레이어 2 - 주황색 */}
+        <motion.div
+          className="absolute w-[210%] h-[210%] rounded-[48%]"
+          style={{
+            background: "rgba(251, 215, 195, 0.3)",
+            left: "-55%",
+          }}
+          animate={{
+            y: [
+              innerCircleSize - waveHeight + 10,
+              innerCircleSize - waveHeight + 20,
+              innerCircleSize - waveHeight + 10,
+            ],
+            rotate: [0, -360],
+          }}
+          transition={{
+            y: {
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.3,
+            },
+            rotate: {
+              duration: 10,
+              repeat: Infinity,
+              ease: "linear",
+            },
+          }}
+        />
+
+        {/* 물결 레이어 3 - 보라색 */}
+        <motion.div
+          className="absolute w-[220%] h-[220%] rounded-[42%]"
+          style={{
+            background: "rgba(202, 166, 219, 0.2)",
+            left: "-60%",
+          }}
+          animate={{
+            y: [
+              innerCircleSize - waveHeight + 30,
+              innerCircleSize - waveHeight + 15,
+              innerCircleSize - waveHeight + 30,
+            ],
+            rotate: [0, 360],
+          }}
+          transition={{
+            y: {
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.6,
+            },
+            rotate: {
+              duration: 12,
+              repeat: Infinity,
+              ease: "linear",
+            },
+          }}
+        />
+      </div>
+
+      {/* 중앙 텍스트 및 데이터 - 최상단 레이어 */}
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        style={{ width: size, height: size }}
+      >
+        <div className="text-5xl font-bold text-black mb-1">
+          {Math.round(clamped)}%
+        </div>
+        <div className="text-sm text-gray-600 mb-4">
+          {usedData} / {totalData}
+        </div>
+
+        {/* 글래스모피즘 칩 */}
+        <div className="flex gap-2">
+          <GlassChip
+            gradientFrom="#ffffff"
+            gradientTo="#CAF1FF"
+            bgColor="173, 230, 255"
+            bgOpacity={0.5}
+          >
+            <span className="text-xs text-gray-700">기본 {basicData}</span>
+          </GlassChip>
+          <GlassChip
+            gradientFrom="#ffffff"
+            gradientTo="#FFF5F9"
+            bgColor="246, 202, 221"
+            bgOpacity={0.5}
+          >
+            <span className="text-xs text-gray-700">추가 {additionalData}</span>
+          </GlassChip>
+        </div>
+      </div>
     </div>
   );
 }
