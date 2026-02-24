@@ -18,7 +18,7 @@ export default function StatusBar() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full h-8 pt-[env(safe-area-inset-top)] flex justify-between items-center px-6 text-black text-sm font-semibold z-[200]">
+    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full h-8 pt-[env(safe-area-inset-top)] flex justify-between items-center px-6 text-black font-semibold z-[200] text-sm">
       <div className="flex items-center gap-1">
         <span>{currentTime}</span>
       </div>
