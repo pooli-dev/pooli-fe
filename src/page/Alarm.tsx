@@ -85,7 +85,8 @@ export default function Alarm() {
       <div className="flex justify-end mb-4">
         <button
           onClick={markAllAsRead}
-          className="text-sm text-[#678BF7] font-medium"
+          className="text-[#678BF7] font-medium"
+          style={{ fontSize: '0.875em' }}
         >
           전체 읽음
         </button>
@@ -106,18 +107,18 @@ export default function Alarm() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 {!alarm.isRead && (
-                  <span className="text-xs font-bold text-[#FF6B6B]">NEW</span>
+                  <span className="font-bold text-[#FF6B6B]" style={{ fontSize: '0.75em' }}>NEW</span>
                 )}
                 {alarm.isRead && (
-                  <span className="text-xs font-medium text-[#CCCCCC]">READ</span>
+                  <span className="font-medium text-[#CCCCCC]" style={{ fontSize: '0.75em' }}>READ</span>
                 )}
-                <span className={`text-xs ${alarm.isRead ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
+                <span className={alarm.isRead ? 'text-[#CCCCCC]' : 'text-[#999999]'} style={{ fontSize: '0.75em' }}>
                   {alarm.date}
                 </span>
               </div>
-              <p className={`text-sm leading-relaxed ${
+              <p className={`leading-relaxed ${
                 alarm.isRead ? 'text-[#AAAAAA]' : 'text-[#333333]'
-              }`}>
+              }`} style={{ fontSize: '0.875em' }}>
                 {alarm.title}
               </p>
             </div>
