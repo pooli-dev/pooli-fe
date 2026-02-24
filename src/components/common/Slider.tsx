@@ -1,129 +1,201 @@
-import { useState, useRef, useEffect } from 'react';
-
 /**
- * 슬라이더바 컴포넌트
+ * LineChart 공용 컴포넌트
  * 
- * @example
- * // 기본 사용 (0-100)
- * const [volume, setVolume] = useState(50);
- * <Slider value={volume} onChange={setVolume} />
- * 
- * @example
- * // 범위 지정
- * const [temperature, setTemperature] = useState(20);
+ * 사용 방법:
  * <Slider 
- *   value={temperature} 
- *   onChange={setTemperature}
- *   min={10}
- *   max={30}
- *   step={0.5}
+ *   data={[
+ *     { label: '8월', value: 60, gb: 3.0 },
+ *     { label: '9월', value: 80, gb: 4.0 },
+ *     { label: '10월', value: 75, gb: 3.75 },
+ *     { label: '평균', value: 78, gb: 3.9 }
+ *   ]}
+ *   height={192}
+ *   color="#678BF7"
+ *   showTooltip={true}
+ *   animated={true}
  * />
- * 
- * @example
- * // 비활성화 상태
- * <Slider value={50} onChange={() => {}} disabled />
  */
 
+import { useState, useEffect, useRef, useId } from 'react';
+
 interface SliderProps {
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  disabled?: boolean;
+  data: Array<{
+    label: string;
+    value: number; // 0-100 퍼센트 값
+    gb?: number; // GB 값 (선택사항)
+    isCurrent?: boolean; // 현재 달 여부
+  }>;
+  height?: number; // 차트 높이 (px)
+  color?: string; // 라인 및 포인트 색상
+  animated?: boolean; // 애니메이션 여부
 }
 
 export default function Slider({ 
-  value, 
-  onChange, 
-  min = 0, 
-  max = 100, 
-  step = 1,
-  disabled = false 
+  data, 
+  height = 192, 
+  color = '#678BF7',
+  animated = false
 }: SliderProps) {
-  const [isDragging, setIsDragging] = useState(false);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isAnimated, setIsAnimated] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const gradientId = useId();
 
-  const percentage = ((value - min) / (max - min)) * 100;
-
-  const handleMove = (clientX: number) => {
-    if (!sliderRef.current || disabled) return;
-
-    const rect = sliderRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const percent = x / rect.width;
-    const newValue = min + percent * (max - min);
-    const steppedValue = Math.round(newValue / step) * step;
-    const clampedValue = Math.max(min, Math.min(max, steppedValue));
-
-    onChange(clampedValue);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (disabled) return;
-    setIsDragging(true);
-    handleMove(e.clientX);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled) return;
-    setIsDragging(true);
-    handleMove(e.touches[0].clientX);
-  };
-
+  // Intersection Observer로 애니메이션 트리거
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        handleMove(e.clientX);
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (isDragging) {
-        handleMove(e.touches[0].clientX);
-      }
-    };
-
-    const handleEnd = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleEnd);
-      document.addEventListener('touchmove', handleTouchMove);
-      document.addEventListener('touchend', handleEnd);
+    if (!animated) {
+      return;
     }
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsAnimated(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    const currentRef = chartRef.current;
+    if (currentRef) observer.observe(currentRef);
+
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleEnd);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleEnd);
+      if (currentRef) observer.unobserve(currentRef);
     };
-  }, [isDragging]);
+  }, [animated]);
 
   return (
-    <div className="w-full py-2">
-      <div
-        ref={sliderRef}
-        className={`relative h-2 rounded-full bg-[#E0E0E0] ${disabled ? 'opacity-50' : 'cursor-pointer'}`}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
-      >
-        {/* 활성화된 트랙 */}
-        <div
-          className="absolute h-full rounded-full bg-[#7B9EFF] transition-all duration-100"
-          style={{ width: `${percentage}%` }}
-        />
+    <div ref={chartRef} className="relative" style={{ height: `${height}px` }}>
+      {/* 그리드 라인 */}
+      <div className="absolute inset-0 flex flex-col justify-between">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="w-full border-t border-gray-100"></div>
+        ))}
+      </div>
 
-        {/* 썸 (동그란 핸들) */}
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow-lg transition-all duration-100 ${
-            isDragging ? 'scale-110' : 'scale-100'
-          }`}
-          style={{ left: `${percentage}%`, transform: `translate(-50%, -50%)` }}
-        />
+      {/* SVG로 라인과 포인트 그리기 */}
+      <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%', paddingBottom: '32px' }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={color} />
+            <stop offset="100%" stopColor="#9A9CEA" />
+          </linearGradient>
+        </defs>
+        
+        {/* 라인 그리기 */}
+        {data.map((item, index) => {
+          const nextItem = data[index + 1];
+          if (!nextItem) return null;
+          
+          const currentHeight = (item.value / 100) * (height - 32);
+          const nextHeight = (nextItem.value / 100) * (height - 32);
+          
+          const totalWidth = 100;
+          const spacing = totalWidth / data.length;
+          const x1 = spacing * index + spacing / 2;
+          const x2 = spacing * (index + 1) + spacing / 2;
+          const y1 = height - currentHeight - 32;
+          const y2 = height - nextHeight - 32;
+          
+          // 애니메이션: 시작점에서 끝점으로
+          const animY1 = isAnimated ? y1 : (animated ? height - 32 : y1);
+          const animY2 = isAnimated ? y2 : (animated ? height - 32 : y2);
+          
+          return (
+            <line
+              key={`line-${index}`}
+              x1={`${x1}%`}
+              y1={animY1}
+              x2={`${x2}%`}
+              y2={animY2}
+              stroke={`url(#${gradientId})`}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+              style={{ transitionDelay: `${index * 100}ms` }}
+            />
+          );
+        })}
+        
+        {/* 포인트 그리기 */}
+        {data.map((item, index) => {
+          const currentHeight = (item.value / 100) * (height - 32);
+          const totalWidth = 100;
+          const spacing = totalWidth / data.length;
+          const x = spacing * index + spacing / 2;
+          const y = height - currentHeight - 32;
+          
+          // 애니메이션: 아래에서 위로
+          const animY = isAnimated ? y : (animated ? height - 32 : y);
+          
+          return (
+            <circle
+              key={`point-${index}`}
+              cx={`${x}%`}
+              cy={animY}
+              r={hoveredIndex === index ? 7 : 5}
+              fill={color}
+              className="transition-all duration-1000 ease-out"
+              style={{ 
+                transitionDelay: `${index * 100}ms`,
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))'
+              }}
+            />
+          );
+        })}
+      </svg>
+
+      {/* 호버 영역과 레이블 */}
+      <div className="absolute inset-0 flex items-end justify-around gap-4 pb-8">
+        {data.map((item, index) => {
+          const currentHeight = (item.value / 100) * (height - 32);
+          
+          return (
+            <div 
+              key={index} 
+              className="flex-1 relative flex flex-col items-center cursor-pointer"
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              {/* 호버 시 GB 표시 */}
+              {hoveredIndex === index && item.gb !== undefined && (
+                <div 
+                  className="absolute bg-[#333333] text-white px-3 py-1.5 rounded text-sm font-medium z-20"
+                  style={{ 
+                    bottom: `${currentHeight + 16}px`,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {item.gb}GB
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]"></div>
+                </div>
+              )}
+
+              {/* 넓은 호버 영역 */}
+              <div 
+                className="absolute w-full"
+                style={{ 
+                  bottom: 0,
+                  height: `${height - 32}px`
+                }}
+              ></div>
+
+              {/* 레이블 */}
+              <span 
+                className={`absolute ${item.isCurrent ? 'text-[#678BF7] font-semibold' : 'text-[#666666]'}`}
+                style={{ 
+                  fontSize: '0.875em',
+                  bottom: '-28px'
+                }}
+              >
+                {item.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

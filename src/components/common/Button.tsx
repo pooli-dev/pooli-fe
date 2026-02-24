@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 /**
  * 공통 버튼 컴포넌트
@@ -29,27 +29,22 @@ import type { ReactNode } from 'react';
  * </Button>
  */
 
-interface ButtonProps {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
   fullWidth?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
 }
 
 export default function Button({ 
   children, 
-  onClick, 
   disabled = false,
   fullWidth = false,
   type = 'button',
-  className = ''
+  className = '',
+  ...props
 }: ButtonProps) {
   return (
     <button
       type={type}
-      onClick={onClick}
       disabled={disabled}
       className={`
         flex items-center justify-center gap-2
@@ -60,6 +55,7 @@ export default function Button({
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
+      {...props}
     >
       {children}
     </button>

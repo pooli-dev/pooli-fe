@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * 상태 바 컴포넌트
+ * 현재 시간, 와이파이, 배터리 상태를 표시합니다.
+ * @returns 상태 바 JSX
+ */
 export default function StatusBar() {
   const [currentTime, setCurrentTime] = useState('');
 
@@ -12,13 +17,13 @@ export default function StatusBar() {
     };
 
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+    const interval = setInterval(updateTime, 60 * 1000); // 1분마다 업데이트
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full h-8 pt-[env(safe-area-inset-top)] flex justify-between items-center px-6 text-black text-sm font-semibold z-[200]">
+    <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full h-8 pt-[env(safe-area-inset-top)] flex justify-between items-center px-6 text-black font-semibold z-[200] text-sm">
       <div className="flex items-center gap-1">
         <span>{currentTime}</span>
       </div>

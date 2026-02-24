@@ -2,7 +2,12 @@ import { useState } from 'react';
 import type { AlarmCategory } from '../types/alarm';
 import { useAlarmStore } from '../store/alarmStore';
 
-// 카테고리별 아이콘 SVG
+/**
+ * 카테고리별 아이콘 컴포넌트
+ * @param category - 알림 카테고리 (data, policy, permission, etc)
+ * @param isRead - 읽음 여부
+ * @returns 카테고리에 맞는 아이콘 JSX
+ */
 const CategoryIcon = ({ category, isRead }: { category: Exclude<AlarmCategory, 'all'>; isRead: boolean }) => {
   const iconColor = isRead ? '#CCCCCC' : '#FF6B6B';
   const bgColor = isRead ? '#F5F5F5' : '#FFE8E8';
@@ -46,6 +51,11 @@ const CategoryIcon = ({ category, isRead }: { category: Exclude<AlarmCategory, '
   }
 };
 
+/**
+ * 알림 페이지 컴포넌트
+ * 카테고리별 알림 필터링 및 읽음 처리 기능을 제공합니다.
+ * @returns 알림 페이지 JSX
+ */
 export default function Alarm() {
   const [selectedCategory, setSelectedCategory] = useState<AlarmCategory>('all');
   const { alarms, markAsRead, markAllAsRead } = useAlarmStore();
@@ -85,7 +95,8 @@ export default function Alarm() {
       <div className="flex justify-end mb-4">
         <button
           onClick={markAllAsRead}
-          className="text-sm text-[#678BF7] font-medium"
+          className="text-[#678BF7] font-medium"
+          style={{ fontSize: '0.875em' }}
         >
           전체 읽음
         </button>
@@ -96,7 +107,15 @@ export default function Alarm() {
         {filteredAlarms.map(alarm => (
           <div
             key={alarm.id}
+            role="button"
+            tabIndex={0}
             onClick={() => markAsRead(alarm.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                markAsRead(alarm.id);
+              }
+            }}
             className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
               alarm.isRead ? 'bg-[#FAFAFA]' : 'bg-white shadow-sm'
             }`}
@@ -106,18 +125,18 @@ export default function Alarm() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 {!alarm.isRead && (
-                  <span className="text-xs font-bold text-[#FF6B6B]">NEW</span>
+                  <span className="font-bold text-[#FF6B6B]" style={{ fontSize: '0.75em' }}>NEW</span>
                 )}
                 {alarm.isRead && (
-                  <span className="text-xs font-medium text-[#CCCCCC]">READ</span>
+                  <span className="font-medium text-[#CCCCCC]" style={{ fontSize: '0.75em' }}>READ</span>
                 )}
-                <span className={`text-xs ${alarm.isRead ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
+                <span className={alarm.isRead ? 'text-[#CCCCCC]' : 'text-[#999999]'} style={{ fontSize: '0.75em' }}>
                   {alarm.date}
                 </span>
               </div>
-              <p className={`text-sm leading-relaxed ${
+              <p className={`leading-relaxed ${
                 alarm.isRead ? 'text-[#AAAAAA]' : 'text-[#333333]'
-              }`}>
+              }`} style={{ fontSize: '0.875em' }}>
                 {alarm.title}
               </p>
             </div>
