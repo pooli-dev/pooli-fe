@@ -269,7 +269,7 @@ export default function Detail() {
 
   return (
     <div className="relative h-[calc(100vh-106px-100px)] overflow-y-auto mt-[106px] mb-[100px]">
-      <div className="px-5 py-5">
+      <div className="px-[24px] py-5">
         {/* 날짜 선택 */}
         <div className="flex items-center justify-center gap-4 mb-6">
           <button onClick={handlePrevMonth} className="p-2">
@@ -280,11 +280,12 @@ export default function Detail() {
 
           <button 
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl"
+            className="flex items-center gap-2 px-6 py-2 rounded-3xl border border-white"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)'
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -292,7 +293,7 @@ export default function Detail() {
               <path d="M3 10h18M8 2v4M16 2v4" stroke="#678BF7" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             <span className="font-semibold text-[#333333]" style={{ fontSize: '1.125em' }}>
-              {currentDate.getFullYear().toString().slice(2)}년 {currentDate.getMonth() + 1}월
+              {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
             </span>
           </button>
 
@@ -419,7 +420,7 @@ export default function Detail() {
                       style={{ 
                         width: `${member.percentage}%`, 
                         backgroundColor: member.color, 
-                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' 
+                        boxShadow: '0 0 4px rgba(176, 176, 176, 0.5)' 
                       }}
                     ></div>
                   ))}

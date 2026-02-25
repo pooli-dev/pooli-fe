@@ -80,7 +80,7 @@ export default function Alarm() {
           <button
             key={key}
             onClick={() => setSelectedCategory(key)}
-            className={`px-5 py-2 rounded-full whitespace-nowrap transition-all ${
+            className={`px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
               selectedCategory === key
                 ? 'bg-[#678BF7] text-white font-semibold'
                 : 'bg-[#F0F0F0] text-[#999999] font-medium'
