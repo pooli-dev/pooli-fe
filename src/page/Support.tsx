@@ -136,6 +136,16 @@ export default function Support() {
     setExpandedInquiries(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
+    
+    // 펼칠 때 해당 요소로 스크롤
+    if (!expandedInquiries.includes(id)) {
+      setTimeout(() => {
+        const element = document.getElementById(`inquiry-${id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -346,7 +356,7 @@ export default function Support() {
             </button>
             
             {showSortDropdown && (
-              <div className="absolute top-full left-2 mt-2 bg-white rounded-lg shadow-lg border border-[#EEEEEE] overflow-hidden z-10">
+              <div className="absolute top-full left-2 mt-2 bg-white rounded-lg shadow-lg border border-[#EEEEEE] overflow-hidden z-50">
                 <button
                   onClick={() => {
                     setSortOrder('latest');
@@ -394,6 +404,7 @@ export default function Support() {
             <div className="space-y-[11px]">
             {sortedInquiries.map((inquiry) => (
               <div
+                id={`inquiry-${inquiry.id}`}
                 key={inquiry.id}
                 className="relative bg-white rounded-2xl p-5 overflow-hidden"
                 style={{
