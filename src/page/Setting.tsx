@@ -175,42 +175,42 @@ export default function Setting() {
 
   return (
     <div className="relative h-[calc(100vh-106px-100px)] overflow-y-auto mt-[106px] mb-[100px]">
-      <div className="px-5 py-5">
+      <div className="py-5">
       {/* 모드 설정 */}
-      <div className="mb-8">
+      <div className="mb-8 px-[34.5px]">
         <div className="flex items-center gap-2 mb-4">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
             <rect x="2" y="2" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
             <rect x="11" y="2" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
             <rect x="2" y="11" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
             <rect x="11" y="11" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
           </svg>
-          <h2 className="font-semibold text-[#333333]" style={{ fontSize: '1.125em' }}>모드 설정</h2>
+          <h2 className="font-semibold text-[#333333] text-[16px]">모드 설정</h2>
         </div>
 
         <div className="bg-white rounded-2xl p-5 space-y-4 shadow-sm">
           {/* 다크 모드 */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-5">
             <div className="flex items-center gap-2">
-              <span className="text-[#333333] font-medium" style={{ fontSize: '0.875em' }}>다크 모드</span>
+              <span className="text-[#333333] font-medium text-[14px]">다크 모드</span>
               <InfoTooltip text="화면 밝기 다크 모드를 바꿀 수 있습니다." />
             </div>
             <DarkModeToggle checked={darkMode} onChange={setDarkMode} />
           </div>
 
           {/* 큰글씨 모드 */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-5">
             <div className="flex items-center gap-2">
-              <span className="text-[#333333] font-medium" style={{ fontSize: '0.875em' }}>큰글씨 모드</span>
+              <span className="text-[#333333] font-medium text-[14px]">큰글씨 모드</span>
               <InfoTooltip text="글자 크기가 커지며 좀 더 글자가 잘 보이도록 합니다." />
             </div>
             <LargeTextToggle checked={largeTextMode} onChange={setLargeTextMode} />
           </div>
 
           {/* 어린이 모드 */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-5">
             <div className="flex items-center gap-2">
-              <span className="text-[#333333] font-medium" style={{ fontSize: '0.875em' }}>어린이 모드</span>
+              <span className="text-[#333333] font-medium text-[14px]">어린이 모드</span>
               <InfoTooltip text="이해가 어려운 데이터 관련 용어들을 쉬운 언어로 번역합니다." />
             </div>
             <ChildModeToggle checked={childMode} onChange={setChildMode} />
@@ -219,30 +219,30 @@ export default function Setting() {
       </div>
 
       {/* 알림 설정 */}
-      <div className="mb-8">
+      <div className="mb-8 px-[34.5px]">
         <div className="flex items-center gap-2 mb-4">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
             <path d="M10 2a6 6 0 0 1 6 6c0 3.5 1 5 2 6H2c1-1 2-2.5 2-6a6 6 0 0 1 6-6z" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M8 17a2 2 0 1 0 4 0" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <h2 className="font-semibold text-[#333333]" style={{ fontSize: '1.125em' }}>알림 설정</h2>
+          <h2 className="font-semibold text-[#333333] text-[16px]">알림 설정</h2>
         </div>
 
         <div className="bg-white rounded-2xl p-5 space-y-5 shadow-sm">
           {/* 데이터 */}
-          <div>
-            <div className="mb-3">
-              <span className="text-[#0088FF] font-semibold" style={{ fontSize: '0.875em' }}>데이터</span>
+          <div className="pr-[18px] pt-[2px]">
+            <div className="mb-3 pl-4">
+              <span className="text-[#0E8EFF] font-semibold text-[14px]">데이터</span>
             </div>
-            <div className="pl-4 space-y-3">
+            <div className="space-y-3 pl-5">
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>가족 데이터 알림</span>
+                <span className="text-[#333333] text-[14px]">가족 데이터 알림</span>
                 <div className="scale-90">
                   <Toggle checked={familyDataNotification} onChange={setFamilyDataNotification} aria-label="가족 데이터 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>개인 데이터 알림</span>
+                <span className="text-[#333333] text-[14px]">개인 데이터 알림</span>
                 <div className="scale-90">
                   <Toggle checked={personalDataNotification} onChange={setPersonalDataNotification} aria-label="개인 데이터 알림" />
                 </div>
@@ -251,7 +251,7 @@ export default function Setting() {
               {/* 개인 데이터 임계치 */}
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>개인 데이터 임계치 알림</span>
+                  <span className="text-[#333333] text-[14px]">개인 데이터 임계치 알림</span>
                   <div className="scale-90">
                     <Toggle checked={personalDataThresholdEnabled} onChange={setPersonalDataThresholdEnabled} aria-label="개인 데이터 임계치 알림" />
                   </div>
@@ -302,19 +302,19 @@ export default function Setting() {
           </div>
 
           {/* 정책 */}
-          <div>
-            <div className="mb-3">
-              <span className="text-[#0088FF] font-semibold" style={{ fontSize: '0.875em' }}>정책</span>
+          <div className="pr-[18px] pt-[2px]">
+            <div className="mb-3 pl-4">
+              <span className="text-[#0E8EFF] font-semibold text-[14px]">정책</span>
             </div>
-            <div className="pl-4 space-y-3">
+            <div className="space-y-3 pl-5">
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>정책 변경 알림</span>
+                <span className="text-[#333333] text-[14px]">정책 변경 알림</span>
                 <div className="scale-90">
                   <Toggle checked={policyChangeNotification} onChange={setPolicyChangeNotification} aria-label="정책 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>정책 활동 알림</span>
+                <span className="text-[#333333] text-[14px]">정책 활동 알림</span>
                 <div className="scale-90">
                   <Toggle checked={policyActivityNotification} onChange={setPolicyActivityNotification} aria-label="정책 활동 알림" />
                 </div>
@@ -323,19 +323,19 @@ export default function Setting() {
           </div>
 
           {/* 기타 */}
-          <div>
-            <div className="mb-3">
-              <span className="text-[#0088FF] font-semibold" style={{ fontSize: '0.875em' }}>기타</span>
+          <div className="pr-[18px] pt-[2px]">
+            <div className="mb-3 pl-4">
+              <span className="text-[#0E8EFF] font-semibold text-[14px]">기타</span>
             </div>
-            <div className="pl-4 space-y-3">
+            <div className="space-y-3 pl-5">
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>권한 변경 알림</span>
+                <span className="text-[#333333] text-[14px]">권한 변경 알림</span>
                 <div className="scale-90">
                   <Toggle checked={permissionChangeNotification} onChange={setPermissionChangeNotification} aria-label="권한 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#666666]" style={{ fontSize: '0.875em' }}>문의사항 알림</span>
+                <span className="text-[#333333] text-[14px]">문의사항 알림</span>
                 <div className="scale-90">
                   <Toggle checked={inquiryNotification} onChange={setInquiryNotification} aria-label="문의사항 알림" />
                 </div>
