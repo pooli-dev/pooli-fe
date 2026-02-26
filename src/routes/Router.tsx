@@ -20,10 +20,10 @@ export default function Router() {
         <StatusBar />
         <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Main />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />
-          <Route path="/main" element={<Main />} />
           <Route path="/alarm" element={<Alarm />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/detail" element={<Detail />} />

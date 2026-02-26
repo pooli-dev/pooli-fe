@@ -34,7 +34,8 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="min-h-dvh flex flex-col items-center justify-center gap-5 px-6 pb-24">
+    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+      <div className="min-h-full flex flex-col items-center justify-center gap-5 px-6 pb-[60px]">
       {/* 데이터 차단 활성화 배너 영역 */}
       <div className="w-full max-w-md">
         <DataBlockBanner
@@ -82,6 +83,7 @@ export default function Main() {
       </div>
 
       <FamilyMemberList members={members} />
+      </div>
     </div>
   );
 }

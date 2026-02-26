@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import GlassCard from "./GlassCard";
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
@@ -89,6 +90,7 @@ function DataBar({
 
 // ── FamilyMemberCard ──────────────────────────────────────────────────────────
 function FamilyMemberCard({ member }: { member: FamilyMember }) {
+  const navigate = useNavigate();
   const isUsingShared =
     member.basicDataRemaining === 0 &&
     member.sharedDataRemaining < member.sharedDataTotal;
@@ -136,7 +138,10 @@ function FamilyMemberCard({ member }: { member: FamilyMember }) {
               {member.name}
             </span>
             {member.isMe && (
-              <button className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              <button 
+                onClick={() => navigate('/detail')}
+                className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 상세보기
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                   <path
