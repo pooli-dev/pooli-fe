@@ -31,7 +31,7 @@ export default function Toggle({ checked, onChange, disabled = false, 'aria-labe
       onClick={() => onChange(!checked)}
       className={`
         relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ease-in-out
-        ${checked ? 'bg-[#7B9EFF]' : 'bg-[#E0E0E0]'}
+        ${checked ? 'bg-[#7B9EFF]/80' : 'bg-[#D0D0D0]'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
     >

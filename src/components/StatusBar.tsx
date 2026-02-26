@@ -17,7 +17,7 @@ export default function StatusBar() {
     };
 
     updateTime();
-    const interval = setInterval(updateTime, 60 * 1000); // 1분마다 업데이트
+    const interval = setInterval(updateTime, 3 * 1000); // 3초마다 업데이트
 
     return () => clearInterval(interval);
   }, []);
