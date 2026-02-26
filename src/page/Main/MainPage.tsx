@@ -13,22 +13,22 @@ export default function Main() {
   const navigate = useNavigate();
   const members: FamilyMember[] = [
     {
-      id: "1",
-      name: "김영희",
-      isRepresentative: true,
-      isMe: true,
-      basicDataRemaining: 0,
-      basicDataTotal: 5000, // 5GB
-      sharedDataRemaining: 1600, // 1.6GB
-      sharedDataTotal: 2000, // 2GB
+      userId: 100,
+      userName: "김영희",
+      role: "OWNER",
+      remainingData: 0,
+      basicDataAmount: 5000,
+      sharedPoolRemainingAmount: 1600,
+      sharedPoolTotalAmount: 2000,
     },
     {
-      id: "2",
-      name: "김철수",
-      basicDataRemaining: 1600,
-      basicDataTotal: 2000,
-      sharedDataRemaining: 0,
-      sharedDataTotal: 2000,
+      userId: 101,
+      userName: "김철수",
+      role: "MEMBER",
+      remainingData: 1600,
+      basicDataAmount: 2000,
+      sharedPoolRemainingAmount: 2000,
+      sharedPoolTotalAmount: 2000,
     },
   ];
 
@@ -81,7 +81,11 @@ export default function Main() {
         <SharedPoolUsage />
       </div>
 
-      <FamilyMemberList members={members} />
+      <FamilyMemberList
+        members={members}
+        myUserId={100} // 로그인 유저 id
+        onDetailClick={() => navigate(`/member/detail`)}
+      />
     </div>
   );
 }
