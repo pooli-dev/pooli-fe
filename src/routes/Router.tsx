@@ -7,6 +7,8 @@ import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
 import Setting from "../page/Setting";
 import Detail from "../page/Detail";
+import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
+import NotFound from "../page/NotFound";
 import StatusBar from "../components/StatusBar";
 import Header from "../components/Header";
 import BottomBar from "../components/BottomBar";
@@ -25,7 +27,9 @@ export default function Router() {
           <Route path="/alarm" element={<Alarm />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/detail" element={<Detail />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/policy-detail" element={<PolicyDetail />} />
+          <Route path="/404" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
         <BottomBar />
       </Layout>
