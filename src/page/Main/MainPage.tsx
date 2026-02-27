@@ -72,7 +72,7 @@ export default function Main() {
       </div>
 
       {/* 공유 데이터 담기 페이지 이동 버튼 */}
-      <GradientButton onClick={() => navigate("/shared-pool/add")}>
+      <GradientButton onClick={() => navigate("/shared-data")}>
         <img src={PlusIcon} className="w-5 h-5" />
         가족 공유 데이터 담기
       </GradientButton>
