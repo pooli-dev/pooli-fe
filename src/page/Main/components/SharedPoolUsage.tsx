@@ -27,32 +27,47 @@ export default function SharedPoolUsage({
       gradientTo="#CCCCCC"
       bgGradientFrom="#FFFFFF"
       bgGradientTo="#F8F8F8"
-      bgOpacity={0.3}
+      bgOpacity={0.7}
       borderWidth={1}
       className={className}
     >
       <div className="space-y-4">
         {/* 막대 그래프 */}
-        <div className="relative w-full h-4 bg-white/50 rounded-full overflow-hidden shadow-blue-600">
-          {users.map((user, index) => {
-            const leftOffset = users
-              .slice(0, index)
-              .reduce((sum, u) => sum + u.percentage, 0);
+        <div className="relative w-full my-3">
+          {/* 글로우 레이어 - 흰색 막대의 파란 네온 */}
+          <div
+            className="absolute w-full h-4 rounded-full"
+            style={{
+              backgroundColor: "#FFFFFF",
+              filter: "blur(6px)",
+              opacity: 0.9,
+              transform: "scaleY(0.5)",
+              boxShadow: "0 0 12px 4px #93C5FD",
+            }}
+          />
 
-            return (
-              <div
-                key={user.name}
-                className="absolute top-0 h-full transition-all duration-500 ease-out"
-                style={{
-                  left: `${leftOffset}%`,
-                  width: `${user.percentage}%`,
-                  backgroundColor: user.color,
-                  opacity: 0.8,
-                  boxShadow: `0 0 8px ${user.color}50`,
-                }}
-              />
-            );
-          })}
+          {/* 실제 흰색 막대 (유저 세그먼트 포함) */}
+          <div
+            className="relative w-full h-4 rounded-full overflow-hidden"
+            style={{ backgroundColor: "#F0F5FF" }}
+          >
+            {users.map((user, index) => {
+              const leftOffset = users
+                .slice(0, index)
+                .reduce((sum, u) => sum + u.percentage, 0);
+              return (
+                <div
+                  key={user.name}
+                  className="absolute top-0 h-full transition-all duration-500 ease-out"
+                  style={{
+                    left: `${leftOffset}%`,
+                    width: `${user.percentage}%`,
+                    backgroundColor: user.color,
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
 
         {/* 사용자 정보 */}

@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Home from "../page/Home";
 import Support from "../page/Support";
-import Policy from "../page/Policy";
+import Policy from "../page/Policy/Policy";
 import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
 import Setting from "../page/Setting";
