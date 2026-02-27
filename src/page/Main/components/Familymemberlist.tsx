@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import GlassCard from "./GlassCard";
 
 // ── API 타입 ──────────────────────────────────────────────────────────────────
@@ -105,6 +106,8 @@ function FamilyMemberCard({
 }) {
   const isOwner = member.role === "OWNER";
 
+function FamilyMemberCard({ member }: { member: FamilyMember }) {
+  const navigate = useNavigate();
   const isUsingShared =
     member.remainingData === 0 &&
     member.sharedPoolRemainingAmount < member.sharedPoolTotalAmount;
@@ -143,10 +146,7 @@ function FamilyMemberCard({
               {member.userName}
             </span>
             {isMe && (
-              <button
-                onClick={onDetailClick}
-                className="flex items-center gap-0.5 text-xs text-[#6B9FD4] hover:text-[#4A7FB5] transition-colors"
-              >
+              <button className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
                 상세보기
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                   <path

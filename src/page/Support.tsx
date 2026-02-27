@@ -149,7 +149,8 @@ export default function Support() {
   };
 
   return (
-    <div className="pt-[106px] pb-24">
+    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+      <div className="py-5 pb-[60px]">
       {/* 탭 */}
       <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">
         <button
@@ -510,6 +511,7 @@ export default function Support() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -73,7 +73,8 @@ export default function Alarm() {
     : alarms.filter(alarm => alarm.category === selectedCategory);
 
   return (
-    <div className="pt-[106px] pb-[100px] px-5">
+    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+      <div className="px-5 py-5 pb-[60px]">
       {/* 카테고리 탭 */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {categories.map(({ key, label }) => (
@@ -149,6 +150,7 @@ export default function Alarm() {
           알림이 없습니다.
         </div>
       )}
+      </div>
     </div>
   );
 }

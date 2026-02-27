@@ -268,8 +268,8 @@ export default function Detail() {
   ];
 
   return (
-    <div className="relative h-[calc(100vh-106px-100px)] overflow-y-auto mt-[106px] mb-[100px]">
-      <div className="px-[24px] py-5">
+    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+      <div className="px-[24px] py-5 pb-[60px]">
         {/* 날짜 선택 */}
         <div className="flex items-center justify-center gap-4 mb-6">
           <button onClick={handlePrevMonth} className="p-2">
