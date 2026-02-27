@@ -9,6 +9,7 @@ import Setting from "../page/Setting";
 import Detail from "../page/Detail";
 import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
 import NotFound from "../page/NotFound";
+import SharedData from "../page/SharedData/SharedData";
 import StatusBar from "../components/StatusBar";
 import Header from "../components/Header";
 import BottomBar from "../components/BottomBar";
@@ -28,6 +29,7 @@ export default function Router() {
           <Route path="/setting" element={<Setting />} />
           <Route path="/detail" element={<Detail />} />
           <Route path="/policy-detail" element={<PolicyDetail />} />
+          <Route path="/shared-data" element={<SharedData />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>

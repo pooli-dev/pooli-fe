@@ -155,7 +155,7 @@ export default function Support() {
       <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">
         <button
           onClick={() => setActiveTab('inquiry')}
-          className={`px-[70px] py-2 rounded-2xl font-medium transition-colors text-sm ${
+          className={`px-[70px] py-2 rounded-2xl font-medium transition-colors text-sm whitespace-nowrap ${
             activeTab === 'inquiry'
               ? 'bg-white text-[#219BE4]'
               : 'bg-transparent text-[#999999]'
@@ -166,7 +166,7 @@ export default function Support() {
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`px-[70px] py-2 rounded-2xl font-medium transition-colors text-sm ${
+          className={`px-[70px] py-2 rounded-2xl font-medium transition-colors text-sm whitespace-nowrap ${
             activeTab === 'history'
               ? 'bg-white text-[#219BE4]'
               : 'bg-transparent text-[#999999]'
