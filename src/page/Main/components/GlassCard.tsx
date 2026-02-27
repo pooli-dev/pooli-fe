@@ -99,7 +99,7 @@ export default function DataBlockBanner({
             ${hexToRgba(bgGradientTo, bgOpacity)}
           )`,
           borderRadius: `${borderRadius}px`,
-          padding: "16px 24px",
+          padding: "16px 18px",
         }}
       >
         {/* 텍스트 영역 */}

@@ -16,7 +16,6 @@ export type FamilyMember = {
 type Props = {
   members: FamilyMember[];
   myUserId: number; // 본인 userId → 상세보기 버튼 노출 기준
-  onDetailClick?: () => void;
 };
 
 // ── 유틸 ─────────────────────────────────────────────────────────────────────
@@ -98,16 +97,13 @@ function DataBar({
 function FamilyMemberCard({
   member,
   isMe,
-  onDetailClick,
 }: {
   member: FamilyMember;
   isMe: boolean;
-  onDetailClick?: () => void;
 }) {
   const isOwner = member.role === "OWNER";
-
-function FamilyMemberCard({ member }: { member: FamilyMember }) {
   const navigate = useNavigate();
+
   const isUsingShared =
     member.remainingData === 0 &&
     member.sharedPoolRemainingAmount < member.sharedPoolTotalAmount;
@@ -146,7 +142,10 @@ function FamilyMemberCard({ member }: { member: FamilyMember }) {
               {member.userName}
             </span>
             {isMe && (
-              <button className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              <button
+                onClick={() => navigate("/detail")}
+                className="flex items-center gap-0.5 text-xs text-[#6B9FD4] hover:text-[#4A7FB5] transition-colors"
+              >
                 상세보기
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                   <path
@@ -211,11 +210,7 @@ function FamilyMemberCard({ member }: { member: FamilyMember }) {
 }
 
 // ── FamilyMemberList (최종 export) ────────────────────────────────────────────
-export default function FamilyMemberList({
-  members,
-  myUserId,
-  onDetailClick,
-}: Props) {
+export default function FamilyMemberList({ members, myUserId }: Props) {
   return (
     <div className="w-full flex flex-col gap-3">
       <h2 className="text-lg font-bold text-gray-800">가족 구성원</h2>
@@ -224,7 +219,6 @@ export default function FamilyMemberList({
           key={member.userId}
           member={member}
           isMe={member.userId === myUserId}
-          onDetailClick={onDetailClick}
         />
       ))}
     </div>
