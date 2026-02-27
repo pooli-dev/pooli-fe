@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 
 interface DataTransferCardProps {
   personalDataRemaining: number; // MB
@@ -12,6 +13,7 @@ export default function DataTransferCard({
   onTransfer
 }: DataTransferCardProps) {
   const [sharedAmount, setSharedAmount] = useState(3);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const personalGB = (personalDataRemaining / 1000).toFixed(0);
   const poolGB = (poolTotalData / 1000).toFixed(1);
@@ -30,7 +32,12 @@ export default function DataTransferCard({
   };
 
   const handleShare = () => {
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmShare = () => {
     onTransfer(sharedAmount * 1000); // GB를 MB로 변환
+    setShowConfirmModal(false);
   };
 
   return (
@@ -121,6 +128,14 @@ export default function DataTransferCard({
           </svg>
         </button>
       </div>
+
+      {/* 확인 모달 */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmShare}
+        message="데이터를 공유하시겠습니까?<br />공유 후에는 취소가 불가능합니다."
+      />
     </>
   );
 }

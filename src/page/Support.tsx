@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ConfirmModal from '../components/common/ConfirmModal';
 
 type InquiryCategory = '정책 문의' | '버그 제보' | '기능 요청' | '기타';
 type InquiryStatus = '대기중' | '완료';
@@ -310,30 +311,12 @@ export default function Support() {
           </div>
 
           {/* 확인 모달 */}
-          {showConfirmModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
-                <p className="text-center text-[#333333] mb-6 leading-relaxed">
-                  문의 접수 후 문의 취소가 불가합니다.<br />
-                  정말 접수하시겠습니까?
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowConfirmModal(false)}
-                    className="flex-1 py-3 bg-[#E0E0E0] text-[#666666] rounded-lg font-medium"
-                  >
-                    아니요
-                  </button>
-                  <button
-                    onClick={handleConfirmSubmit}
-                    className="flex-1 py-3 bg-[#678BF7] text-white rounded-lg font-medium"
-                  >
-                    예
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onClose={() => setShowConfirmModal(false)}
+            onConfirm={handleConfirmSubmit}
+            message="문의 접수 후 문의 취소가 불가합니다.<br />정말 접수하시겠습니까?"
+          />
         </div>
       ) : (
         <div className="px-6">
