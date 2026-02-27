@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSettingStore } from '../store/settingStore';
 import Toggle from '../components/common/Toggle';
+import RangeSlider from '../components/common/RangeSlider';
 
 /**
  * 정보 툴팁 컴포넌트
@@ -259,22 +260,17 @@ export default function Setting() {
                 
                 {personalDataThresholdEnabled && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 relative">
-                        <input
-                          type="range"
-                          min="0"
-                          max="10000"
-                          step="50"
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1">
+                        <RangeSlider
                           value={personalDataThreshold}
-                          onChange={(e) => handleThresholdChange(Number(e.target.value))}
-                          className="w-full h-2 rounded-lg appearance-none cursor-pointer slider-custom"
-                          style={{
-                            background: `linear-gradient(to right, #678BF7 0%, #9A9CEA ${(personalDataThreshold / 10000) * 100}%, #E0E0E0 ${(personalDataThreshold / 10000) * 100}%, #E0E0E0 100%)`
-                          }}
+                          onChange={handleThresholdChange}
+                          min={0}
+                          max={10000}
+                          step={50}
                         />
                       </div>
-                      <div className="flex items-center ml-3">
+                      <div className="flex items-center">
                         <input
                           type="number"
                           value={personalDataThreshold}
