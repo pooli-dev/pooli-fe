@@ -229,7 +229,7 @@ export default function PolicyPageHeader({
         <GradientButton
           width={12}
           height={8}
-          onClick={() => navigate("/shared-pool/add")}
+          onClick={() => navigate("/shared-data")}
         >
           <img src={PlusIcon} className="w-4 h-4" />
           가족 공유 데이터 담기
@@ -243,7 +243,7 @@ export default function PolicyPageHeader({
           gradientFrom="#FFFFFF"
           gradientTo="#FFA780"
           textColor="#FF5C14"
-          onClick={() => navigate("/shared-pool/add")}
+          onClick={() => navigate("/log")}
         >
           <img src={ClockIcon} className="w-4 h-4" />
           사용 로그 보기
