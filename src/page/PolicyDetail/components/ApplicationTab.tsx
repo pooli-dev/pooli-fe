@@ -22,6 +22,35 @@ import tossIcon from "../../../assets/img/toss.jpeg";
 import pooliIcon from "../../../assets/img/열품타.png";
 import type { AppPolicy } from "../../../data/policyDetailDummyData";
 
+// 상수 정의
+const MAX_DATA_LIMIT_MB = 5000;
+const MAX_SPEED_LIMIT_MBPS = 50;
+const MIN_SPEED_LIMIT_MBPS = 1;
+const DATA_LIMIT_STEP = 100;
+const SPEED_LIMIT_STEP = 1;
+
+// 앱 아이콘 매핑
+const APP_ICONS: { [key: string]: string } = {
+  "인스타그램": instaIcon,
+  "카카오톡": kakaotalkIcon,
+  "틱톡": tiktokIcon,
+  "멜론": melonIcon,
+  "유튜브": youtubeIcon,
+  "넷플릭스": netflixIcon,
+  "사파리": safariIcon,
+  "크롬": chromeIcon,
+  "네이버": naverIcon,
+  "LMS": lmsIcon,
+  "열품타": pooliIcon,
+  "산타": santaIcon,
+  "무신사": musinsaIcon,
+  "쿠팡": coupangIcon,
+  "배민": baeminIcon,
+  "당근": karrotIcon,
+  "토스": tossIcon,
+  "Pooli": logo
+};
+
 interface ApplicationTabProps {
   appPolicyStates: AppPolicy[];
   setAppPolicyStates: React.Dispatch<React.SetStateAction<AppPolicy[]>>;
@@ -33,6 +62,15 @@ interface ApplicationTabProps {
   handleVoiceSearch: () => void;
   cancelVoiceSearch: () => void;
 }
+
+// 앱 정책 상태 확인 헬퍼 함수
+const hasDataLimit = (app: AppPolicy) => app.enabled && app.dailyLimitMb < MAX_DATA_LIMIT_MB;
+const hasSpeedLimit = (app: AppPolicy) => app.enabled && (app.maxSpeedMbps || 0) < MAX_SPEED_LIMIT_MBPS;
+const hasException = (app: AppPolicy) => app.blockAds;
+
+// 배지 표시 여부 확인
+const shouldShowDataBadge = (app: AppPolicy) => hasDataLimit(app) && !hasException(app);
+const shouldShowSpeedBadge = (app: AppPolicy) => hasSpeedLimit(app) && !hasException(app);
 
 const ApplicationTab = ({
   appPolicyStates,
@@ -93,7 +131,7 @@ const ApplicationTab = ({
 
   const handleDataLimitInputChange = (appPolicyId: number, value: string) => {
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.min(Math.max(numValue, 0), 5000);
+    const clampedValue = Math.min(Math.max(numValue, 0), MAX_DATA_LIMIT_MB);
     handleDataLimitChange(appPolicyId, clampedValue);
   };
 
@@ -109,7 +147,7 @@ const ApplicationTab = ({
 
   const handleSpeedLimitInputChange = (appPolicyId: number, value: string) => {
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.min(Math.max(numValue, 1), 50);
+    const clampedValue = Math.min(Math.max(numValue, MIN_SPEED_LIMIT_MBPS), MAX_SPEED_LIMIT_MBPS);
     handleSpeedLimitChange(appPolicyId, clampedValue);
   };
 
@@ -136,35 +174,31 @@ const ApplicationTab = ({
   };
 
   const filteredApps = appPolicyStates.filter(app => {
+    // 검색어 필터
     if (!app.appName.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
 
-    const hasDataLimit = app.enabled && app.dailyLimitMb < 5000;
-    const hasSpeedLimit = app.enabled && (app.maxSpeedMbps || 0) < 50;
-    const hasPolicy = hasDataLimit || hasSpeedLimit;
-    const hasException = app.blockAds;
-
-    if (policyFilter === "정책없음" && (hasPolicy || hasException)) {
+    // 정책 필터
+    if (policyFilter === "정책없음" && app.enabled) {
       return false;
     }
-    if (policyFilter === "정책적용" && (!hasPolicy || hasException)) {
+    if (policyFilter === "정책적용" && (!app.enabled || hasException(app))) {
       return false;
     }
-    if (policyFilter === "정책예외" && !hasException) {
+    if (policyFilter === "정책예외" && (!app.enabled || !hasException(app))) {
       return false;
     }
 
+    // 조건 필터
     if (conditionFilters.size > 0) {
-      const showDataBadge = hasDataLimit && !app.blockAds;
-      const showSpeedBadge = hasSpeedLimit && !app.blockAds;
+      const showDataBadge = shouldShowDataBadge(app);
+      const showSpeedBadge = shouldShowSpeedBadge(app);
 
-      // 둘 다 체크된 경우: 둘 다 활성화되어야 함
       if (conditionFilters.size === 2) {
         return showDataBadge && showSpeedBadge;
       }
 
-      // 하나만 체크된 경우
       const matchesDataLimit = conditionFilters.has("사용량 제한") && showDataBadge;
       const matchesSpeedLimit = conditionFilters.has("속도 제한") && showSpeedBadge;
 
@@ -185,30 +219,9 @@ const ApplicationTab = ({
   });
 
   const getAppIcon = (name: string) => {
-    const icons: { [key: string]: string } = {
-      "인스타그램": instaIcon,
-      "카카오톡": kakaotalkIcon,
-      "틱톡": tiktokIcon,
-      "멜론": melonIcon,
-      "유튜브": youtubeIcon,
-      "넷플릭스": netflixIcon,
-      "사파리": safariIcon,
-      "크롬": chromeIcon,
-      "네이버": naverIcon,
-      "LMS": lmsIcon,
-      "열품타": pooliIcon,
-      "산타": santaIcon,
-      "무신사": musinsaIcon,
-      "쿠팡": coupangIcon,
-      "배민": baeminIcon,
-      "당근": karrotIcon,
-      "토스": tossIcon,
-      "Pooli": logo
-    };
-    
     return (
       <img 
-        src={icons[name]} 
+        src={APP_ICONS[name]} 
         alt={name} 
         className="w-full h-full object-contain rounded-lg" 
       />
@@ -217,7 +230,7 @@ const ApplicationTab = ({
 
   return (
     <div 
-      className="mx-[11px] rounded-3xl overflow-hidden relative"
+      className="mx-[11px] rounded-3xl relative"
       style={{
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
         padding: '1px'
@@ -234,7 +247,7 @@ const ApplicationTab = ({
         }}
       />
       
-      <div className="relative bg-white rounded-3xl">
+      <div className="relative bg-white rounded-3xl overflow-hidden">
         <div className="pt-[11px] px-[15px] mb-4">
           {isListening && (
             <div className="mb-3 flex items-center justify-between px-4 py-3 rounded-full bg-gradient-to-r from-[#678BF7] to-[#9A9CEA] text-white">
@@ -318,12 +331,13 @@ const ApplicationTab = ({
             </div>
           </div>
 
-          <div className="flex gap-6 text-sm px-2">
-            <div className="flex items-center gap-2 relative">
-              <span className="text-gray-700 font-medium">정책</span>
+          <div className="flex gap-6 px-2 overflow-x-auto overflow-y-visible pb-2 flex-nowrap whitespace-nowrap" style={{ fontSize: '11px' }}>
+            <div className="flex items-center gap-2 relative flex-shrink-0 whitespace-nowrap">
+              <span className="text-gray-700 whitespace-nowrap">정책</span>
               <button
                 onClick={() => setShowPolicyDropdown(!showPolicyDropdown)}
-                className="px-4 py-1.5 rounded-full text-xs bg-white border border-gray-300 flex items-center gap-2"
+                className="px-3 py-1 rounded-full bg-white border border-gray-300 flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                style={{ fontSize: '11px' }}
               >
                 {policyFilter}
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -332,7 +346,7 @@ const ApplicationTab = ({
               </button>
               
               {showPolicyDropdown && (
-                <div className="absolute top-full left-12 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[120px]">
+                <div className="absolute top-full left-12 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[60] min-w-[120px]">
                   {(["전체", "정책없음", "정책적용", "정책예외"] as const).map((filter) => (
                     <button
                       key={filter}
@@ -340,7 +354,7 @@ const ApplicationTab = ({
                         setPolicyFilter(filter);
                         setShowPolicyDropdown(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 whitespace-nowrap ${
                         policyFilter === filter ? "text-[#678BF7] font-medium" : "text-gray-700"
                       }`}
                     >
@@ -351,19 +365,20 @@ const ApplicationTab = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">조건</span>
-              <div className="flex gap-1">
+            <div className="flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
+              <span className="text-gray-700 whitespace-nowrap">조건</span>
+              <div className="flex gap-1 flex-nowrap whitespace-nowrap">
                 {(["사용량 제한", "속도 제한"] as const).map((condition) => (
                   <button
                     key={condition}
                     onClick={() => toggleConditionFilter(condition)}
-                    className={`relative px-3 py-1.5 rounded-full text-xs transition-colors ${
+                    className={`relative px-2.5 py-1 rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
                       conditionFilters.has(condition)
                         ? "text-[#003458]"
                         : "text-gray-600"
                     }`}
                     style={{
+                      fontSize: '11px',
                       backgroundColor: conditionFilters.has(condition) 
                         ? 'rgba(223, 248, 254, 0.6)' 
                         : 'transparent',
@@ -392,10 +407,8 @@ const ApplicationTab = ({
           ) : (
             sortedApps.map((app) => {
             const isExpanded = expandedApps.has(app.appPolicyId);
-            const hasDataLimit = app.enabled && app.dailyLimitMb < 5000;
-            const hasSpeedLimit = app.enabled && (app.maxSpeedMbps || 0) < 50;
-            const showDataBadge = hasDataLimit && !app.blockAds;
-            const showSpeedBadge = hasSpeedLimit && !app.blockAds;
+            const showDataBadge = shouldShowDataBadge(app);
+            const showSpeedBadge = shouldShowSpeedBadge(app);
             
             return (
               <div
@@ -432,7 +445,7 @@ const ApplicationTab = ({
                         <div className="flex gap-2 mt-2">
                           {showDataBadge && (
                             <div 
-                              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+                              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs whitespace-nowrap"
                               style={{ backgroundColor: '#FDECE4', color: '#FF6520' }}
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -445,7 +458,7 @@ const ApplicationTab = ({
                           )}
                           {showSpeedBadge && (
                             <div 
-                              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+                              className="flex items-center gap-1 px-3 py-1 rounded-full text-xs whitespace-nowrap"
                               style={{ backgroundColor: '#F3ECF6', color: '#B044E3' }}
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -485,13 +498,13 @@ const ApplicationTab = ({
                           value={app.dailyLimitMb}
                           onChange={(value: number) => handleDataLimitChange(app.appPolicyId, value)}
                           min={0}
-                          max={5000}
-                          step={100}
+                          max={MAX_DATA_LIMIT_MB}
+                          step={DATA_LIMIT_STEP}
                           disabled={!app.enabled}
                         />
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
                           <span>0GB</span>
-                          <span>5GB</span>
+                          <span>{MAX_DATA_LIMIT_MB / 1000}GB</span>
                         </div>
                       </div>
 
@@ -504,21 +517,21 @@ const ApplicationTab = ({
                             onChange={(e) => handleSpeedLimitInputChange(app.appPolicyId, e.target.value)}
                             disabled={!app.enabled}
                             className="w-24 px-2 py-1 text-right border border-gray-300 rounded text-sm font-medium disabled:bg-gray-100 disabled:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            min="1"
-                            max="50"
+                            min={MIN_SPEED_LIMIT_MBPS}
+                            max={MAX_SPEED_LIMIT_MBPS}
                           />
                         </div>
                         <RangeSlider
                           value={app.maxSpeedMbps || 0}
                           onChange={(value: number) => handleSpeedLimitChange(app.appPolicyId, value)}
-                          min={1}
-                          max={50}
-                          step={1}
+                          min={MIN_SPEED_LIMIT_MBPS}
+                          max={MAX_SPEED_LIMIT_MBPS}
+                          step={SPEED_LIMIT_STEP}
                           disabled={!app.enabled}
                         />
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
-                          <span>1Mbps</span>
-                          <span>50Mbps</span>
+                          <span>{MIN_SPEED_LIMIT_MBPS}Mbps</span>
+                          <span>{MAX_SPEED_LIMIT_MBPS}Mbps</span>
                         </div>
                       </div>
 
