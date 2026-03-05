@@ -1,16 +1,12 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import GlassCard from "../../Main/components/GlassCard";
 import Toggle from "@/components/common/Toggle";
 
-// ── 타입 ─────────────────────────────────────────────────────────────────────
-type RepeatType = "반복" | "1회";
 type DayKey = "월" | "화" | "수" | "목" | "금" | "토" | "일";
-
 const DAYS: DayKey[] = ["월", "화", "수", "목", "금", "토", "일"];
 
 type BlockPolicy = {
   id: number;
-  repeatType: RepeatType;
   startHour: number;
   startMin: number;
   endHour: number;
@@ -24,7 +20,6 @@ type Props = {
   onSave?: (policies: BlockPolicy[]) => void;
 };
 
-// ── 유틸 ─────────────────────────────────────────────────────────────────────
 function formatTime(h: number, m: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
@@ -33,115 +28,182 @@ function formatDays(days: DayKey[]) {
   return days.join(", ") + " 적용됨";
 }
 
-// 시작시간 기준 최대 24시간 이내로 종료시간 계산
 function clampEndTime(
   startH: number,
   startM: number,
   endH: number,
   endM: number,
-): { endHour: number; endMin: number } {
+) {
   const startTotal = startH * 60 + startM;
   const endTotal = endH * 60 + endM;
-  // 종료가 시작보다 이전이면 다음날로 간주 (+1440)
   const diff =
     endTotal >= startTotal
       ? endTotal - startTotal
       : endTotal + 1440 - startTotal;
-
   if (diff > 24 * 60) {
-    // 최대 24시간
     const maxTotal = (startTotal + 24 * 60) % (24 * 60);
     return { endHour: Math.floor(maxTotal / 60), endMin: maxTotal % 60 };
   }
   return { endHour: endH, endMin: endM };
 }
 
-// ── 시간 스피너 ───────────────────────────────────────────────────────────────
-function TimeSpinner({
+// ── 드럼롤 스크롤 피커 ────────────────────────────────────────────────────────
+const ITEM_HEIGHT = 40;
+const VISIBLE_COUNT = 5;
+
+function ScrollPicker({
+  values,
+  selected,
+  onChange,
+}: {
+  values: number[];
+  selected: number;
+  onChange: (v: number) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScrolling = useRef(false);
+
+  const scrollToValue = useCallback(
+    (val: number, smooth = true) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const idx = values.indexOf(val);
+      el.scrollTo({
+        top: idx * ITEM_HEIGHT,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    },
+    [values],
+  );
+
+  useEffect(() => {
+    scrollToValue(selected, false);
+  }, []);
+
+  const handleScroll = () => {
+    if (isScrolling.current) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
+    const snapped = values[Math.min(Math.max(idx, 0), values.length - 1)];
+    if (snapped !== selected) onChange(snapped);
+  };
+
+  const handleScrollEnd = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
+    const snapped = values[Math.min(Math.max(idx, 0), values.length - 1)];
+    isScrolling.current = true;
+    scrollToValue(snapped);
+    setTimeout(() => {
+      isScrolling.current = false;
+    }, 300);
+    if (snapped !== selected) onChange(snapped);
+  };
+
+  return (
+    <div
+      className="relative"
+      style={{ width: 48, height: ITEM_HEIGHT * VISIBLE_COUNT }}
+    >
+      {/* 선택 영역 하이라이트 */}
+      <div
+        className="absolute left-0 right-0 pointer-events-none rounded-xl"
+        style={{
+          top: ITEM_HEIGHT * Math.floor(VISIBLE_COUNT / 2),
+          height: ITEM_HEIGHT,
+          backgroundColor: "rgba(103, 139, 247, 0.12)",
+          border: "1.5px solid rgba(103, 139, 247, 0.25)",
+        }}
+      />
+      {/* 위아래 페이드 */}
+      <div
+        className="absolute inset-x-0 top-0 h-16 pointer-events-none z-10"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(248,249,255,1), transparent)",
+        }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-16 pointer-events-none z-10"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(248,249,255,1), transparent)",
+        }}
+      />
+
+      <div
+        ref={containerRef}
+        className="h-full overflow-y-scroll"
+        style={{ scrollSnapType: "y mandatory", scrollbarWidth: "none" }}
+        onScroll={handleScroll}
+        onScrollCapture={handleScroll}
+        onMouseUp={handleScrollEnd}
+        onTouchEnd={handleScrollEnd}
+      >
+        {/* 상단 패딩 */}
+        {Array.from({ length: Math.floor(VISIBLE_COUNT / 2) }).map((_, i) => (
+          <div key={`top-${i}`} style={{ height: ITEM_HEIGHT }} />
+        ))}
+        {values.map((val) => (
+          <div
+            key={val}
+            onClick={() => {
+              onChange(val);
+              scrollToValue(val);
+            }}
+            className="flex items-center justify-center cursor-pointer transition-all"
+            style={{
+              height: ITEM_HEIGHT,
+              scrollSnapAlign: "center",
+              fontSize: val === selected ? 22 : 16,
+              fontWeight: val === selected ? 700 : 400,
+              color: val === selected ? "#678BF7" : "#9CA3AF",
+            }}
+          >
+            {String(val).padStart(2, "0")}
+          </div>
+        ))}
+        {/* 하단 패딩 */}
+        {Array.from({ length: Math.floor(VISIBLE_COUNT / 2) }).map((_, i) => (
+          <div key={`bot-${i}`} style={{ height: ITEM_HEIGHT }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINS = Array.from({ length: 60 }, (_, i) => i);
+
+// ── 시간 피커 ─────────────────────────────────────────────────────────────────
+function TimePicker({
+  label,
   hour,
   min,
   onHourChange,
   onMinChange,
 }: {
+  label: string;
   hour: number;
   min: number;
   onHourChange: (h: number) => void;
   onMinChange: (m: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
-      {/* 시 */}
-      <div className="flex flex-col items-center">
-        <button
-          className="text-gray-300 hover:text-gray-500 transition-colors px-2"
-          onClick={() => onHourChange((hour + 1) % 24)}
-        >
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path
-              d="M1 7l5-5 5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-        <span className="text-2xl font-bold text-gray-800 w-10 text-center tabular-nums">
-          {String(hour).padStart(2, "0")}
-        </span>
-        <button
-          className="text-gray-300 hover:text-gray-500 transition-colors px-2"
-          onClick={() => onHourChange((hour + 23) % 24)}
-        >
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path
-              d="M1 1l5 5 5-5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <span className="text-2xl font-bold text-gray-400 mb-0.5">:</span>
-
-      {/* 분 */}
-      <div className="flex flex-col items-center">
-        <button
-          className="text-gray-300 hover:text-gray-500 transition-colors px-2"
-          onClick={() => onMinChange((min + 1) % 60)}
-        >
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path
-              d="M1 7l5-5 5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-        <span className="text-2xl font-bold text-gray-800 w-10 text-center tabular-nums">
-          {String(min).padStart(2, "0")}
-        </span>
-        <button
-          className="text-gray-300 hover:text-gray-500 transition-colors px-2"
-          onClick={() => onMinChange((min + 59) % 60)}
-        >
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path
-              d="M1 1l5 5 5-5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-xs text-gray-400">{label}</span>
+      <div className="flex items-center gap-1">
+        <ScrollPicker values={HOURS} selected={hour} onChange={onHourChange} />
+        <span className="text-2xl font-bold text-gray-300 pb-1">:</span>
+        <ScrollPicker values={MINS} selected={min} onChange={onMinChange} />
       </div>
     </div>
   );
 }
 
-// ── 편집 패널 (추가 / 수정 공통) ─────────────────────────────────────────────
+// ── 편집 패널 ─────────────────────────────────────────────────────────────────
 function EditPanel({
   policy,
   mode,
@@ -193,7 +255,6 @@ function EditPanel({
     );
     setDraft((d) => ({ ...d, ...clamped }));
   };
-
   const toggleDay = (day: DayKey) => {
     setDraft((d) => ({
       ...d,
@@ -229,35 +290,31 @@ function EditPanel({
         })}
       </div>
 
-      {/* 시간 설정 */}
-      <div className="flex items-center justify-center gap-4">
-        <div className="flex flex-col items-center">
-          <span className="text-xs text-gray-400 mb-1">시작 시간</span>
-          <TimeSpinner
-            hour={draft.startHour}
-            min={draft.startMin}
-            onHourChange={setStartHour}
-            onMinChange={setStartMin}
-          />
-        </div>
+      {/* 시간 피커 */}
+      <div className="flex items-center justify-center gap-6">
+        <TimePicker
+          label="시작 시간"
+          hour={draft.startHour}
+          min={draft.startMin}
+          onHourChange={setStartHour}
+          onMinChange={setStartMin}
+        />
         <span className="text-xl text-gray-300 mt-4">~</span>
-        <div className="flex flex-col items-center">
-          <span className="text-xs text-gray-400 mb-1">종료 시간</span>
-          <TimeSpinner
-            hour={draft.endHour}
-            min={draft.endMin}
-            onHourChange={setEndHour}
-            onMinChange={setEndMin}
-          />
-        </div>
+        <TimePicker
+          label="종료 시간"
+          hour={draft.endHour}
+          min={draft.endMin}
+          onHourChange={setEndHour}
+          onMinChange={setEndMin}
+        />
       </div>
 
-      {/* 안내 문구 */}
+      {/* 안내 */}
       <div className="mt-4 space-y-1">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400 text-left">
           • 요일 설정은 시작일 기준입니다.
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400 text-left">
           • 차단 시간은 최대 24시간까지만 설정할 수 있습니다.
         </p>
       </div>
@@ -268,14 +325,14 @@ function EditPanel({
           <>
             <button
               onClick={() => onConfirm(draft)}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity active:opacity-80"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#678BF7" }}
             >
               정책 추가하기
             </button>
             <button
               onClick={onCancel}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-gray-500 border border-gray-200 transition-colors hover:bg-gray-50"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-gray-500 border border-gray-200"
             >
               취소하기
             </button>
@@ -284,14 +341,14 @@ function EditPanel({
           <>
             <button
               onClick={() => onConfirm({ ...draft, enabled: true })}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity active:opacity-80"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#678BF7" }}
             >
               정책 수정하기
             </button>
             <button
               onClick={onDelete}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity active:opacity-80"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#F87171" }}
             >
               삭제하기
@@ -319,37 +376,23 @@ function PolicyItem({
 
   return (
     <div>
-      {/* 요약 행 */}
       <div
         className="flex items-start gap-3 cursor-pointer py-1"
         onClick={() => setOpen((v) => !v)}
       >
-        {/* 반복 타입 뱃지 */}
-        <span
-          className="flex-shrink-0 mt-0.5 px-2 py-0.5 rounded-md text-xs font-semibold"
-          style={{ backgroundColor: "#EEF2FF", color: "#678BF7" }}
-        >
-          {policy.repeatType}
-        </span>
-
-        {/* 시간 + 요일 */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800">
+          <p className="text-sm font-semibold text-gray-800 text-left">
             {formatTime(policy.startHour, policy.startMin)} ~{" "}
             {formatTime(policy.endHour, policy.endMin)}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5 text-left">
             {formatDays(policy.days)}
           </p>
         </div>
-
-        {/* 토글 */}
         <div onClick={(e) => e.stopPropagation()}>
           <Toggle checked={policy.enabled} onChange={onToggle} />
         </div>
       </div>
-
-      {/* 편집 패널 (아코디언) */}
       {open && (
         <EditPanel
           policy={policy}
@@ -369,7 +412,7 @@ function PolicyItem({
   );
 }
 
-// ── BlockPolicyManager (최종 export) ─────────────────────────────────────────
+// ── BlockPolicyManager ────────────────────────────────────────────────────────
 let nextId = 100;
 
 export default function BlockPolicyManager({
@@ -381,7 +424,6 @@ export default function BlockPolicyManager({
 
   const newDraft = (): BlockPolicy => ({
     id: ++nextId,
-    repeatType: "반복",
     startHour: 22,
     startMin: 0,
     endHour: 7,
@@ -391,28 +433,25 @@ export default function BlockPolicyManager({
   });
 
   const handleAdd = (p: BlockPolicy) => {
-    const updated = [...policies, p];
-    setPolicies(updated);
+    const u = [...policies, p];
+    setPolicies(u);
     setShowAddPanel(false);
-    onSave?.(updated);
+    onSave?.(u);
   };
-
   const handleUpdate = (id: number, p: BlockPolicy) => {
-    const updated = policies.map((m) => (m.id === id ? p : m));
-    setPolicies(updated);
-    onSave?.(updated);
+    const u = policies.map((m) => (m.id === id ? p : m));
+    setPolicies(u);
+    onSave?.(u);
   };
-
   const handleDelete = (id: number) => {
-    const updated = policies.filter((m) => m.id !== id);
-    setPolicies(updated);
-    onSave?.(updated);
+    const u = policies.filter((m) => m.id !== id);
+    setPolicies(u);
+    onSave?.(u);
   };
-
   const handleToggle = (id: number, enabled: boolean) => {
-    const updated = policies.map((m) => (m.id === id ? { ...m, enabled } : m));
-    setPolicies(updated);
-    onSave?.(updated);
+    const u = policies.map((m) => (m.id === id ? { ...m, enabled } : m));
+    setPolicies(u);
+    onSave?.(u);
   };
 
   return (
@@ -427,9 +466,9 @@ export default function BlockPolicyManager({
       borderRadius={20}
       className="w-full"
     >
-      <h2 className="text-base font-bold text-gray-800 mb-4">반복 차단 정책</h2>
-
-      {/* 정책 목록 */}
+      <h2 className="text-base font-bold text-gray-800 mb-4 text-left">
+        반복 차단 정책
+      </h2>
       <div className="flex flex-col divide-y divide-gray-100">
         {policies.map((policy) => (
           <div key={policy.id} className="py-2 first:pt-0 last:pb-0">
@@ -442,8 +481,6 @@ export default function BlockPolicyManager({
           </div>
         ))}
       </div>
-
-      {/* 추가 패널 */}
       {showAddPanel && (
         <div className="mt-2">
           <EditPanel
@@ -454,8 +491,6 @@ export default function BlockPolicyManager({
           />
         </div>
       )}
-
-      {/* 차단 일정 추가 버튼 */}
       {!showAddPanel && (
         <button
           onClick={() => setShowAddPanel(true)}
