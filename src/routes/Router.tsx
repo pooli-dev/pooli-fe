@@ -13,28 +13,46 @@ import SharedData from "../page/SharedData/SharedData";
 import StatusBar from "../components/StatusBar";
 import Header from "../components/Header";
 import BottomBar from "../components/BottomBar";
+import AdminLayout from "../page/Admin/AdminLayout";
+import PolicyManagement from "../page/Admin/PolicyManagement";
+import UserManagement from "../page/Admin/UserManagement";
+import InquiryManagement from "../page/Admin/InquiryManagement";
+import NotificationManagement from "../page/Admin/NotificationManagement";
 
 export default function Router() {
   return (
     <BrowserRouter>
-      <Layout>
-        <StatusBar />
-        <Header />
-        <Routes>
-          <Route path="/" element={<Main />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/policy" element={<Policy />} />
-          <Route path="/alarm" element={<Alarm />} />
-          <Route path="/setting" element={<Setting />} />
-          <Route path="/detail" element={<Detail />} />
-          <Route path="/policy-detail" element={<PolicyDetail />} />
-          <Route path="/shared-data" element={<SharedData />} />
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-        <BottomBar />
-      </Layout>
+      <Routes>
+        {/* Admin Routes - 별도 레이아웃 */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<PolicyManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="inquiries" element={<InquiryManagement />} />
+          <Route path="notifications" element={<NotificationManagement />} />
+        </Route>
+
+        {/* User Routes - 기존 레이아웃 */}
+        <Route path="/*" element={
+          <Layout>
+            <StatusBar />
+            <Header />
+            <Routes>
+              <Route path="/" element={<Main />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/policy" element={<Policy />} />
+              <Route path="/alarm" element={<Alarm />} />
+              <Route path="/setting" element={<Setting />} />
+              <Route path="/detail" element={<Detail />} />
+              <Route path="/policy-detail" element={<PolicyDetail />} />
+              <Route path="/shared-data" element={<SharedData />} />
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
+            </Routes>
+            <BottomBar />
+          </Layout>
+        } />
+      </Routes>
     </BrowserRouter>
   );
 }
