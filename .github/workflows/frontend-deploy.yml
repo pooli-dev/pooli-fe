@@ -12,6 +12,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # 프론트가 레포 루트면 "."
+      # 예: frontend 폴더라면 "frontend"
+      FRONTEND_DIR: "."
+      # CRA면 build, Vite면 dist
+      BUILD_DIR: "dist"
+      S3_BUCKET: "pooli-frontend-prod"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,12 +29,27 @@ jobs:
         with:
           node-version: 22.20.0
           cache: npm
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
 
       - name: Install dependencies
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: npm ci
 
       - name: Build
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: npm run build
+
+      # (원인 추적) 빌드 산출물이 실제로 생성/변경됐는지 로그로 검증
+      - name: Inspect build output (debug)
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: |
+          set -euo pipefail
+          echo "== Build dir listing =="
+          ls -al "${BUILD_DIR}"
+          echo "== index.html (first 30 lines) =="
+          sed -n '1,30p' "${BUILD_DIR}/index.html"
+          echo "== index.html sha256 =="
+          sha256sum "${BUILD_DIR}/index.html"
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -34,11 +57,30 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # (원인 추적) 배포 전 S3의 index.html 메타데이터 확인
+      - name: Head S3 index.html before deploy (debug)
+        run: |
+          set -euo pipefail
+          aws s3api head-object --bucket "${S3_BUCKET}" --key "index.html" \
+            || echo "index.html not found yet in S3 (first deploy?)"
+
       - name: Deploy to S3
-        run: aws s3 sync build/ s3://pooli-frontend-prod --delete
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: |
+          set -euo pipefail
+          aws s3 sync "${BUILD_DIR}/" "s3://${S3_BUCKET}" --delete --exact-timestamps
+          echo "== S3 top-level listing =="
+          aws s3 ls "s3://${S3_BUCKET}/" | head -n 50
+
+      # (원인 추적) 배포 후 S3의 index.html 메타데이터 확인
+      - name: Head S3 index.html after deploy (debug)
+        run: |
+          set -euo pipefail
+          aws s3api head-object --bucket "${S3_BUCKET}" --key "index.html"
 
       - name: CloudFront Cache Invalidation (index.html)
         run: |
+          set -euo pipefail
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
             --paths "/index.html"
