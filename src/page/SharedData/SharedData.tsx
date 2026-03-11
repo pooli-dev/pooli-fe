@@ -12,8 +12,7 @@ export default function SharedData() {
   // 더미 데이터
   const personalDataRemaining = 15000; // 15GB (MB 단위)
 
-  const handleTransfer = (amount: number) => {
-    console.log("공유하기:", amount, "MB");
+  const handleTransfer = () => {
     // API 호출 로직
     // POST /api/data-transfer
     // body: { fromLineId: 1, toLineId: 2, amount: amount }

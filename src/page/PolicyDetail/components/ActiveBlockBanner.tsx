@@ -25,11 +25,18 @@ export default function ActiveBlockBanner({ endTime, onRelease }: Props) {
   const [remaining, setRemaining] = useState(calcRemaining);
 
   useEffect(() => {
-    if (remaining <= 0) return;
-    const timer = setInterval(() => {
-      const r = calcRemaining();
+    const updateRemaining = () => {
+      const r = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000));
       setRemaining(r);
-      if (r <= 0) clearInterval(timer);
+      return r;
+    };
+    
+    const r = updateRemaining();
+    if (r <= 0) return;
+    
+    const timer = setInterval(() => {
+      const newRemaining = updateRemaining();
+      if (newRemaining <= 0) clearInterval(timer);
     }, 1000);
     return () => clearInterval(timer);
   }, [endTime]);

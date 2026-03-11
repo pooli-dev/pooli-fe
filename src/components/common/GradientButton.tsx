@@ -13,6 +13,7 @@ type Props = {
   borderRadius?: number;
   fontSize?: number;
   className?: string;
+  disabled?: boolean;
 };
 
 export default function GradientButton({
@@ -28,11 +29,12 @@ export default function GradientButton({
   borderRadius,
   fontSize,
   className = "",
+  disabled = false,
 }: Props) {
   return (
     // 바깥 div: 그라데이션 배경 (테두리 역할)
     <div
-      className={`rounded-full ${className}`}
+      className={`rounded-full ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       style={{
         borderRadius: `${borderRadius}px`,
         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
@@ -42,7 +44,8 @@ export default function GradientButton({
       {/* 안쪽 버튼: 단색 배경 */}
       <button
         onClick={onClick}
-        className={`flex items-center justify-center gap-2 rounded-full font-semibold text-sm transition-opacity active:opacity-80`}
+        disabled={disabled}
+        className={`flex items-center justify-center gap-2 rounded-full font-semibold text-base transition-opacity ${disabled ? "cursor-not-allowed" : "active:opacity-80"}`}
         style={{
           borderRadius: `${borderRadius}px`,
           backgroundColor: bgColor,

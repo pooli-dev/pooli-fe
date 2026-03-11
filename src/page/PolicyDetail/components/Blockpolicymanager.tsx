@@ -78,7 +78,7 @@ function ScrollPicker({
 
   useEffect(() => {
     scrollToValue(selected, false);
-  }, []);
+  }, [scrollToValue, selected]);
 
   const handleScroll = () => {
     if (isScrolling.current) return;

@@ -28,7 +28,7 @@ export default function Header({
   );
   const darkMode = useSettingStore((state) => state.darkMode);
 
-  const isHome = location.pathname === "/";
+  const isHome = location.pathname === "/main";
   const isAlarm = location.pathname === "/alarm";
   const isSetting = location.pathname === "/setting";
 

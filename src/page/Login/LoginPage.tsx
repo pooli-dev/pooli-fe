@@ -8,6 +8,8 @@ import loginBg1 from "../../assets/img/loginBg1.png";
 import loginBg2 from "../../assets/img/loginBg2.png";
 import loginBg3 from "../../assets/img/loginBg3.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { authService } from "../../api";
 
 const backgrounds = [loginBg1, loginBg2, loginBg3];
 
@@ -15,8 +17,19 @@ export default function LoginPage() {
   const [currentBg, setCurrentBg] = useState(0);
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const darkMode = useSettingStore((state) => state.darkMode);
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
+  const navigate = useNavigate();
+
+  // 이미 로그인되어 있으면 메인으로 리다이렉트
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      navigate('/main', { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -25,11 +38,64 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const navigate = useNavigate();
+  const handleLogin = async () => {
+    if (!userId || !password) {
+      setError("아이디와 비밀번호를 입력해주세요.");
+      return;
+    }
 
-  const handleLogin = () => {
-    console.log("로그인:", { userId, password });
-    navigate("/");
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await authService.login({ email: userId, password });
+      
+      // 200 응답이면 성공으로 처리 (백엔드가 빈 응답을 보낼 수 있음)
+      if (response.status === 200 || response.success) {
+        // 토큰이 있으면 저장 (data가 객체인 경우에만)
+        if (response.data && typeof response.data === 'object') {
+          if ('accessToken' in response.data && response.data.accessToken) {
+            localStorage.setItem('accessToken', response.data.accessToken);
+          }
+          if ('refreshToken' in response.data && response.data.refreshToken) {
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+          }
+          if ('user' in response.data && response.data.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+          }
+        }
+        
+        // 메인 페이지로 이동
+        navigate("/main");
+      } else {
+        setError(response.message || "로그인에 실패했습니다.");
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("에러 메시지:", err.message);
+      }
+      
+      // Axios 에러인 경우 상태 코드에 따라 메시지 변경
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+        } else if (err.response?.status === 500) {
+          setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } else {
+          setError("로그인에 실패했습니다. 다시 시도해주세요.");
+        }
+      } else {
+        setError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
   };
 
   return (
@@ -81,8 +147,10 @@ export default function LoginPage() {
                 type="text"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="기존 LG U+ 가입한 아이디를 입력하세요."
                 className="w-full px-4 py-4 rounded-2xl border-0 bg-white/70 backdrop-blur-md text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+                disabled={isLoading}
               />
             </div>
 
@@ -94,10 +162,19 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="비밀번호를 입력해 주세요."
                 className="w-full px-4 py-4 rounded-2xl border-0 bg-white/70 backdrop-blur-md text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+                disabled={isLoading}
               />
             </div>
+
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="text-red-600 text-sm text-center bg-red-50 py-2 px-4 rounded-lg">
+                {error}
+              </div>
+            )}
           </motion.div>
 
           {/* 로그인 버튼 */}
@@ -112,31 +189,14 @@ export default function LoginPage() {
               bgColor="#678BF7"
               gradientFrom="#A8C8FF"
               gradientTo="#678BF7"
-              width={120} // 좌우 패딩
-              height={16} // 상하 패딩
+              width={120}
+              height={16}
+              disabled={isLoading}
             >
-              <span className="text-lg font-semibold">로그인</span>
+              <span className="text-lg font-semibold">
+                {isLoading ? "로그인 중..." : "로그인"}
+              </span>
             </GradientButton>
-          </motion.div>
-
-          {/* 추가 링크 */}
-          <motion.div
-            className="mt-8 flex gap-6 text-sm text-gray-600"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <button className="hover:text-blue-600 transition-colors">
-              아이디 찾기
-            </button>
-            <span className="text-gray-400">|</span>
-            <button className="hover:text-blue-600 transition-colors">
-              비밀번호 찾기
-            </button>
-            <span className="text-gray-400">|</span>
-            <button className="hover:text-blue-600 transition-colors">
-              회원가입
-            </button>
           </motion.div>
         </div>
       </div>

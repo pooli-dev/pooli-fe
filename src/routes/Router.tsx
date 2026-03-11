@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Home from "../page/Home";
-import Support from "../page/Support";
+import Support from "../page/Support/Support";
 import Policy from "../page/Policy/Policy";
 import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
@@ -25,6 +25,9 @@ export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 기본 경로를 로그인으로 리다이렉트 */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* Admin Routes - 별도 레이아웃 */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<PolicyManagement />} />
@@ -44,7 +47,7 @@ export default function Router() {
               <StatusBar />
               <Header />
               <Routes>
-                <Route path="/" element={<Main />} />
+                <Route path="/main" element={<Main />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/policy" element={<Policy />} />

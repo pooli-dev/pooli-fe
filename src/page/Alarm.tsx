@@ -76,12 +76,12 @@ export default function Alarm() {
     <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="px-5 py-5 pb-[60px]">
       {/* 카테고리 탭 */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+      <div className="flex flex-wrap gap-2 mb-4">
         {categories.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setSelectedCategory(key)}
-            className={`px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
+            className={`px-4 sm:px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
               selectedCategory === key
                 ? 'bg-[#678BF7] text-white font-semibold'
                 : 'bg-[#F0F0F0] text-[#999999] font-medium'
