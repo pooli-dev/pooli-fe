@@ -1,29 +1,24 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import PolicyScroll from "../../components/common/PolicyScroll";
-import StatusBar from "../../components/StatusBar";
 import ApplicationTab from "./components/ApplicationTab";
 import BlockTab from "./components/BlockTab";
 import LimitTab from "./components/LimitTab";
-import alarmIcon from "../../assets/icon/alarm-icon.png";
-import settingIcon from "../../assets/icon/setting-icon.png";
 import {
   familyMembers,
-  appliedPolicies,
   appPolicies,
   type FamilyMember,
   type AppPolicy,
 } from "../../data/policyDetailDummyData";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
+import Avatar from "@/components/common/Avatar";
 
 type TabType = "차단" | "제한" | "애플리케이션";
 
 const PolicyDetail = () => {
-  const navigate = useNavigate();
   const [selectedMember, setSelectedMember] = useState<FamilyMember>(
     familyMembers[1],
   );
-  const [activeTab, setActiveTab] = useState<TabType>("애플리케이션");
+  const [activeTab, setActiveTab] = useState<TabType>("차단");
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
   // 음성 인식 타입 정의
@@ -140,70 +135,6 @@ const PolicyDetail = () => {
 
   return (
     <>
-      {/* 상태바 */}
-      <StatusBar />
-
-      {/* 커스텀 헤더 */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[480px] max-w-full flex justify-between items-center px-5 h-20 pt-[env(safe-area-inset-top)] z-[100]">
-        <div className="flex items-center w-20">
-          <button
-            type="button"
-            aria-label="뒤로 가기"
-            className="p-1 bg-transparent border-none cursor-pointer flex items-center justify-center"
-            onClick={() => navigate(-1)}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="#333333"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 flex justify-center items-center">
-          <h1
-            className="font-semibold text-[#333333] m-0"
-            style={{ fontSize: "1.25em" }}
-          >
-            구성원 별 정책 제어
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-3 w-20 justify-end">
-          <button
-            type="button"
-            aria-label="알림"
-            className="relative cursor-pointer flex items-center justify-center w-12 h-12 rounded-full shrink-0 border-[3px] border-white bg-gradient-to-b from-white/0 to-white/100 to-42%"
-            onClick={() => navigate("/alarm")}
-          >
-            <img src={alarmIcon} alt="" className="w-6 h-6" />
-            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-[#FF0000] rounded-full flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold leading-none">
-                3
-              </span>
-            </div>
-          </button>
-          <button
-            type="button"
-            aria-label="설정"
-            className="cursor-pointer flex items-center justify-center w-12 h-12 rounded-full shrink-0 border-[3px] border-white bg-gradient-to-b from-white/0 to-white/100 to-42%"
-            onClick={() => navigate("/setting")}
-          >
-            <img src={settingIcon} alt="" className="w-6 h-6" />
-          </button>
-        </div>
-      </header>
-
       <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
         <div className="px-[24px] py-5 pb-[60px]">
           {/* 사용자 선택 */}
@@ -221,27 +152,12 @@ const PolicyDetail = () => {
                   onClick={() => setSelectedMember(member)}
                   className="flex flex-col items-center gap-2 flex-shrink-0"
                 >
-                  <div
-                    className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                      selectedMember.lineId === member.lineId
-                        ? "ring-4 ring-[#678BF7]"
-                        : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        member.lineId === 10
-                          ? "#FBC7C3"
-                          : member.lineId === 11
-                            ? "#CAA6DB"
-                            : member.lineId === 12
-                              ? "#B6DF82"
-                              : "#FFA780",
-                    }}
-                  >
-                    <span className="text-xl text-white font-semibold">
-                      {member.userName.charAt(0)}
-                    </span>
-                  </div>
+                  <Avatar
+                    userName={member.userName}
+                    colorIndex={member.lineId}
+                    size="lg"
+                    isSelected={selectedMember.lineId === member.lineId}
+                  />
                   <span
                     className={`text-sm font-medium ${
                       selectedMember.lineId === member.lineId
@@ -265,22 +181,26 @@ const PolicyDetail = () => {
           {/* 현재 적용중인 정책 */}
           <div className="mb-6">
             <PolicyScroll
-              policies={appliedPolicies.map((policy) => ({
-                id: policy.policyId,
-                type:
-                  policy.policyType === "BLOCK"
-                    ? "한도"
-                    : policy.policyType === "LIMIT"
-                      ? "한도"
-                      : "시간",
-                bgColor:
-                  policy.policyType === "BLOCK"
-                    ? "#FFE5E5"
-                    : policy.policyType === "LIMIT"
-                      ? "#E5F5E5"
-                      : "#E5E5FF",
-                title: policy.policyName,
-              }))}
+              policies={[
+                {
+                  id: 1,
+                  type: "한도",
+                  bgColor: "#FFE5E5",
+                  title: "공유 데이터 한도 1GB로 제한",
+                },
+                {
+                  id: 2,
+                  type: "시간",
+                  bgColor: "#E5E5FF",
+                  title: "10:00 ~ 12:00 데이터 사용 제한",
+                },
+                {
+                  id: 3,
+                  type: "앱",
+                  bgColor: "#E5F5E5",
+                  title: "SNS 앱 사용 제한",
+                },
+              ]}
               title="현재 적용중인 정책"
             />
           </div>
