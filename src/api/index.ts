@@ -6,3 +6,4 @@ export * from './types';
 export { authService } from './services/authService';
 export { questionService } from './services/questionService';
 export { settingService } from './services/settingService';
+export { sharedPoolService } from './services/sharedPoolService';

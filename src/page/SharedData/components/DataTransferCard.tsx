@@ -4,21 +4,21 @@ import GradientButton from "@/components/common/GradientButton";
 import SendIcon from "@/assets/icon/send.svg";
 
 interface DataTransferCardProps {
-  personalDataRemaining: number; // MB
-  poolTotalData: number; // MB
+  personalDataRemaining: number; // GB
+  contributedData: number; // GB
   onTransfer: (amount: number) => void;
 }
 
 export default function DataTransferCard({
   personalDataRemaining,
-  poolTotalData,
+  contributedData,
   onTransfer,
 }: DataTransferCardProps) {
   const [sharedAmount, setSharedAmount] = useState(3);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const personalGB = (personalDataRemaining / 1000).toFixed(0);
-  const poolGB = (poolTotalData / 1000).toFixed(1);
+  const personalGB = personalDataRemaining.toFixed(2);
+  const contributedGB = contributedData.toFixed(2);
 
   const handleIncrement = () => {
     setSharedAmount((prev) => Math.min(prev + 1, 60));
@@ -38,7 +38,7 @@ export default function DataTransferCard({
   };
 
   const handleConfirmShare = () => {
-    onTransfer(sharedAmount * 1000); // GB를 MB로 변환
+    onTransfer(sharedAmount * 1e9); // GB를 Bytes로 변환하여 API에 전송 (1GB = 1e+9 Bytes)
     setShowConfirmModal(false);
   };
 
@@ -66,24 +66,24 @@ export default function DataTransferCard({
           <div className="flex justify-between items-start mb-3">
             <div className="flex-1 text-center">
               <div className="text-sm mb-1" style={{ color: "#9CA3AF" }}>
-                총 공유 데이터
+                공유한 데이터
               </div>
               <div
                 className="text-2xl font-medium"
                 style={{ color: "#678BF7" }}
               >
-                {sharedAmount} GB
+                {contributedGB} GB
               </div>
             </div>
             <div className="flex-1 text-center">
               <div className="text-sm mb-1" style={{ color: "#9CA3AF" }}>
-                충전 데이터 한도
+                담을 데이터
               </div>
               <div
                 className="text-2xl font-medium"
                 style={{ color: "#6B7280" }}
               >
-                {poolGB} GB
+                {sharedAmount} GB
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function DataTransferCard({
       </div>
 
       {/* 안내 문구 */}
-      <div className="space-y-0.5 mb-4 px-[34px]">
+      <div className="space-y-0.5 mb-4 px-4 sm:px-[34px]">
         <p className="text-xs" style={{ color: "#868A8A" }}>
           • 개인 데이터 잔여량이 1GB 이상일 때만 전송 가능합니다
         </p>
@@ -144,16 +144,19 @@ export default function DataTransferCard({
 
       {/* 공유하기 버튼 */}
       <div className="flex items-center justify-center">
-        <GradientButton
-          onClick={handleShare}
-          width={150}
-          height={15}
-          borderRadius={20}
-          fontSize={1.5}
-        >
-          <img src={SendIcon} className="w-7 h-7" />
-          공유하기
-        </GradientButton>
+        <div className="w-auto">
+          <GradientButton
+            onClick={handleShare}
+            width={150}
+            height={15}
+            borderRadius={20}
+            fontSize={1.5}
+            className="min-w-max"
+          >
+            <img src={SendIcon} className="w-7 h-7 flex-shrink-0" />
+            <span className="whitespace-nowrap">공유하기</span>
+          </GradientButton>
+        </div>
       </div>
 
       {/* 확인 모달 */}

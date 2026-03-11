@@ -5,7 +5,7 @@ import Support from "../page/Support/Support";
 import Policy from "../page/Policy/Policy";
 import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
-import Setting from "../page/Setting";
+import Setting from "../page/Setting/Setting";
 import Detail from "../page/Detail";
 import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
 import NotFound from "../page/NotFound";

@@ -1,23 +1,67 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import SharedPoolCard from "./components/SharedPoolCard";
 import DataTransferCard from "./components/DataTransferCard";
-import {
-  dummySharedPoolData,
-  remainingDays,
-} from "../../data/sharedDataDummyData";
+import { sharedPoolService } from "../../api";
+import type { SharedPoolMainData, MySharedPoolData } from "../../api/services/sharedPoolService";
 
 export default function SharedData() {
-  const navigate = useNavigate();
+  const [mainData, setMainData] = useState<SharedPoolMainData | null>(null);
+  const [myData, setMyData] = useState<MySharedPoolData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 더미 데이터
-  const personalDataRemaining = 15000; // 15GB (MB 단위)
-
-  const handleTransfer = () => {
-    // API 호출 로직
-    // POST /api/data-transfer
-    // body: { fromLineId: 1, toLineId: 2, amount: amount }
-    navigate("/");
+  // 다음 달까지 남은 날짜 계산
+  const calculateDaysUntilNextMonth = () => {
+    const today = new Date();
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const diffTime = nextMonth.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
+
+  const remainingDays = calculateDaysUntilNextMonth();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [mainResponse, myResponse] = await Promise.all([
+          sharedPoolService.getMainRemainingAmount(),
+          sharedPoolService.getMySharedPool(),
+        ]);
+        
+        setMainData(mainResponse);
+        setMyData(myResponse);
+      } catch (error) {
+        console.error("Failed to fetch shared pool data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleTransfer = async (amount: number) => {
+    try {
+      await sharedPoolService.contributeData({ amount });
+      
+      // 데이터 다시 불러오기
+      const [mainResponse, myResponse] = await Promise.all([
+        sharedPoolService.getMainRemainingAmount(),
+        sharedPoolService.getMySharedPool(),
+      ]);
+      
+      setMainData(mainResponse);
+      setMyData(myResponse);
+    } catch (error) {
+      console.error("Failed to contribute data:", error);
+    }
+  };
+
+  if (loading || !mainData || !myData) {
+    return <div>Loading...</div>;
+  }
+
+  const usedData = mainData.sharedPoolTotalData - mainData.sharedPoolRemainingData;
 
   return (
     <>
@@ -26,11 +70,11 @@ export default function SharedData() {
           {/* 총 공유 데이터 카드 */}
           <div className="px-6">
             <SharedPoolCard
-              totalData={dummySharedPoolData.poolTotalData}
-              remainingData={dummySharedPoolData.poolRemainingData}
-              baseData={dummySharedPoolData.pool_base_data}
-              contributionData={dummySharedPoolData.monthlyContributionAmount}
-              usageAmount={dummySharedPoolData.monthlyUsageAmount}
+              totalData={mainData.sharedPoolTotalData}
+              remainingData={mainData.sharedPoolRemainingData}
+              baseData={mainData.sharedPoolBaseData}
+              contributionData={mainData.sharedPoolAdditionalData}
+              usageAmount={usedData}
               remainingDays={remainingDays}
             />
           </div>
@@ -42,8 +86,8 @@ export default function SharedData() {
             </h3>
 
             <DataTransferCard
-              personalDataRemaining={personalDataRemaining}
-              poolTotalData={dummySharedPoolData.poolTotalData}
+              personalDataRemaining={myData.remainingData}
+              contributedData={myData.contributionAmount}
               onTransfer={handleTransfer}
             />
           </div>

@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import ClockIcon from "@/assets/icon/clock2.svg";
 
 interface SharedPoolCardProps {
-  totalData: number; // MB
-  remainingData: number; // MB
-  baseData: number; // MB
-  contributionData: number; // MB
-  usageAmount: number; // MB
+  totalData: number; // GB
+  remainingData: number; // GB
+  baseData: number; // GB
+  contributionData: number; // GB
+  usageAmount: number; // GB
   remainingDays: number;
 }
 
@@ -21,11 +21,12 @@ export default function SharedPoolCard({
 }: SharedPoolCardProps) {
   const navigate = useNavigate();
 
-  const totalGB = (totalData / 1000).toFixed(1);
-  const baseGB = (baseData / 1000).toFixed(1);
-  const contributionGB = (contributionData / 1000).toFixed(1);
-  const usageGB = (usageAmount / 1000).toFixed(1);
-  const usagePercent = (usageAmount / totalData) * 100;
+  const totalGB = totalData.toFixed(2);
+  const baseGB = baseData.toFixed(2);
+  const contributionGB = contributionData.toFixed(2);
+  const usageGB = usageAmount.toFixed(2);
+  const remainingGB = remainingData.toFixed(2);
+  const usagePercent = totalData > 0 ? (usageAmount / totalData) * 100 : 0;
 
   return (
     <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
@@ -37,26 +38,26 @@ export default function SharedPoolCard({
           className="text-xs font-medium mr-2 mt-1"
           style={{ color: "#BA7E7D" }}
         >
-          잔여 기간 {remainingDays}일
+          D-{remainingDays}
         </span>
       </div>
 
       <div className="mb-2 mt-3">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-2 gap-2">
           <div
-            className="text-[30px] font-semibold"
+            className="text-2xl sm:text-[30px] font-semibold"
             style={{ color: "#678BF7" }}
           >
             {totalGB} GB
           </div>
           <GradientButton
-            onClick={() => navigate("/shared-data/usage")}
+            onClick={() => navigate("/log")}
             width={20}
             height={8}
             borderRadius={15}
           >
-            <img src={ClockIcon} className="w-5 h-5" />
-            사용 로그 보기
+            <img src={ClockIcon} className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm whitespace-nowrap">사용 로그 보기</span>
           </GradientButton>
         </div>
         <div className="flex gap-8 text-sm">
@@ -96,7 +97,7 @@ export default function SharedPoolCard({
             />
           </div>
           <span className="whitespace-nowrap">
-            사용 {usageGB}GB / 잔여 {(remainingData / 1000).toFixed(1)}GB
+            사용 {usageGB}GB / 잔여 {remainingGB}GB
           </span>
         </div>
       </div>

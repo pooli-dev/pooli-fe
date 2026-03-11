@@ -16,17 +16,21 @@ type AlarmCode = 'FAMILY' | 'USER' | 'POLICY_CHANGE' | 'POLICY_LIMIT' | 'PERMISS
 export const settingService = {
   // 전체 알림 설정 조회
   getNotifications: async () => {
+    console.log('[GET] 알림 설정 조회 요청: /notifications/settings');
     const response = await apiClient.get<NotificationSettings>('/notifications/settings');
+    console.log('[GET] 알림 설정 조회 응답:', response.data);
     return response.data;
   },
 
   // 알림 설정 변경 (공통)
   updateNotification: async (alarmCode: AlarmCode, enabled: boolean) => {
+    console.log(`[PATCH] 알림 변경 요청: /notifications/settings?code=${alarmCode}`, { enabled });
     const response = await apiClient.patch<NotificationSettings>(
       '/notifications/settings',
       { enabled },
       { params: { code: alarmCode } }
     );
+    console.log(`[PATCH] 알림 변경 응답:`, response.data);
     return response.data;
   },
 
