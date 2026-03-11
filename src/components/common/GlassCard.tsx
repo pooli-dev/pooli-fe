@@ -3,7 +3,6 @@ import { type ReactNode, useId, useRef, useState, useEffect } from "react";
 type Props = {
   title: string;
   children: ReactNode;
-  icon?: string;
   gradientFrom?: string;
   gradientTo?: string;
   bgGradientFrom?: string;
@@ -11,6 +10,7 @@ type Props = {
   bgOpacity?: number;
   borderWidth?: number;
   borderRadius?: number;
+  textColor?: string;
   className?: string;
 };
 
@@ -23,7 +23,7 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
-export default function DataBlockBanner({
+export default function GlassCard({
   title,
   children,
   gradientFrom = "#EEEEEE",
@@ -33,12 +33,15 @@ export default function DataBlockBanner({
   bgOpacity = 0.7,
   borderWidth = 1,
   borderRadius = 24,
+  textColor = "#000000",
   className = "",
 }: Props) {
+  // 같은 컴포넌트가 여러개 렌더링 될때 충돌하지 않도록 고유 id 값 생성
   const uid = useId().replace(/:/g, "");
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
+  // 카드 DOM 요소의 실제 픽셀 크기를 측정 -> 그라데이션 테두리 적용 가능해짐
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -52,6 +55,7 @@ export default function DataBlockBanner({
     return () => observer.disconnect();
   }, []);
 
+  // 선 중심으로 그려지기 때문에, 테두리가 밖으로 삐져나오지 않도록 처리
   const half = borderWidth / 2;
 
   return (
@@ -106,13 +110,16 @@ export default function DataBlockBanner({
         <div className="flex-1 min-w-0">
           {/* 제목 */}
           {!!title && (
-            <h3 className="text-base font-semibold text-gray-800 mb-3">
+            <h3
+              className="text-base font-semibold mb-3"
+              style={{ color: textColor }}
+            >
               {title}
             </h3>
           )}
 
           {/* 내용 */}
-          <div className="text-sm text-gray-600">{children}</div>
+          <div className="text-sm text-black">{children}</div>
         </div>
       </div>
     </div>

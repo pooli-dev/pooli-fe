@@ -21,13 +21,13 @@ export default function ConfirmModal({
   onClose,
   onConfirm,
   message,
-  confirmText = '예',
-  cancelText = '아니요',
+  confirmText = "예",
+  cancelText = "아니요",
 }: ConfirmModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]">
       <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
         <p
           className="text-center text-[#333333] mb-6 leading-relaxed"

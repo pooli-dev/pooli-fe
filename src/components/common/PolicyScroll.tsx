@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from "react";
 
 /**
  * PolicyScroll 공용 컴포넌트
- * 
+ *
  * 사용 방법:
- * <PolicyScroll 
+ * <PolicyScroll
  *   policies={[
  *     { id: 1, type: '한도', bgColor: '#FFE5E5', title: '공유 데이터 한도 1GB로 제한' },
  *     { id: 2, type: '시간', bgColor: '#E5E5FF', title: '10:00 ~ 12:00 데이터 사용 제한' },
@@ -26,7 +26,10 @@ interface PolicyScrollProps {
   title?: string;
 }
 
-export default function PolicyScroll({ policies, title = '현재 적용중인 정책' }: PolicyScrollProps) {
+export default function PolicyScroll({
+  policies,
+  title = "현재 적용중인 정책",
+}: PolicyScrollProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -39,26 +42,68 @@ export default function PolicyScroll({ policies, title = '현재 적용중인 �
    */
   const getPolicyIcon = (type: string) => {
     switch (type) {
-      case '한도':
+      case "한도":
         return (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2v20M17 12H7M19 7l-14 10M19 17L5 7" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round"/>
+            <path
+              d="M12 2v20M17 12H7M19 7l-14 10M19 17L5 7"
+              stroke="#FF6B6B"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
         );
-      case '시간':
+      case "시간":
         return (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="#678BF7" strokeWidth="2"/>
-            <path d="M12 7v5l3 3" stroke="#678BF7" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="9" stroke="#678BF7" strokeWidth="2" />
+            <path
+              d="M12 7v5l3 3"
+              stroke="#678BF7"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
         );
-      case '앱':
+      case "앱":
         return (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="4" y="4" width="7" height="7" rx="2" stroke="#4CAF50" strokeWidth="2"/>
-            <rect x="13" y="4" width="7" height="7" rx="2" stroke="#4CAF50" strokeWidth="2"/>
-            <rect x="4" y="13" width="7" height="7" rx="2" stroke="#4CAF50" strokeWidth="2"/>
-            <rect x="13" y="13" width="7" height="7" rx="2" stroke="#4CAF50" strokeWidth="2"/>
+            <rect
+              x="4"
+              y="4"
+              width="7"
+              height="7"
+              rx="2"
+              stroke="#4CAF50"
+              strokeWidth="2"
+            />
+            <rect
+              x="13"
+              y="4"
+              width="7"
+              height="7"
+              rx="2"
+              stroke="#4CAF50"
+              strokeWidth="2"
+            />
+            <rect
+              x="4"
+              y="13"
+              width="7"
+              height="7"
+              rx="2"
+              stroke="#4CAF50"
+              strokeWidth="2"
+            />
+            <rect
+              x="13"
+              y="13"
+              width="7"
+              height="7"
+              rx="2"
+              stroke="#4CAF50"
+              strokeWidth="2"
+            />
           </svg>
         );
       default:
@@ -97,38 +142,45 @@ export default function PolicyScroll({ policies, title = '현재 적용중인 �
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false);
-    document.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => document.removeEventListener("mouseup", handleGlobalMouseUp);
   }, []);
 
   return (
-    <div className="mb-6">
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-[#333333]" style={{ fontSize: '1.125em' }}>{title}</h2>
+        <h2
+          className="font-semibold text-[#333333]"
+          style={{ fontSize: "1.125em" }}
+        >
+          {title}
+        </h2>
       </div>
 
-      <div 
+      <div
         ref={scrollRef}
         className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide cursor-grab active:cursor-grabbing"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        style={{ userSelect: 'none' }}
+        style={{ userSelect: "none" }}
       >
         {policies.map((policy) => (
           <div
             key={policy.id}
-            className="min-w-[280px] bg-white rounded-2xl p-5 flex-shrink-0"
-            style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}
+            className="min-w-[280px] bg-white/60 rounded-2xl p-5 flex-shrink-0"
+            style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
           >
-            <div 
+            <div
               className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
               style={{ backgroundColor: policy.bgColor }}
             >
               {getPolicyIcon(policy.type)}
             </div>
-            <div className="text-[#999999] mb-1" style={{ fontSize: '0.75em' }}>[{policy.type}]</div>
+            <div className="text-[#999999] mb-1" style={{ fontSize: "0.75em" }}>
+              [{policy.type}]
+            </div>
             <div className="text-[#333333] font-medium">{policy.title}</div>
           </div>
         ))}
