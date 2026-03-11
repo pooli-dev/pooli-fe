@@ -1,12 +1,26 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import logoSvg from '@/assets/img/logo.svg';
+import { authService } from '@/api';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm('로그아웃 하시겠습니까?')) {
-      navigate('/');
+      try {
+        await authService.logout();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        navigate('/login');
+      } catch (error) {
+        console.error('로그아웃 실패:', error);
+        // 에러가 발생해도 로컬 스토리지는 정리하고 로그인 페이지로 이동
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        navigate('/login');
+      }
     }
   };
 

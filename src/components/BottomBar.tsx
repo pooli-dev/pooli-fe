@@ -9,7 +9,7 @@ import policyOff from '../assets/icon/policy-off.png';
 
 const navItems = [
   { path: '/support', icon: { on: supportOn, off: supportOff }, label: 'Support' },
-  { path: '/', icon: { on: homeOn, off: homeOff }, label: 'Home' },
+  { path: '/main', icon: { on: homeOn, off: homeOff }, label: 'Home' },
   { path: '/policy', icon: { on: policyOn, off: policyOff }, label: 'Policy' },
 ];
 
@@ -26,8 +26,8 @@ export default function BottomBar() {
   return (
     <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full flex justify-around items-center py-2 bg-white/60 backdrop-blur-[10px] pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-[100] ${darkMode ? 'invert' : ''}`}>
       {navItems.map(({ path, icon, label }) => {
-        const isActive = path === '/' 
-          ? location.pathname === '/' 
+        const isActive = path === '/main' 
+          ? location.pathname === '/main' 
           : location.pathname.startsWith(path);
         return (
           <button 

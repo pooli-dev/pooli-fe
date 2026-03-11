@@ -77,7 +77,7 @@ export default function Policy() {
               canHideAppUsage: true,
             },
           ]}
-          onApply={(updated) => console.log("적용:", updated)}
+          onApply={() => {}}
         />
         <button
           onClick={() => navigate("/policy-detail")}
