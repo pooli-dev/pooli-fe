@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingStore } from '../store/settingStore';
 import Toggle from '../components/common/Toggle';
-import RangeSlider from '../components/common/RangeSlider';
-import { authService } from '../api';
+import { authService, settingService } from '../api';
 
 /**
  * 정보 툴팁 컴포넌트
@@ -167,15 +166,105 @@ export default function Setting() {
   // 알림 설정
   const [familyDataNotification, setFamilyDataNotification] = useState(false);
   const [personalDataNotification, setPersonalDataNotification] = useState(false);
-  const [personalDataThresholdEnabled, setPersonalDataThresholdEnabled] = useState(true);
-  const [personalDataThreshold, setPersonalDataThreshold] = useState(500); // MB 단위
   const [policyChangeNotification, setPolicyChangeNotification] = useState(true);
-  const [policyActivityNotification, setPolicyActivityNotification] = useState(true);
+  const [policyLimitNotification, setPolicyLimitNotification] = useState(true);
   const [permissionChangeNotification, setPermissionChangeNotification] = useState(false);
   const [inquiryNotification, setInquiryNotification] = useState(false);
 
-  const handleThresholdChange = (value: number) => {
-    setPersonalDataThreshold(Math.max(0, Math.min(10000, value))); // 0-10000 MB 범위
+  // 알림 설정 조회
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        console.log('알림 설정 조회 시작...');
+        const data = await settingService.getNotifications();
+        console.log('알림 설정 조회 성공:', data);
+        setFamilyDataNotification(data.familyAlarm);
+        setPersonalDataNotification(data.userAlarm);
+        setPolicyChangeNotification(data.policyChangeAlarm);
+        setPolicyLimitNotification(data.policyLimitAlarm);
+        setPermissionChangeNotification(data.permissionAlarm);
+        setInquiryNotification(data.questionAlarm);
+      } catch (error) {
+        console.error('알림 설정 조회 실패:', error);
+        // 백엔드 에러 시 기본값 유지
+      }
+    };
+    void fetchNotifications();
+  }, []);
+
+  // 알림 변경 핸들러
+  const handleFamilyDataChange = async (enabled: boolean) => {
+    const prevValue = familyDataNotification;
+    setFamilyDataNotification(enabled);
+    try {
+      console.log('가족 데이터 알림 변경 요청:', { enabled });
+      await settingService.updateFamilyAlarm(enabled);
+      console.log('가족 데이터 알림 변경 성공');
+    } catch (error) {
+      console.error('가족 데이터 알림 변경 실패:', error);
+      setFamilyDataNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handlePersonalDataChange = async (enabled: boolean) => {
+    const prevValue = personalDataNotification;
+    setPersonalDataNotification(enabled);
+    try {
+      await settingService.updateUserAlarm(enabled);
+    } catch (error) {
+      console.error('개인 데이터 알림 변경 실패:', error);
+      setPersonalDataNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handlePolicyChangeChange = async (enabled: boolean) => {
+    const prevValue = policyChangeNotification;
+    setPolicyChangeNotification(enabled);
+    try {
+      await settingService.updatePolicyChangeAlarm(enabled);
+    } catch (error) {
+      console.error('정책 변경 알림 변경 실패:', error);
+      setPolicyChangeNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handlePolicyLimitChange = async (enabled: boolean) => {
+    const prevValue = policyLimitNotification;
+    setPolicyLimitNotification(enabled);
+    try {
+      await settingService.updatePolicyLimitAlarm(enabled);
+    } catch (error) {
+      console.error('정책 한도 알림 변경 실패:', error);
+      setPolicyLimitNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handlePermissionChange = async (enabled: boolean) => {
+    const prevValue = permissionChangeNotification;
+    setPermissionChangeNotification(enabled);
+    try {
+      await settingService.updatePermissionAlarm(enabled);
+    } catch (error) {
+      console.error('권한 변경 알림 변경 실패:', error);
+      setPermissionChangeNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handleInquiryChange = async (enabled: boolean) => {
+    const prevValue = inquiryNotification;
+    setInquiryNotification(enabled);
+    try {
+      await settingService.updateQuestionAlarm(enabled);
+    } catch (error) {
+      console.error('문의사항 알림 변경 실패:', error);
+      setInquiryNotification(prevValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    }
   };
 
   const handleLogout = async () => {
@@ -262,60 +351,14 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#333333] text-[14px]">가족 데이터 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={familyDataNotification} onChange={setFamilyDataNotification} aria-label="가족 데이터 알림" />
+                  <Toggle checked={familyDataNotification} onChange={handleFamilyDataChange} aria-label="가족 데이터 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#333333] text-[14px]">개인 데이터 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={personalDataNotification} onChange={setPersonalDataNotification} aria-label="개인 데이터 알림" />
+                  <Toggle checked={personalDataNotification} onChange={handlePersonalDataChange} aria-label="개인 데이터 알림" />
                 </div>
-              </div>
-              
-              {/* 개인 데이터 임계치 */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[#333333] text-[14px]">개인 데이터 임계치 알림</span>
-                  <div className="scale-90">
-                    <Toggle checked={personalDataThresholdEnabled} onChange={setPersonalDataThresholdEnabled} aria-label="개인 데이터 임계치 알림" />
-                  </div>
-                </div>
-                
-                {personalDataThresholdEnabled && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1">
-                        <RangeSlider
-                          value={personalDataThreshold}
-                          onChange={handleThresholdChange}
-                          min={0}
-                          max={10000}
-                          step={50}
-                        />
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="number"
-                          value={personalDataThreshold}
-                          onChange={(e) => handleThresholdChange(Number(e.target.value))}
-                          className="w-16 px-2 py-1.5 border border-[#678BF7] rounded-l-lg text-center text-[#678BF7] font-medium border-r-0 number-input-small"
-                          style={{ 
-                            fontSize: '0.875em',
-                            backgroundColor: 'rgba(103, 139, 247, 0.1)'
-                          }}
-                          min="0"
-                          max="10000"
-                        />
-                        <div className="py-1.5 pl-1 pr-2 border border-[#678BF7] rounded-r-lg text-[#818181] border-l-0 whitespace-nowrap flex items-center justify-start" style={{ 
-                          fontSize: '0.875em',
-                          backgroundColor: 'rgba(103, 139, 247, 0.1)'
-                        }}>
-                          MB
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -329,13 +372,13 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#333333] text-[14px]">정책 변경 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={policyChangeNotification} onChange={setPolicyChangeNotification} aria-label="정책 변경 알림" />
+                  <Toggle checked={policyChangeNotification} onChange={handlePolicyChangeChange} aria-label="정책 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#333333] text-[14px]">정책 활동 알림</span>
+                <span className="text-[#333333] text-[14px]">정책 한도 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={policyActivityNotification} onChange={setPolicyActivityNotification} aria-label="정책 활동 알림" />
+                  <Toggle checked={policyLimitNotification} onChange={handlePolicyLimitChange} aria-label="정책 한도 알림" />
                 </div>
               </div>
             </div>
@@ -350,13 +393,13 @@ export default function Setting() {
               <div className="flex items-center justify-between">
                 <span className="text-[#333333] text-[14px]">권한 변경 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={permissionChangeNotification} onChange={setPermissionChangeNotification} aria-label="권한 변경 알림" />
+                  <Toggle checked={permissionChangeNotification} onChange={handlePermissionChange} aria-label="권한 변경 알림" />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#333333] text-[14px]">문의사항 알림</span>
                 <div className="scale-90">
-                  <Toggle checked={inquiryNotification} onChange={setInquiryNotification} aria-label="문의사항 알림" />
+                  <Toggle checked={inquiryNotification} onChange={handleInquiryChange} aria-label="문의사항 알림" />
                 </div>
               </div>
             </div>
