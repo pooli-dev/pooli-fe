@@ -29,12 +29,12 @@ const BlockTab = ({ onBlockApply }: Props) => {
             enabled: false,
           },
         ]}
-        onSave={(updated) => console.log("저장:", updated)}
+        onSave={() => {}}
       />
       <ImmediateBlockPolicy
         initialEnabled={true}
         onDurationChange={onBlockApply}
-        onToggle={(enabled) => console.log("차단 토글:", enabled)}
+        onToggle={() => {}}
       />
     </div>
   );

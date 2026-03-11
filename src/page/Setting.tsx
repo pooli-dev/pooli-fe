@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSettingStore } from '../store/settingStore';
 import Toggle from '../components/common/Toggle';
 import RangeSlider from '../components/common/RangeSlider';
+import { authService } from '../api';
 
 /**
  * 정보 툴팁 컴포넌트
@@ -152,6 +154,8 @@ const ChildModeToggle = ({ checked, onChange }: { checked: boolean; onChange: (c
  * @returns 설정 페이지 JSX
  */
 export default function Setting() {
+  const navigate = useNavigate();
+  
   // 전역 상태에서 모드 가져오기
   const darkMode = useSettingStore(state => state.darkMode);
   const largeTextMode = useSettingStore(state => state.largeTextMode);
@@ -172,6 +176,25 @@ export default function Setting() {
 
   const handleThresholdChange = (value: number) => {
     setPersonalDataThreshold(Math.max(0, Math.min(10000, value))); // 0-10000 MB 범위
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      // 로컬 스토리지 정리
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      // 로그인 페이지로 이동
+      navigate('/login');
+    } catch (error) {
+      console.error('로그아웃 에러:', error);
+      // 에러가 나도 로그인 페이지로 이동
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      navigate('/login');
+    }
   };
 
   return (
@@ -343,7 +366,10 @@ export default function Setting() {
 
       {/* 로그아웃 버튼 */}
       <div className="flex justify-center mb-3">
-        <button className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm ${darkMode ? 'invert' : ''}`}>
+        <button 
+          onClick={handleLogout}
+          className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors ${darkMode ? 'invert' : ''}`}
+        >
           로그아웃
         </button>
       </div>

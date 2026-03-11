@@ -23,7 +23,7 @@ export default function Header({ showAlarm = true, showSetting = true }: HeaderP
   const unreadCount = useAlarmStore(state => state.alarms.filter(a => !a.isRead).length);
   const darkMode = useSettingStore(state => state.darkMode);
 
-  const isHome = location.pathname === '/';
+  const isHome = location.pathname === '/main';
   const isAlarm = location.pathname === '/alarm';
   const isSetting = location.pathname === '/setting';
 
