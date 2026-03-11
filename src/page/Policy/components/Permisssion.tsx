@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GlassCard from "../../Main/components/GlassCard";
+import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export default function PermissionManager({
       gradientTo="#CCCCCC"
       bgGradientFrom="#FFFFFF"
       bgGradientTo="#F8F8F8"
-      bgOpacity={0.8}
+      bgOpacity={0.7}
       borderWidth={1}
       borderRadius={20}
       className="w-full"
