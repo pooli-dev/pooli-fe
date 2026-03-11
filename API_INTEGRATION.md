@@ -166,6 +166,59 @@ const questions = await questionService.getQuestions(0, 10);
 1. CORS 설정 추가 (위의 "CORS 설정" 섹션 참고)
 2. 로그인 응답에 CSRF 토큰 포함 (옵션 A 또는 B)
 3. OPTIONS preflight 요청 처리
+4. **S3 버킷 CORS 설정** (이미지 업로드용)
+
+## 이미지 업로드 (S3 Presigned URL)
+
+문의사항 이미지 업로드는 다음 플로우로 동작합니다:
+
+1. **Presigned URL 발급**: `POST /api/uploads/presigned-urls`
+2. **S3 직접 업로드**: 발급받은 URL로 브라우저에서 S3에 직접 PUT 요청
+3. **문의 생성**: s3Key를 포함하여 `POST /api/questions`
+
+### S3 CORS 설정 (필수)
+
+브라우저에서 S3로 직접 파일을 업로드하려면 S3 버킷에 CORS 설정이 필요합니다.
+
+**AWS S3 버킷 CORS 설정**:
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "AllowedOrigins": [
+      "http://localhost:5173",
+      "https://www.pooliapp.com"
+    ],
+    "ExposeHeaders": [
+      "ETag",
+      "x-amz-server-side-encryption",
+      "x-amz-request-id"
+    ],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
+
+**중요 사항**:
+- `AllowedOrigins`에 프론트엔드 도메인이 포함되어야 합니다
+- `AllowedMethods`에 `PUT`이 반드시 포함되어야 합니다 (파일 업로드용)
+- `AllowedHeaders`는 `["*"]`로 설정하여 모든 헤더를 허용합니다
+
+### 현재 상태
+
+**문제**: S3 버킷에 CORS 설정이 없어 브라우저에서 다음 에러 발생
+```
+Access to fetch at 'https://pooli-s3-bucket.s3.ap-northeast-2.amazonaws.com/...' 
+from origin 'http://localhost:5173' has been blocked by CORS policy: 
+Response to preflight request doesn't pass access control check: 
+No 'Access-Control-Allow-Origin' header is present on the requested resource.
+```
+
+**임시 대응**: 이미지 업로드 실패 시 사용자에게 확인을 받고 이미지 없이 문의 접수 가능
+
+**해결 방법**: 백엔드 팀이 S3 버킷에 위의 CORS 설정 추가 필요
 
 ## 주의사항
 
