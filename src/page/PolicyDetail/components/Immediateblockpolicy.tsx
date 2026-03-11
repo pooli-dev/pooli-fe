@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GlassCard from "../../Main/components/GlassCard";
+import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 
 type Props = {
