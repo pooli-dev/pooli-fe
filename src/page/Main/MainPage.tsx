@@ -1,15 +1,17 @@
-import CircleProgress from "../Main/components/PieChart";
-import DataBlockBanner from "./components/GlassCard";
+import GlassCard from "../../components/common/GlassCard";
 import SharedPoolUsage from "./components/SharedPoolUsage";
 import BlockIcon from "../../assets/icon/block.svg";
 import PlusIcon from "../../assets/icon/plus.svg";
-import GradientButton from "./components/GradientButton";
+import GradientButton from "../../components/common/GradientButton";
 import { useNavigate } from "react-router-dom";
-import type { FamilyMember } from "./components/FamilyMemberList";
 import FamilyMemberList from "./components/FamilyMemberList";
+import type { FamilyMember } from "@/types/FamilyMember";
+import PieChart from "../Main/components/PieChart";
 
 export default function Main() {
   const navigate = useNavigate();
+
+  // /api/families/members로 FamilyApiResponse 받은 후 FamilyMemberList에 아래 구조로 전달
   const members: FamilyMember[] = [
     {
       userId: 100,
@@ -36,8 +38,9 @@ export default function Main() {
     <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="min-h-full flex flex-col items-center justify-center gap-5 px-6 pb-[60px]">
         {/* 데이터 차단 활성화 배너 영역 */}
+        {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
         <div className="w-full max-w-md">
-          <DataBlockBanner
+          <GlassCard
             title=""
             gradientFrom="#FFFFFF"
             gradientTo="#999999"
@@ -62,12 +65,13 @@ export default function Main() {
                 </p>
               </div>
             </div>
-          </DataBlockBanner>
+          </GlassCard>
         </div>
 
         {/* 그래프 영역 */}
+        {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
         <div className="flex flex-col items-center gap-4">
-          <CircleProgress value={65} />
+          <PieChart />
         </div>
 
         {/* 공유 데이터 담기 페이지 이동 버튼 */}
@@ -77,10 +81,13 @@ export default function Main() {
         </GradientButton>
 
         {/* 공유풀 사용량 */}
+        {/* /api/families/members 요청후 각 member에 대해 sharedPoolRemainingAmount로 각각 사용량 계산 후 넘기기(%) */}
         <div className="w-full max-w-md">
           <SharedPoolUsage />
         </div>
 
+        {/* 구성원별 데이터 정보 */}
+        {/* /api/families/members 요청후 members 넘기기 */}
         <FamilyMemberList
           members={members}
           myUserId={100} // 로그인 유저 id}

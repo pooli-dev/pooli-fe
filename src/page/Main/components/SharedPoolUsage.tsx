@@ -1,4 +1,4 @@
-import GlassCard from "./GlassCard";
+import GlassCard from "../../../components/common/GlassCard";
 
 type UserData = {
   name: string;
@@ -39,14 +39,13 @@ export default function SharedPoolUsage({
             className="absolute w-full h-4 rounded-full"
             style={{
               backgroundColor: "#FFFFFF",
-              filter: "blur(6px)",
               opacity: 0.9,
-              transform: "scaleY(0.5)",
-              boxShadow: "0 0 12px 4px #93C5FD",
+              transform: "scaleY(0.3)",
+              boxShadow: "0 0 20px 5px #93C5FD",
             }}
           />
 
-          {/* 실제 흰색 막대 (유저 세그먼트 포함) */}
+          {/* 실제 흰색 막대 */}
           <div
             className="relative w-full h-4 rounded-full overflow-hidden"
             style={{ backgroundColor: "#F0F5FF" }}

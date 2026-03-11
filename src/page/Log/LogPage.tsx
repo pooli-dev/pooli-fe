@@ -1,4 +1,4 @@
-import GlassCard from "../Main/components/GlassCard";
+import GlassCard from "../../components/common/GlassCard";
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
 type LogEntry = {

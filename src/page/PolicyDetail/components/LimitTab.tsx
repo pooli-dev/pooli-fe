@@ -1,6 +1,6 @@
 import RangeSlider from "@/components/common/RangeSlider";
 import Toggle from "@/components/common/Toggle";
-import GlassCard from "@/page/Main/components/GlassCard";
+import GlassCard from "@/components/common/GlassCard";
 import { useRef, useState } from "react";
 
 // ── 공통 슬라이더 카드 컴포넌트 ──────────────────────────────────────────────

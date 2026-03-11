@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import GradientButton from "../Main/components/GradientButton";
+import GradientButton from "../../components/common/GradientButton";
 import { useSettingStore } from "../../store/settingStore";
 import logo from "../../assets/img/logo.svg";
 import backgroundImg from "../../assets/img/background.png";
