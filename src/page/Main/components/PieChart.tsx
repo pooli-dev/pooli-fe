@@ -1,25 +1,24 @@
 import { motion } from "framer-motion";
-import GlassChip from "./Chip";
+import Chip from "./Chip";
 
 type Props = {
-  value: number; // 0~100, 그래프의 값
   size?: number; // px, 그래프의 사이즈
   strokeWidth?: number; // px, 그래프의 두께
-  usedData?: string; // 사용된 데이터 (예: "5.2GB")
-  totalData?: string; // 전체 데이터 (예: "8GB")
-  basicData?: string; // 기본 데이터 (예: "5GB")
-  additionalData?: string; // 추가 데이터 (예: "3GB")
+  sharedPoolRemainingData?: number; // 사용된 데이터 (예: "5.2GB")
+  sharedPoolTotalData?: number; // 전체 데이터 (예: "8GB")
+  sharedPoolBaseData?: number; // 기본 데이터 (예: "5GB")
+  sharedPoolAdditionalData?: number; // 추가 데이터 (예: "3GB")
 };
 
-export default function CircleProgress({
-  value,
+export default function PieChart({
   size = 260,
   strokeWidth = 20,
-  usedData = "5.2GB",
-  totalData = "8GB",
-  basicData = "5GB",
-  additionalData = "3GB",
+  sharedPoolRemainingData = 6,
+  sharedPoolTotalData = 8,
+  sharedPoolBaseData = 5,
+  sharedPoolAdditionalData = 3,
 }: Props) {
+  const value = (sharedPoolRemainingData / sharedPoolTotalData) * 100;
   const clamped = Math.max(0, Math.min(100, value)); // value가 0~100 사이일 수 있도록
   const r = (size - strokeWidth - 10) / 2; // 원의 반지름
   const c = 2 * Math.PI * r;
@@ -182,27 +181,31 @@ export default function CircleProgress({
           {Math.round(clamped)}%
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          {usedData} / {totalData}
+          {sharedPoolRemainingData}GB / {sharedPoolTotalData}GB
         </div>
 
         {/* 글래스모피즘 칩 */}
         <div className="flex gap-2">
-          <GlassChip
+          <Chip
             gradientFrom="#ffffff"
             gradientTo="#CAF1FF"
             bgColor="173, 230, 255"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">기본 {basicData}</span>
-          </GlassChip>
-          <GlassChip
+            <span className="text-xs text-gray-700">
+              기본 {sharedPoolBaseData}GB
+            </span>
+          </Chip>
+          <Chip
             gradientFrom="#ffffff"
             gradientTo="#FFF5F9"
             bgColor="246, 202, 221"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">추가 {additionalData}</span>
-          </GlassChip>
+            <span className="text-xs text-gray-700">
+              추가 {sharedPoolAdditionalData}GB
+            </span>
+          </Chip>
         </div>
       </div>
     </div>
