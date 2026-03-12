@@ -40,12 +40,12 @@ export default function SharedPoolCard({
       usage: usageAmount.toFixed(2),
       remaining: remainingData.toFixed(2),
     }),
-    [totalData, baseData, contributionData, usageAmount, remainingData]
+    [totalData, baseData, contributionData, usageAmount, remainingData],
   );
 
   const usagePercent = useMemo(
     () => (totalData > 0 ? (usageAmount / totalData) * 100 : 0),
-    [totalData, usageAmount]
+    [totalData, usageAmount],
   );
 
   return (
@@ -70,7 +70,10 @@ export default function SharedPoolCard({
 function CardHeader({ remainingDays }: { remainingDays: number }) {
   return (
     <div className="flex justify-between items-start mb-1">
-      <h2 className="text-[15px] font-medium" style={{ color: COLORS.textGray }}>
+      <h2
+        className="text-[15px] font-medium"
+        style={{ color: COLORS.textGray }}
+      >
         총 공유 데이터
       </h2>
       <span
@@ -138,7 +141,10 @@ function DataItem({ label, value }: { label: string; value: string }) {
 
 function Divider() {
   return (
-    <div className="mx-4 mb-3 border-t" style={{ borderColor: COLORS.divider }} />
+    <div
+      className="mx-4 mb-3 border-t"
+      style={{ borderColor: COLORS.divider }}
+    />
   );
 }
 
@@ -148,7 +154,11 @@ interface UsageProgressProps {
   remainingGB: string;
 }
 
-function UsageProgress({ usagePercent, usageGB, remainingGB }: UsageProgressProps) {
+function UsageProgress({
+  usagePercent,
+  usageGB,
+  remainingGB,
+}: UsageProgressProps) {
   return (
     <div className="mb-2">
       <div className="text-xs mb-2" style={{ color: COLORS.textLight }}>

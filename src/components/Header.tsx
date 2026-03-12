@@ -62,7 +62,7 @@ export default function Header({
   const showSettingIcon = showSetting && !isSetting;
 
   return (
-    <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[480px] max-w-full flex justify-between items-center px-5 h-20 pt-[env(safe-area-inset-top)] z-[100] backdrop-blur-sm">
+    <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[480px] max-w-full flex justify-between items-center px-5 h-20 pt-[env(safe-area-inset-top)] z-[100] ">
       <div className="flex items-center w-20">
         {showBackButton && (
           <button
