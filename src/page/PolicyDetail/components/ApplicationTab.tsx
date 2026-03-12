@@ -393,7 +393,7 @@ const ApplicationTab = ({
           </div>
 
           <div
-            className="flex gap-6 px-2 pb-2 flex-nowrap whitespace-nowrap relative"
+            className="flex gap-6 px-2 pb-2 flex-wrap relative"
             style={{ fontSize: "11px" }}
           >
             <div className="flex items-center gap-2 relative flex-shrink-0 whitespace-nowrap">
@@ -459,7 +459,7 @@ const ApplicationTab = ({
 
             <div className="flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
               <span className="text-gray-700 whitespace-nowrap">조건</span>
-              <div className="flex gap-1 flex-nowrap whitespace-nowrap">
+              <div className="flex gap-1 flex-wrap">
                 {(["사용량 제한", "속도 제한"] as const).map((condition) => (
                   <button
                     key={condition}
@@ -505,7 +505,7 @@ const ApplicationTab = ({
                 <div
                   key={app.appPolicyId}
                   id={`app-${app.appPolicyId}`}
-                  className="relative rounded-2xl"
+                  className="relative rounded-2xl overflow-hidden"
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.7)",
                     padding: "1px",
@@ -524,16 +524,16 @@ const ApplicationTab = ({
                         }
                       }}
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
                         <div className="w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white flex-shrink-0">
                           {getAppIcon(app.appName)}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 overflow-hidden">
                           <h4 className="font-medium mb-1 truncate">{app.appName}</h4>
-                          <div className="flex gap-2 items-center flex-wrap">
+                          <div className="flex gap-2 items-center flex-wrap overflow-hidden">
                             {showDataBadge && (
                               <div
-                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap"
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap flex-shrink-0"
                                 style={{
                                   backgroundColor: "#FDECE4",
                                   color: "#FF6520",
@@ -573,7 +573,7 @@ const ApplicationTab = ({
                             )}
                             {showSpeedBadge && (
                               <div
-                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap"
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap flex-shrink-0"
                                 style={{
                                   backgroundColor: "#F3ECF6",
                                   color: "#B044E3",
