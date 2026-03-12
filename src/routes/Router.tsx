@@ -20,26 +20,40 @@ import InquiryManagement from "../page/Admin/InquiryManagement";
 import NotificationManagement from "../page/Admin/NotificationManagement";
 import Login from "@/page/Login/LoginPage";
 import Log from "@/page/Log/LogPage";
+import { getAppType } from "@/utils/domain";
 
 export default function Router() {
+  const appType = getAppType();
+
+  // Admin 도메인 라우팅
+  if (appType === 'admin') {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<PolicyManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="inquiries" element={<InquiryManagement />} />
+            <Route path="notifications" element={<NotificationManagement />} />
+          </Route>
+
+          {/* 잘못된 경로는 admin으로 리다이렉트 */}
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  // User 도메인 라우팅
   return (
     <BrowserRouter>
       <Routes>
-        {/* 기본 경로를 로그인으로 리다이렉트 */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* Admin Routes - 별도 레이아웃 */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<PolicyManagement />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="inquiries" element={<InquiryManagement />} />
-          <Route path="notifications" element={<NotificationManagement />} />
-        </Route>
-
-        {/* 레이아웃 없는 페이지 */}
         <Route path="/login" element={<Login />} />
 
-        {/* User Routes - 기존 레이아웃 */}
         <Route
           path="/*"
           element={
