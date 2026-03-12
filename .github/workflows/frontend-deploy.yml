@@ -103,5 +103,5 @@ jobs:
         run: |
           set -euo pipefail
           aws cloudfront create-invalidation \
-            --distribution-id "${{ secrets.CLOUDFRONT_OFFICE_DISTRIBUTION_ID }}" \
-            --paths "/index.html"
+            —distribution-id "${{ secrets.CLOUDFRONT_OFFICE_DISTRIBUTION_ID }}" \
+            —paths "/index.html"
