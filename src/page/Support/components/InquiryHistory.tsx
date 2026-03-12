@@ -1,4 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { questionService } from '../../../api/services/questionService';
+
+// 첨부파일
+export interface Attachment {
+  s3Key?: string;
+  url?: string;
+  fileSize: number;
+}
 
 type InquiryStatus = '대기중' | '완료';
 
@@ -12,8 +20,8 @@ export interface Inquiry {
   date: string;
   response?: string;
   responseDate?: string;
-  attachments?: { url?: string; fileSize: number }[];
-  responseAttachments?: { url?: string; fileSize: number }[];
+  attachments?: Attachment[];
+  responseAttachments?: Attachment[];
 }
 
 interface InquiryHistoryProps {
@@ -25,6 +33,42 @@ interface InquiryHistoryProps {
 export default function InquiryHistory({ inquiries, sortOrder, onSortChange }: InquiryHistoryProps) {
   const [expandedInquiries, setExpandedInquiries] = useState<number[]>([]);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+
+  // s3Key로 다운로드 URL 가져오기
+  useEffect(() => {
+    const fetchImageUrls = async () => {
+      const allS3Keys: string[] = [];
+      
+      inquiries.forEach(inquiry => {
+        inquiry.attachments?.forEach(att => {
+          if (att.s3Key && !att.url) {
+            allS3Keys.push(att.s3Key);
+          }
+        });
+        inquiry.responseAttachments?.forEach(att => {
+          if (att.s3Key && !att.url) {
+            allS3Keys.push(att.s3Key);
+          }
+        });
+      });
+
+      if (allS3Keys.length === 0) return;
+
+      try {
+        const response = await questionService.getDownloadUrls(allS3Keys);
+        const urlMap: Record<string, string> = {};
+        response.downloads.forEach(item => {
+          urlMap[item.s3Key] = item.downloadUrl;
+        });
+        setImageUrls(urlMap);
+      } catch (error) {
+        console.error('이미지 URL 조회 실패:', error);
+      }
+    };
+
+    void fetchImageUrls();
+  }, [inquiries]);
 
   const getCategoryColor = (categoryName: string) => {
     if (categoryName.includes('정책')) {
@@ -203,6 +247,24 @@ export default function InquiryHistory({ inquiries, sortOrder, onSortChange }: I
                   <p className="text-xs text-[#999999] mb-2">문의 일시 : {inquiry.date}</p>
                   <p className="text-sm text-[#333333] mb-4 break-words whitespace-pre-wrap">{inquiry.content}</p>
 
+                  {/* 문의 첨부 이미지 */}
+                  {inquiry.attachments && inquiry.attachments.length > 0 && (
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                      {inquiry.attachments.map((att, idx) => {
+                        const imageUrl = att.url || (att.s3Key ? imageUrls[att.s3Key] : undefined);
+                        if (!imageUrl) return null;
+                        return (
+                          <img
+                            key={idx}
+                            src={imageUrl}
+                            alt={`첨부 이미지 ${idx + 1}`}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {inquiry.response && (
                     <div 
                       className="bg-[#F8FCFD] rounded-lg p-4"
@@ -224,7 +286,25 @@ export default function InquiryHistory({ inquiries, sortOrder, onSortChange }: I
                           {inquiry.responseDate}
                         </span>
                       </div>
-                      <p className="text-sm text-[#333333] break-words whitespace-pre-wrap">{inquiry.response}</p>
+                      <p className="text-sm text-[#333333] break-words whitespace-pre-wrap mb-3">{inquiry.response}</p>
+                      
+                      {/* 답변 첨부 이미지 */}
+                      {inquiry.responseAttachments && inquiry.responseAttachments.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {inquiry.responseAttachments.map((att, idx) => {
+                            const imageUrl = att.url || (att.s3Key ? imageUrls[att.s3Key] : undefined);
+                            if (!imageUrl) return null;
+                            return (
+                              <img
+                                key={idx}
+                                src={imageUrl}
+                                alt={`답변 첨부 이미지 ${idx + 1}`}
+                                className="w-20 h-20 object-cover rounded-lg"
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
