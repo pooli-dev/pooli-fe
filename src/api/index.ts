@@ -8,4 +8,5 @@ export { questionService } from "./services/questionService";
 export { settingService } from "./services/settingService";
 export { sharedPoolService } from "./services/sharedPoolService";
 export { userService } from "./services/userService";
-export { policyService } from "./services/policyService";
+export { blockService } from "./services/blockService";
+export { familyService } from "./services/familyService";

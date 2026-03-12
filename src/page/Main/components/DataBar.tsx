@@ -1,7 +1,4 @@
-function formatMB(mb: number): string {
-  if (mb >= 1000) return `${(mb / 1000).toFixed(1)}GB`;
-  return `${mb}MB`;
-}
+import { formatData } from "@/utils/dataFormat";
 
 function getRemainingPercent(remaining: number, total: number): number {
   if (total === 0) return 0;
@@ -24,7 +21,7 @@ export default function DataBar({
       <div className="flex justify-between items-center mb-1">
         <span className="text-xs text-gray-400">{label}</span>
         <span className="text-xs text-gray-500">
-          {formatMB(remaining)} / {formatMB(total)}
+          {formatData(remaining)} / {formatData(total)}
         </span>
       </div>
       <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">

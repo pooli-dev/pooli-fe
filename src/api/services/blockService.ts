@@ -5,7 +5,7 @@ type BlockStatus = {
   blocked: boolean;
 };
 
-export const policyService = {
+export const blockService = {
   getBlockStatus: (lineId: number) =>
     apiClient.get<BlockStatus>("/policies/lines/block-status", {
       params: { lineId },

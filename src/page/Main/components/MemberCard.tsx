@@ -8,13 +8,14 @@ import RightIcon from "@/assets/icon/right.svg";
 
 export default function FamilyMemberCard({
   member,
-  isMe,
+  isEnable,
 }: {
   member: FamilyMember;
-  isMe: boolean;
+  isEnable: boolean;
 }) {
   const isOwner = member.role === "OWNER";
   const navigate = useNavigate();
+  const canViewDetail = isEnable || isOwner || member.isMe;
 
   const isUsingShared =
     member.remainingData === 0 &&
@@ -47,9 +48,11 @@ export default function FamilyMemberCard({
               {member.userName}
             </span>
             {/* 본인 이거나 혹은 대표자일 때 조건부 렌더링 */}
-            {isMe && (
+            {canViewDetail && (
               <button
-                onClick={() => navigate("/detail")}
+                onClick={() =>
+                  navigate("/detail", { state: { lineId: member.lineId } })
+                }
                 className="flex items-center justify-center gap-0.2 text-xs text-[#0F4E7A] hover:text-[#4A7FB5] transition-colors"
               >
                 상세보기
