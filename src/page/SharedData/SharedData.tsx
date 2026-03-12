@@ -52,11 +52,12 @@ export default function SharedData() {
     return <div>Loading...</div>;
   }
 
-  const usedData = mainData.sharedPoolTotalData - mainData.sharedPoolRemainingData;
+  const usedData =
+    mainData.sharedPoolTotalData - mainData.sharedPoolRemainingData;
   const remainingDays = calculateDaysUntilNextMonth();
 
   return (
-    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="py-5 pb-[40px]">
         <div className="px-6">
           <SharedPoolCard

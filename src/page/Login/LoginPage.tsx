@@ -114,7 +114,7 @@ export default function LoginPage() {
       className={`flex justify-center min-h-screen bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
     >
       <div
-        className={`relative w-[480px] max-w-full min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat ${darkMode ? "invert" : ""} ${largeTextMode ? "text-[1.25em]" : ""}`}
+        className={`relative w-[480px] max-w-full min-h-[100dvh] overflow-hidden bg-cover bg-center bg-no-repeat ${darkMode ? "invert" : ""} ${largeTextMode ? "text-[1.25em]" : ""}`}
         style={{ backgroundImage: `url(${backgroundImg})` }}
       >
         {/* 슬라이딩 배경 */}
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </AnimatePresence>
 
         {/* 콘텐츠 */}
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8">
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] px-8">
           {/* 로고 */}
           <motion.div
             className="mb-16"
