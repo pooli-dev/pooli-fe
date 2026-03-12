@@ -8,7 +8,9 @@ export type FamilyApiResponse = {
 
 // 멤버 타입 - API 필드명 그대로, 안 쓰는 건 생략 가능
 export type FamilyMember = {
+  isMe: boolean;
   userId: number;
+  lineId: number;
   userName: string;
   role: "OWNER" | "MEMBER";
   remainingData: number;

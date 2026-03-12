@@ -5,50 +5,58 @@ import PlusIcon from "../../assets/icon/plus.svg";
 import GradientButton from "../../components/common/GradientButton";
 import { useNavigate } from "react-router-dom";
 import FamilyMemberList from "./components/FamilyMemberList";
-import type { FamilyMember } from "@/types/FamilyMember";
+import type { FamilyApiResponse } from "@/types/FamilyMember";
 import PieChart from "../Main/components/PieChart";
-import { useEffect, useState } from "react";
-import { policyService } from "@/api";
+import { blockService, sharedPoolService } from "@/api";
 import { useUserStore } from "@/store/userStore";
+import { familyService } from "@/api";
+import type { SharedData } from "@/types/SharedData";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Main() {
   const navigate = useNavigate();
   const lineId = useUserStore((state) => state.userInfo?.lineId);
-  const [blockStatus, setBlockStatus] = useState<{
+
+  const { data: familyData, isLoading: isFamilyLoading } =
+    useQuery<FamilyApiResponse>({
+      queryKey: ["familyMembers"],
+      queryFn: () => familyService.getMembers().then((res) => res.data),
+    });
+
+  const { data: sharedPoolData, isLoading: isPoolLoading } =
+    useQuery<SharedData>({
+      queryKey: ["sharedPool"],
+      queryFn: () => sharedPoolService.getMainRemainingAmount(),
+    });
+
+  const { data: blockStatus } = useQuery<{
     blockEndsAt: string;
     blocked: boolean;
-  } | null>(null);
+  }>({
+    queryKey: ["blockStatus", lineId],
+    queryFn: () => blockService.getBlockStatus(lineId!).then((res) => res.data),
+    enabled: !!lineId,
+  });
 
-  useEffect(() => {
-    if (!lineId) return;
+  const isLoading = isFamilyLoading || isPoolLoading;
 
-    policyService.getBlockStatus(lineId).then((res) => {
-      setBlockStatus(res.data);
-      console.log(res.data); // 여기서 찍어야 함
-    });
-  }, [lineId]); // 추후 페이지 진입시로 변경
+  // 종료 시간 변환 함수
+  const formatBlockEndTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    const day = days[date.getDay()];
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    return `${day}요일 ${hour}시${minute > 0 ? ` ${minute}분` : ""}`;
+  };
 
-  // /api/families/members로 FamilyApiResponse 받은 후 FamilyMemberList에 아래 구조로 전달
-  const members: FamilyMember[] = [
-    {
-      userId: 100,
-      userName: "김영희",
-      role: "OWNER",
-      remainingData: 0,
-      basicDataAmount: 5000,
-      sharedPoolRemainingAmount: 1600,
-      sharedPoolTotalAmount: 2000,
-    },
-    {
-      userId: 101,
-      userName: "김철수",
-      role: "MEMBER",
-      remainingData: 1600,
-      basicDataAmount: 2000,
-      sharedPoolRemainingAmount: 2000,
-      sharedPoolTotalAmount: 2000,
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-106px-60px)] mt-[130px]">
+        <div className="w-10 h-10 border-4 border-[#678BF7] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     // 전체 영역
@@ -79,7 +87,8 @@ export default function Main() {
 
                   {/* 내용 */}
                   <p className="text-sm text-gray-500 font-light">
-                    현재 차단 시간 | 월요일 10시 ~ 화요일 06시
+                    차단 종료 시간 |{" "}
+                    {formatBlockEndTime(blockStatus.blockEndsAt)}
                   </p>
                 </div>
               </div>
@@ -90,7 +99,7 @@ export default function Main() {
         {/* 그래프 영역 */}
         {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
         <div className="flex flex-col items-center gap-4">
-          <PieChart />
+          <PieChart sharedPoolData={sharedPoolData} />
         </div>
 
         {/* 공유 데이터 담기 페이지 이동 버튼 */}
@@ -107,10 +116,12 @@ export default function Main() {
 
         {/* 구성원별 데이터 정보 */}
         {/* /api/families/members 요청후 members 넘기기 */}
-        <FamilyMemberList
-          members={members}
-          myUserId={100} // 로그인 유저 id}
-        />
+        {familyData?.isEnable && (
+          <FamilyMemberList
+            members={familyData.members}
+            isEnable={familyData.isEnable}
+          />
+        )}
       </div>
     </div>
   );
