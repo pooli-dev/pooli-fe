@@ -1,24 +1,23 @@
 import { motion } from "framer-motion";
 import Chip from "./Chip";
+import type { SharedData } from "@/types/SharedData";
 
 type Props = {
   size?: number; // px, 그래프의 사이즈
   strokeWidth?: number; // px, 그래프의 두께
-  sharedPoolRemainingData?: number; // 사용된 데이터 (예: "5.2GB")
-  sharedPoolTotalData?: number; // 전체 데이터 (예: "8GB")
-  sharedPoolBaseData?: number; // 기본 데이터 (예: "5GB")
-  sharedPoolAdditionalData?: number; // 추가 데이터 (예: "3GB")
+  sharedPoolData?: SharedData | null;
 };
 
 export default function PieChart({
   size = 260,
   strokeWidth = 20,
-  sharedPoolRemainingData = 6,
-  sharedPoolTotalData = 8,
-  sharedPoolBaseData = 5,
-  sharedPoolAdditionalData = 3,
+  sharedPoolData,
 }: Props) {
-  const value = (sharedPoolRemainingData / sharedPoolTotalData) * 100;
+  const remaining = sharedPoolData?.sharedPoolRemainingData ?? 0;
+  const total = sharedPoolData?.sharedPoolTotalData ?? 1;
+  const base = sharedPoolData?.sharedPoolBaseData ?? 0;
+  const additional = sharedPoolData?.sharedPoolAdditionalData ?? 0;
+  const value = (remaining / total) * 100;
   const clamped = Math.max(0, Math.min(100, value)); // value가 0~100 사이일 수 있도록
   const r = (size - strokeWidth - 10) / 2; // 원의 반지름
   const c = 2 * Math.PI * r;
@@ -181,7 +180,7 @@ export default function PieChart({
           {Math.round(clamped)}%
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          {sharedPoolRemainingData}GB / {sharedPoolTotalData}GB
+          {remaining}GB / {total}GB
         </div>
 
         {/* 글래스모피즘 칩 */}
@@ -192,9 +191,7 @@ export default function PieChart({
             bgColor="173, 230, 255"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">
-              기본 {sharedPoolBaseData}GB
-            </span>
+            <span className="text-xs text-gray-700">기본 {base}GB</span>
           </Chip>
           <Chip
             gradientFrom="#ffffff"
@@ -202,9 +199,7 @@ export default function PieChart({
             bgColor="246, 202, 221"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">
-              추가 {sharedPoolAdditionalData}GB
-            </span>
+            <span className="text-xs text-gray-700">추가 {additional}GB</span>
           </Chip>
         </div>
       </div>
