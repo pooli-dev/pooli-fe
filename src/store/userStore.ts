@@ -1,14 +1,7 @@
 // store/userStore.ts
+import type { UserInfo } from "@/types/user";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-type UserInfo = {
-  lineId: number;
-  role: "OWNER" | "MEMBER";
-  planName: string;
-  sharedDataRemaining: number;
-  personalDataRemaining: number;
-};
 
 type UserStore = {
   userInfo: UserInfo | null;

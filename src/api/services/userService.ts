@@ -1,14 +1,7 @@
 // api/services/userService.ts
+import type { UserInfo } from "@/types/user";
 import { apiClient } from "../client";
 
-export type UserBalance = {
-  lineId: number;
-  role: "OWNER" | "MEMBER";
-  sharedDataRemaining: number;
-  personalDataRemaining: number;
-  planName: string;
-};
-
 export const userService = {
-  getMyInfo: () => apiClient.get<UserBalance>("/data/usages/balances"),
+  getMyInfo: () => apiClient.get<UserInfo>("/data/usages/balances"),
 };
