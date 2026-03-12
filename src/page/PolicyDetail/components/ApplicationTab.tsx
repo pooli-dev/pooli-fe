@@ -119,11 +119,33 @@ const ApplicationTab = ({
   const toggleExpand = (appPolicyId: number) => {
     setExpandedApps((prev) => {
       const newSet = new Set(prev);
+      const isExpanding = !newSet.has(appPolicyId);
+      
       if (newSet.has(appPolicyId)) {
         newSet.delete(appPolicyId);
       } else {
         newSet.add(appPolicyId);
       }
+      
+      // 펼칠 때만 스크롤
+      if (isExpanding) {
+        setTimeout(() => {
+          const element = document.getElementById(`app-${appPolicyId}`);
+          if (element) {
+            const container = element.closest('.overflow-y-auto');
+            if (container) {
+              const elementRect = element.getBoundingClientRect();
+              const containerRect = container.getBoundingClientRect();
+              
+              // 요소가 컨테이너 하단에 가려져 있으면 스크롤
+              if (elementRect.bottom > containerRect.bottom) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+              }
+            }
+          }
+        }, 150);
+      }
+      
       return newSet;
     });
   };
@@ -239,7 +261,7 @@ const ApplicationTab = ({
   };
 
   return (
-    <div className="relative overflow-hidden px-4 py-8">
+    <div className="relative py-4">
       <GlassCard
         title=""
         gradientFrom="#FFFFFF"
@@ -249,7 +271,7 @@ const ApplicationTab = ({
         bgOpacity={0.7}
         borderWidth={1}
         borderRadius={20}
-        className="w-full"
+        className="w-full overflow-visible"
       >
         <div className="pt-[11px] mb-4">
           {isListening && (
@@ -296,7 +318,8 @@ const ApplicationTab = ({
                 placeholder="앱 검색"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-12 py-3 bg-transparent text-sm focus:outline-none"
+                disabled={isListening}
+                className="w-full pl-12 pr-12 py-3 bg-transparent text-sm focus:outline-none disabled:opacity-50"
                 style={{ color: "#727272" }}
               />
               <button
@@ -310,19 +333,27 @@ const ApplicationTab = ({
                 />
               </button>
             </div>
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="px-4 py-3 text-sm flex items-center gap-2"
+                className={`px-3 py-3 text-[13px] flex items-center gap-1.5 w-[90px] justify-between transition-all ${
+                  showSortDropdown ? "text-[#678BF7]" : ""
+                }`}
                 style={{
                   borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
                 }}
               >
-                {sortOrder}
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <span className="truncate">{sortOrder}</span>
+                <svg 
+                  width="10" 
+                  height="10" 
+                  viewBox="0 0 12 12" 
+                  fill="none" 
+                  className={`flex-shrink-0 transition-transform ${showSortDropdown ? "rotate-180" : ""}`}
+                >
                   <path
                     d="M3 4.5L6 7.5L9 4.5"
-                    stroke="#000000"
+                    stroke="currentColor"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -331,44 +362,62 @@ const ApplicationTab = ({
               </button>
 
               {showSortDropdown && (
-                <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[120px]">
-                  {(["이름순", "활성화순"] as const).map((sort) => (
-                    <button
-                      key={sort}
-                      onClick={() => {
-                        setSortOrder(sort);
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
-                        sortOrder === sort
-                          ? "text-[#678BF7] font-medium"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {sort}
-                    </button>
-                  ))}
-                </div>
+                <>
+                  {/* 오버레이 - 드롭다운 외부 클릭 시 닫기 */}
+                  <div 
+                    className="fixed inset-0 z-[90]" 
+                    onClick={() => setShowSortDropdown(false)}
+                  />
+                  {/* 드롭다운 메뉴 */}
+                  <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-[100] w-[85px] flex flex-col">
+                    {(["이름순", "활성화순"] as const).map((sort) => (
+                      <button
+                        key={sort}
+                        onClick={() => {
+                          setSortOrder(sort);
+                          setShowSortDropdown(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 transition-colors block ${
+                          sortOrder === sort
+                            ? "text-[#678BF7] font-semibold bg-blue-50"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {sort}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
 
           <div
-            className="flex gap-6 px-2 overflow-x-auto overflow-y-visible pb-2 flex-nowrap whitespace-nowrap"
+            className="flex gap-6 px-2 pb-2 flex-nowrap whitespace-nowrap relative"
             style={{ fontSize: "11px" }}
           >
             <div className="flex items-center gap-2 relative flex-shrink-0 whitespace-nowrap">
               <span className="text-gray-700 whitespace-nowrap">정책</span>
               <button
                 onClick={() => setShowPolicyDropdown(!showPolicyDropdown)}
-                className="px-3 py-1 rounded-full bg-white border border-gray-300 flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                className={`px-3 py-1 rounded-full border flex items-center justify-between whitespace-nowrap flex-shrink-0 transition-all min-w-[80px] ${
+                  showPolicyDropdown 
+                    ? "bg-[#678BF7] text-white border-[#678BF7]" 
+                    : "bg-white text-gray-700 border-gray-300"
+                }`}
                 style={{ fontSize: "11px" }}
               >
                 {policyFilter}
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <svg 
+                  width="12" 
+                  height="12" 
+                  viewBox="0 0 12 12" 
+                  fill="none"
+                  className={`transition-transform ${showPolicyDropdown ? "rotate-180" : ""}`}
+                >
                   <path
                     d="M3 4.5L6 7.5L9 4.5"
-                    stroke="#000000"
+                    stroke="currentColor"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -377,26 +426,34 @@ const ApplicationTab = ({
               </button>
 
               {showPolicyDropdown && (
-                <div className="absolute top-full left-12 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[60] min-w-[120px]">
-                  {(["전체", "정책없음", "정책적용", "정책예외"] as const).map(
-                    (filter) => (
-                      <button
-                        key={filter}
-                        onClick={() => {
-                          setPolicyFilter(filter);
-                          setShowPolicyDropdown(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 whitespace-nowrap ${
-                          policyFilter === filter
-                            ? "text-[#678BF7] font-medium"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        {filter}
-                      </button>
-                    ),
-                  )}
-                </div>
+                <>
+                  {/* 오버레이 - 드롭다운 외부 클릭 시 닫기 */}
+                  <div 
+                    className="fixed inset-0 z-[90]" 
+                    onClick={() => setShowPolicyDropdown(false)}
+                  />
+                  {/* 드롭다운 메뉴 */}
+                  <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-[100] w-[90px] flex flex-col">
+                    {(["전체", "정책없음", "정책적용", "정책예외"] as const).map(
+                      (filter) => (
+                        <button
+                          key={filter}
+                          onClick={() => {
+                            setPolicyFilter(filter);
+                            setShowPolicyDropdown(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 whitespace-nowrap transition-colors block ${
+                            policyFilter === filter
+                              ? "text-[#678BF7] font-semibold bg-blue-50"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {filter}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
@@ -433,7 +490,7 @@ const ApplicationTab = ({
           </div>
         </div>
 
-        <div className="space-y-4 px-[13px] pb-4">
+        <div className="space-y-4 px-1.5 sm:px-[13px] pb-4">
           {sortedApps.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               일치하는 결과가 없습니다.
@@ -447,7 +504,8 @@ const ApplicationTab = ({
               return (
                 <div
                   key={app.appPolicyId}
-                  className="relative rounded-2xl overflow-hidden"
+                  id={`app-${app.appPolicyId}`}
+                  className="relative rounded-2xl"
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.7)",
                     padding: "1px",
@@ -456,29 +514,37 @@ const ApplicationTab = ({
                 >
                   <div className="relative bg-white rounded-2xl p-4">
                     <div
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={() => toggleExpand(app.appPolicyId)}
+                      className="flex items-start gap-3 cursor-pointer"
+                      onClick={() => {
+                        // 토글이 꺼져있으면 먼저 켜고 펼치기
+                        if (!app.enabled) {
+                          handleToggleApp(app.appPolicyId);
+                        } else {
+                          toggleExpand(app.appPolicyId);
+                        }
+                      }}
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white flex-shrink-0">
                           {getAppIcon(app.appName)}
                         </div>
-                        <div className="flex-1 flex flex-col justify-center h-6">
-                          <h4 className="font-medium mb-1">{app.appName}</h4>
-                          <div className="flex gap-2 items-center">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium mb-1 truncate">{app.appName}</h4>
+                          <div className="flex gap-2 items-center flex-wrap">
                             {showDataBadge && (
                               <div
-                                className="flex items-center gap-1 px-3 py-0.2 rounded-full text-[0.6rem] whitespace-nowrap"
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap"
                                 style={{
                                   backgroundColor: "#FDECE4",
                                   color: "#FF6520",
                                 }}
                               >
                                 <svg
-                                  width="12"
-                                  height="12"
+                                  width="10"
+                                  height="10"
                                   viewBox="0 0 24 24"
                                   fill="none"
+                                  className="flex-shrink-0"
                                 >
                                   <rect
                                     x="3"
@@ -507,17 +573,18 @@ const ApplicationTab = ({
                             )}
                             {showSpeedBadge && (
                               <div
-                                className="flex items-center gap-1 px-3 py-0.2 rounded-full text-[0.6rem] whitespace-nowrap"
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] whitespace-nowrap"
                                 style={{
                                   backgroundColor: "#F3ECF6",
                                   color: "#B044E3",
                                 }}
                               >
                                 <svg
-                                  width="12"
-                                  height="12"
+                                  width="10"
+                                  height="10"
                                   viewBox="0 0 24 24"
                                   fill="none"
+                                  className="flex-shrink-0"
                                 >
                                   <path
                                     d="M12 4C7.58172 4 4 7.58172 4 12C4 14.5 5 16.5 6.5 18"
@@ -538,7 +605,7 @@ const ApplicationTab = ({
                           </div>
                         </div>
                       </div>
-                      <div onClick={(e) => e.stopPropagation()}>
+                      <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 pt-1">
                         <Toggle
                           checked={app.enabled}
                           onChange={() => handleToggleApp(app.appPolicyId)}
@@ -563,7 +630,7 @@ const ApplicationTab = ({
                                 )
                               }
                               disabled={!app.enabled}
-                              className="w-24 px-2 py-1 text-right border border-gray-300 rounded text-sm font-medium disabled:bg-gray-100 disabled:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-20 sm:w-24 px-2 py-1 text-right border border-gray-300 rounded text-sm font-medium disabled:bg-gray-100 disabled:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               min="0"
                               max="5000"
                             />
@@ -599,7 +666,7 @@ const ApplicationTab = ({
                                 )
                               }
                               disabled={!app.enabled}
-                              className="w-24 px-2 py-1 text-right border border-gray-300 rounded text-sm font-medium disabled:bg-gray-100 disabled:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-20 sm:w-24 px-2 py-1 text-right border border-gray-300 rounded text-sm font-medium disabled:bg-gray-100 disabled:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               min={MIN_SPEED_LIMIT_MBPS}
                               max={MAX_SPEED_LIMIT_MBPS}
                             />

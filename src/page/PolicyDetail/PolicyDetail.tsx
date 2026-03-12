@@ -235,7 +235,7 @@ const PolicyDetail = () => {
           </div>
 
           {/* 탭 내용 */}
-          <div className="-mx-[24px]">
+          <div>
             {activeTab === "애플리케이션" && (
               <ApplicationTab
                 appPolicyStates={appPolicyStates}
