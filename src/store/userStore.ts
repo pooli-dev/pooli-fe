@@ -1,5 +1,6 @@
 // store/userStore.ts
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 type UserInfo = {
   lineId: number;
@@ -15,8 +16,15 @@ type UserStore = {
   clear: () => void;
 };
 
-export const useUserStore = create<UserStore>((set) => ({
-  userInfo: null,
-  setUserInfo: (info) => set({ userInfo: info }),
-  clear: () => set({ userInfo: null }),
-}));
+export const useUserStore = create(
+  persist<UserStore>(
+    (set) => ({
+      userInfo: null,
+      setUserInfo: (info) => set({ userInfo: info }),
+      clear: () => set({ userInfo: null }),
+    }),
+    {
+      name: "user-storage", // localStorage 키
+    },
+  ),
+);
