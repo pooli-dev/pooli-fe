@@ -13,12 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # 프론트가 레포 루트면 "."
-      # 예: frontend 폴더라면 "frontend"
       FRONTEND_DIR: "."
-      # CRA면 build, Vite면 dist
       BUILD_DIR: "dist"
-      S3_BUCKET: "pooli-frontend-prod"
+      S3_BUCKET_MAIN: "pooli-frontend-prod"
+      S3_BUCKET_OFFICE: "pooli-frontend-office-prod"
 
     steps:
       - name: Checkout
@@ -39,7 +37,6 @@ jobs:
         working-directory: ${{ env.FRONTEND_DIR }}
         run: npm run build
 
-      # (원인 추적) 빌드 산출물이 실제로 생성/변경됐는지 로그로 검증
       - name: Inspect build output (debug)
         working-directory: ${{ env.FRONTEND_DIR }}
         run: |
@@ -57,30 +54,54 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # (원인 추적) 배포 전 S3의 index.html 메타데이터 확인
-      - name: Head S3 index.html before deploy (debug)
+      - name: Head S3 index.html before deploy (main)
         run: |
           set -euo pipefail
-          aws s3api head-object --bucket "${S3_BUCKET}" --key "index.html" \
-            || echo "index.html not found yet in S3 (first deploy?)"
+          aws s3api head-object --bucket "${S3_BUCKET_MAIN}" --key "index.html" \
+            || echo "main bucket: index.html not found yet"
 
-      - name: Deploy to S3
+      - name: Head S3 index.html before deploy (office)
+        run: |
+          set -euo pipefail
+          aws s3api head-object --bucket "${S3_BUCKET_OFFICE}" --key "index.html" \
+            || echo "office bucket: index.html not found yet"
+
+      - name: Deploy to S3 (main)
         working-directory: ${{ env.FRONTEND_DIR }}
         run: |
           set -euo pipefail
-          aws s3 sync "${BUILD_DIR}/" "s3://${S3_BUCKET}" --delete --exact-timestamps
-          echo "== S3 top-level listing =="
-          aws s3 ls "s3://${S3_BUCKET}/" | head -n 50
+          aws s3 sync "${BUILD_DIR}/" "s3://${S3_BUCKET_MAIN}" --delete --exact-timestamps
+          echo "== Main bucket top-level listing =="
+          aws s3 ls "s3://${S3_BUCKET_MAIN}/" | head -n 50
 
-      # (원인 추적) 배포 후 S3의 index.html 메타데이터 확인
-      - name: Head S3 index.html after deploy (debug)
+      - name: Deploy to S3 (office)
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: |
           set -euo pipefail
-          aws s3api head-object --bucket "${S3_BUCKET}" --key "index.html"
+          aws s3 sync "${BUILD_DIR}/" "s3://${S3_BUCKET_OFFICE}" --delete --exact-timestamps
+          echo "== Office bucket top-level listing =="
+          aws s3 ls "s3://${S3_BUCKET_OFFICE}/" | head -n 50
 
-      - name: CloudFront Cache Invalidation (index.html)
+      - name: Head S3 index.html after deploy (main)
+        run: |
+          set -euo pipefail
+          aws s3api head-object --bucket "${S3_BUCKET_MAIN}" --key "index.html"
+
+      - name: Head S3 index.html after deploy (office)
+        run: |
+          set -euo pipefail
+          aws s3api head-object --bucket "${S3_BUCKET_OFFICE}" --key "index.html"
+
+      - name: CloudFront Cache Invalidation (main)
         run: |
           set -euo pipefail
           aws cloudfront create-invalidation \
             --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/index.html"
+
+      - name: CloudFront Cache Invalidation (office)
+        run: |
+          set -euo pipefail
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.CLOUDFRONT_OFFICE_DISTRIBUTION_ID }}" \
             --paths "/index.html"

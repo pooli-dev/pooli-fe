@@ -49,7 +49,7 @@ export default function Header({
       case "/detail":
         return "상세페이지";
       case "/policy-detail":
-        return "구성원 별 상세페이지";
+        return "구성원 정책제어";
       case "/shared-data":
         return "공유 데이터 담기";
       default:

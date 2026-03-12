@@ -117,11 +117,22 @@ export const questionService = {
     return response.data;
   },
 
-  // Presigned URL 발급
+  // Presigned URL 발급 (업로드용)
   getPresignedUrls: async (request: PresignedUrlRequest) => {
     const response = await apiClient.post<PresignedUrlResponse>(
       '/uploads/presigned-urls',
       request
+    );
+    return response.data;
+  },
+
+  // Presigned URL 조회 (다운로드용)
+  getDownloadUrls: async (s3Keys: string[]) => {
+    const response = await apiClient.get<{ downloads: { s3Key: string; downloadUrl: string }[] }>(
+      '/uploads/presigned-urls',
+      {
+        params: { s3Keys: s3Keys.join(',') },
+      }
     );
     return response.data;
   },
