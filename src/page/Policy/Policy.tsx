@@ -19,6 +19,8 @@ export default function Policy() {
   const [confirmText, setConfirmText] = useState("");
   const [familyMembers] = useState<FamilyMember[]>([
     {
+      isMe: false,
+      lineId: 100,
       userId: 1,
       userName: "김아내",
       role: "MEMBER",
@@ -28,6 +30,8 @@ export default function Policy() {
       sharedPoolTotalAmount: 2000,
     },
     {
+      isMe: false,
+      lineId: 102,
       userId: 2,
       userName: "박아들",
       role: "MEMBER",
