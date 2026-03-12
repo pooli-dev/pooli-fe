@@ -151,7 +151,7 @@ export default function LogPage() {
   }, {});
 
   return (
-    <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="flex flex-col gap-4 px-6 pb-8 pt-2">
         {/* ── 현재 공유 데이터 요약 카드 ── */}
         <GlassCard

@@ -135,7 +135,7 @@ const PolicyDetail = () => {
 
   return (
     <>
-      <div className="relative h-[calc(100vh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+      <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
         <div className="px-[24px] py-5 pb-[60px]">
           {/* 사용자 선택 */}
           <div className="mb-6">
