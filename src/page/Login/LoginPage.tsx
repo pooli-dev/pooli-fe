@@ -10,6 +10,8 @@ import loginBg3 from "../../assets/img/loginBg3.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { authService } from "../../api";
+import { userService } from "../../api";
+import { useUserStore } from "../../store/userStore";
 
 const backgrounds = [loginBg1, loginBg2, loginBg3];
 
@@ -22,12 +24,13 @@ export default function LoginPage() {
   const darkMode = useSettingStore((state) => state.darkMode);
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
   const navigate = useNavigate();
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
 
   // 이미 로그인되어 있으면 메인으로 리다이렉트
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
     if (token) {
-      navigate('/main', { replace: true });
+      navigate("/main", { replace: true });
     }
   }, [navigate]);
 
@@ -49,22 +52,29 @@ export default function LoginPage() {
 
     try {
       const response = await authService.login({ email: userId, password });
-      
+
       // 200 응답이면 성공으로 처리 (백엔드가 빈 응답을 보낼 수 있음)
       if (response.status === 200 || response.success) {
         // 토큰이 있으면 저장 (data가 객체인 경우에만)
-        if (response.data && typeof response.data === 'object') {
-          if ('accessToken' in response.data && response.data.accessToken) {
-            localStorage.setItem('accessToken', response.data.accessToken);
+        if (response.data && typeof response.data === "object") {
+          if ("accessToken" in response.data && response.data.accessToken) {
+            localStorage.setItem("accessToken", response.data.accessToken);
           }
-          if ('refreshToken' in response.data && response.data.refreshToken) {
-            localStorage.setItem('refreshToken', response.data.refreshToken);
+          if ("refreshToken" in response.data && response.data.refreshToken) {
+            localStorage.setItem("refreshToken", response.data.refreshToken);
           }
-          if ('user' in response.data && response.data.user) {
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+          if ("user" in response.data && response.data.user) {
+            localStorage.setItem("user", JSON.stringify(response.data.user));
           }
         }
-        
+
+        // 내 정보 가져와서 store에 저장
+        const { data } = await userService.getMyInfo();
+        setUserInfo(data);
+        console.log("유저 데이터 가져오기 성공", data);
+
+        navigate("/main");
+
         // 메인 페이지로 이동
         navigate("/main");
       } else {
@@ -74,7 +84,7 @@ export default function LoginPage() {
       if (err instanceof Error) {
         console.error("에러 메시지:", err.message);
       }
-      
+
       // Axios 에러인 경우 상태 코드에 따라 메시지 변경
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
@@ -93,7 +103,7 @@ export default function LoginPage() {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleLogin();
     }
   };

@@ -50,7 +50,7 @@ export default function SharedPoolCard({
             {totalGB} GB
           </div>
           <GradientButton
-            onClick={() => navigate("/shared-data/usage")}
+            onClick={() => navigate("/log")}
             width={20}
             height={8}
             borderRadius={15}
