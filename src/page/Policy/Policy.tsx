@@ -2,16 +2,23 @@ import { useNavigate } from "react-router-dom";
 import PolicyScroll from "@/components/common/PolicyScroll";
 import DataThresholdSlider from "./components/DataThresholdSlider";
 import PermissionManager from "./components/Permisssion";
-import UserInfo from "./components/UserInfo";
+import UserInfoCard from "./components/UserInfoCard";
 import SettingIcon from "@/assets/icon/setting.svg";
 import AssignIcon from "@/assets/icon/assignment.svg";
 import type { FamilyMember } from "@/types/FamilyMember";
 import { useState } from "react";
 import Avatar from "@/components/common/Avatar";
 import { createPortal } from "react-dom";
+import { useUserStore } from "@/store/userStore";
 
 export default function Policy() {
   const navigate = useNavigate();
+  // store에 저장된 user 정보 가져오기
+  const userData = useUserStore((state) => state.userInfo);
+
+  //대표자인가
+  const isOwner = userData?.role === "OWNER";
+
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<FamilyMember | null>(
     null,
@@ -55,16 +62,7 @@ export default function Policy() {
       <div className="min-h-full flex flex-col gap-5 px-6 pb-[60px]">
         {/* 사용자 정보 영역 */}
         {/* /api/data/usages/balances 로 사용자 정보 받아오기 */}
-        <UserInfo
-          userName="김영희"
-          lineId={3}
-          isOwner={true}
-          planName="5G 라이트"
-          isDualPhone={true}
-          sharedDataRemaining={2500}
-          personalDataRemaining={2500}
-          isBlocked={false}
-        />
+        {userData && <UserInfoCard userData={userData} />}
 
         {/* 현재 적용중인 정책 영역 */}
         {/* /api/data/usages/balances로 데이터 넘기기 */}
@@ -98,7 +96,7 @@ export default function Policy() {
         개인 데이터 임계치 설정: 각자 자신의 것
         /api/lines/thresholds로 데이터 넘기기 */}
         <DataThresholdSlider
-          isOwner={false}
+          isOwner={isOwner}
           individualThreshold={3}
           familyThreshold={2}
         />
@@ -129,6 +127,7 @@ export default function Policy() {
           onApply={() => {}}
         />
 
+        {/* 구성원별 정책 제어 버튼 */}
         <button
           onClick={() => navigate("/policy-detail")}
           className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
@@ -149,6 +148,7 @@ export default function Policy() {
           </div>
         </button>
 
+        {/* 권한 양도 버튼 */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
           className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"

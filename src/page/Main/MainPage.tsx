@@ -52,7 +52,7 @@ export default function Main() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-106px-60px)] mt-[130px]">
+      <div className="flex items-center justify-center h-[calc(100vh-106px-60px)] mt-[106px]">
         <div className="w-10 h-10 border-4 border-[#678BF7] border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -60,7 +60,7 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[calc(106px+env(safe-area-inset-top))] mb-[60px]">
       <div className="flex flex-col items-center gap-5 px-6 pb-[60px] mt-4">
         {/* 데이터 차단 활성화 배너 영역 */}
         {/* 아직 api 없음. 페이지 로드 시 api 호출 */}

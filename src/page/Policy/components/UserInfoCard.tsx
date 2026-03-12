@@ -6,54 +6,50 @@ import { useNavigate } from "react-router-dom";
 import Avatar from "@/components/common/Avatar";
 import DataRemainingCard from "./DataRemainingCard";
 import { useState } from "react";
+import type { UserInfo } from "@/types/user";
+import { useUserStore } from "@/store/userStore";
+import { useQuery } from "@tanstack/react-query";
+import type { Line } from "@/types/line";
+import { lineService } from "@/api";
+import { blockService } from "@/api";
 
 type Props = {
   // 프로필
-  userName: string;
-  lineId: number;
-  isOwner?: boolean;
-  planName?: string;
-  isDualPhone?: boolean; // 투폰 여부 → 계정 전환 버튼 노출
-
-  // 데이터 잔여량
-  sharedDataRemaining: number; // MB
-  personalDataRemaining: number; // MB
-
-  // 차단 상태
-  isBlocked?: boolean;
+  userData: UserInfo;
 };
 
-export default function UserInfo({
-  userName,
-  lineId,
-  isOwner = false,
-  planName,
-  isDualPhone = false,
-  sharedDataRemaining,
-  personalDataRemaining,
-  isBlocked = false,
-}: Props) {
+export default function UserInfo({ userData }: Props) {
   const navigate = useNavigate();
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-  const [lines, setLines] = useState<{ lineId: number; phoneNumber: string }[]>(
-    [],
-  );
+  const lineId = useUserStore((state) => state.userInfo?.lineId);
+
+  const isOwner = userData.role === "OWNER";
+  // 회선이 여러개 인지 조회
+  const { data: lines } = useQuery<Line[]>({
+    queryKey: ["lines"],
+    queryFn: () => lineService.getLines().then((res) => res.data),
+  });
+
+  const isDualPhone = (lines?.length ?? 0) > 1;
+
+  // 차단 상태인지 확인
+  const { data: blockStatus } = useQuery<{
+    blockEndsAt: string;
+    blocked: boolean;
+  }>({
+    queryKey: ["blockStatus", lineId],
+    queryFn: () => blockService.getBlockStatus(lineId!).then((res) => res.data),
+    enabled: !!lineId,
+  });
+
+  const isBlocked = blockStatus?.blocked;
 
   async function handleAccountSwitch() {
     setIsBottomSheetOpen(true);
-    // const res = await fetch("/api/users/lines");
-    // const data = await res.json();
-    setLines([
-      { lineId: 1, phoneNumber: "010-1234-5678" },
-      { lineId: 2, phoneNumber: "010-9876-5432" },
-      { lineId: 3, phoneNumber: "010-9876-5432" },
-    ]);
   }
 
   async function handleSelectLine(lineId: number) {
-    await fetch(`/api/lines?lineId=${lineId}`, {
-      method: "PATCH",
-    });
+    await lineService.switchLine(lineId);
 
     setIsBottomSheetOpen(false);
     // 전환 후 페이지 새로고침 or 상태 업데이트
@@ -75,7 +71,7 @@ export default function UserInfo({
       >
         {/* ── 프로필 영역 ── */}
         <div className="flex items-start gap-3 mb-4">
-          <Avatar userName={userName} isOwner={isOwner} />
+          <Avatar userName={userData.userName} isOwner={isOwner} />
 
           <div className="flex-1 min-w-0">
             {/* 대표자 뱃지 */}
@@ -88,7 +84,7 @@ export default function UserInfo({
             {/* 이름 + 계정 전환 */}
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-gray-800">
-                {userName}
+                {userData.userName}
               </span>
               {isDualPhone && (
                 <button
@@ -110,9 +106,9 @@ export default function UserInfo({
             </div>
 
             {/* 요금제 */}
-            {planName && (
+            {userData.planName && (
               <p className="text-xs text-gray-400 mt-0.5">
-                이용중인 요금제: {planName}
+                이용중인 요금제: {userData.planName}
               </p>
             )}
           </div>
@@ -131,12 +127,12 @@ export default function UserInfo({
         <div className="flex gap-3 mb-4">
           <DataRemainingCard
             label="가족 공유 데이터 잔여량"
-            amount={sharedDataRemaining}
+            amount={userData.sharedDataRemaining}
             icon="share"
           />
           <DataRemainingCard
             label="개인 데이터 잔여량"
-            amount={personalDataRemaining}
+            amount={userData.personalDataRemaining}
             icon="person"
           />
         </div>
@@ -183,21 +179,21 @@ export default function UserInfo({
               계정 전환
             </h3>
             <ul className="flex flex-col">
-              {lines.map((line) => (
+              {(lines ?? []).map((line) => (
                 <li key={line.lineId}>
                   <button
                     onClick={() => handleSelectLine(line.lineId)}
                     className="w-full flex items-center gap-3 py-3 border-b border-gray-100"
                   >
                     <Avatar
-                      userName={userName}
+                      userName={userData.userName}
                       colorIndex={line.lineId}
                       size="md"
                     />
                     <span className="text-sm text-gray-700">
                       {line.phoneNumber}
                     </span>
-                    {line.lineId === lineId && (
+                    {line.lineId === userData.lineId && (
                       <span className="ml-auto text-green-500">✓</span>
                     )}
                   </button>

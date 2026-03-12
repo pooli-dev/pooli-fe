@@ -1,11 +1,7 @@
 import shareIcon from "@/assets/icon/share.svg";
 import personIcon from "@/assets/icon/person.svg";
 import GlassCard from "@/components/common/GlassCard";
-
-function formatMB(mb: number): string {
-  if (mb >= 1000) return `${(mb / 1000).toFixed(1)} GB`;
-  return `${mb} MB`;
-}
+import { formatData } from "@/utils/dataFormat";
 
 export default function DataRemainingCard({
   label,
@@ -31,7 +27,9 @@ export default function DataRemainingCard({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs text-gray-400 mb-1">{label}</p>
-          <p className="text-xl font-bold text-gray-800">{formatMB(amount)}</p>
+          <p className="text-xl font-bold text-gray-800">
+            {formatData(amount)}
+          </p>
         </div>
         <div className="w-8 h-8 rounded-full bg-[#EEF0FF] flex items-center justify-center flex-shrink-0">
           {icon === "share" ? (
