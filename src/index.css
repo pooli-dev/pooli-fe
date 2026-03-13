@@ -112,4 +112,7 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  /* 터치 스크롤 부드럽게 */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }

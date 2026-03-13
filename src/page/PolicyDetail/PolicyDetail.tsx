@@ -3,24 +3,36 @@ import PolicyScroll from "../../components/common/PolicyScroll";
 import ApplicationTab from "./components/ApplicationTab";
 import BlockTab from "./components/BlockTab";
 import LimitTab from "./components/LimitTab";
-import {
-  familyMembers,
-  appPolicies,
-  type FamilyMember,
-  type AppPolicy,
-} from "../../data/policyDetailDummyData";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
 import Avatar from "@/components/common/Avatar";
+import { policyService } from "@/api";
+import { useUserStore } from "@/store/userStore";
+import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
+
+type FamilyMember = {
+  lineId: number;
+  userId: number;
+  userName: string;
+  phone: string;
+};
 
 type TabType = "차단" | "제한" | "애플리케이션";
 
 const PolicyDetail = () => {
-  const [selectedMember, setSelectedMember] = useState<FamilyMember>(
-    familyMembers[1],
+  const lineId = useUserStore((state) => state.userInfo?.lineId);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
+    null,
   );
   const [activeTab, setActiveTab] = useState<TabType>("차단");
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
+  
+  // 사용자 선택 드래그 스크롤 상태
+  const userScrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   // 음성 인식 타입 정의
   interface SpeechRecognitionResult {
     transcript: string;
@@ -53,6 +65,8 @@ const PolicyDetail = () => {
   const [activeBlockEndTime, setActiveBlockEndTime] = useState<Date | null>(
     null,
   );
+  
+  const { appliedPolicies, refetch: refetchAppliedPolicies } = useAppliedPolicies(selectedMember?.lineId);
 
   const handleBlockApply = (minutes: number) => {
     const end = new Date();
@@ -60,10 +74,43 @@ const PolicyDetail = () => {
     setActiveBlockEndTime(end);
   };
 
-  // 앱 정책 상태 관리
-  const [appPolicyStates, setAppPolicyStates] =
-    useState<AppPolicy[]>(appPolicies);
   const [expandedApps, setExpandedApps] = useState<Set<number>>(new Set());
+
+  // 구성원 목록 조회 (페이지 로드 시 한 번만)
+  useEffect(() => {
+    policyService
+      .getFamilyMembersSimple()
+      .then((res) => {
+        console.log("백엔드 /families/members-simple 응답:", res.data);
+        setFamilyMembers(res.data);
+        if (res.data.length > 0) {
+          // 로그인한 사용자의 lineId와 일치하는 구성원을 기본 선택
+          const currentUser = res.data.find((m) => m.lineId === lineId);
+          const selected = currentUser || res.data[0];
+          setSelectedMember(selected);
+        }
+      })
+      .catch((error) => {
+        console.error("구성원 목록 조회 실패:", error);
+        // 에러 발생 시 더미 데이터 사용 (개발 중)
+        const dummyMembers = [
+          {
+            lineId: 10,
+            userId: 3,
+            userName: "홍길동",
+            phone: "01012345678",
+          },
+          {
+            lineId: 11,
+            userId: 4,
+            userName: "김철수",
+            phone: "01023456789",
+          },
+        ];
+        setFamilyMembers(dummyMembers);
+        setSelectedMember(dummyMembers[0]);
+      });
+  }, []); // lineId 의존성 제거 - 페이지 로드 시 한 번만 실행
 
   // 음성 인식 초기화
   useEffect(() => {
@@ -133,6 +180,36 @@ const PolicyDetail = () => {
     }
   };
 
+  // 드래그 스크롤 핸들러
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!userScrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - userScrollRef.current.offsetLeft);
+    setScrollLeft(userScrollRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !userScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - userScrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    userScrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setIsDragging(false);
+    document.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => document.removeEventListener("mouseup", handleGlobalMouseUp);
+  }, []);
+
   return (
     <>
       <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
@@ -145,31 +222,45 @@ const PolicyDetail = () => {
             >
               사용자 선택
             </h3>
-            <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1">
-              {familyMembers.map((member) => (
-                <button
-                  key={member.lineId}
-                  onClick={() => setSelectedMember(member)}
-                  className="flex flex-col items-center gap-2 flex-shrink-0"
-                >
-                  <Avatar
-                    userName={member.userName}
-                    colorIndex={member.lineId}
-                    size="lg"
-                    isSelected={selectedMember.lineId === member.lineId}
-                  />
-                  <span
-                    className={`text-sm font-medium ${
-                      selectedMember.lineId === member.lineId
-                        ? "text-black"
-                        : "text-[#818181]"
-                    }`}
+            {familyMembers.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                구성원 정보를 불러오는 중...
+              </div>
+            ) : (
+              <div
+                ref={userScrollRef}
+                className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide cursor-grab active:cursor-grabbing"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+                style={{ userSelect: "none" }}
+              >
+                {familyMembers.map((member, index) => (
+                  <button
+                    key={member.lineId}
+                    onClick={() => setSelectedMember(member)}
+                    className="flex flex-col items-center gap-2 flex-shrink-0"
                   >
-                    {member.userName}
-                  </span>
-                </button>
-              ))}
-            </div>
+                    <Avatar
+                      userName={member.userName}
+                      colorIndex={index}
+                      size="lg"
+                      isSelected={selectedMember?.lineId === member.lineId}
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        selectedMember?.lineId === member.lineId
+                          ? "text-black"
+                          : "text-[#818181]"
+                      }`}
+                    >
+                      {member.userName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           {activeBlockEndTime && (
             <ActiveBlockBanner
@@ -179,31 +270,19 @@ const PolicyDetail = () => {
           )}
 
           {/* 현재 적용중인 정책 */}
-          <div className="mb-6">
-            <PolicyScroll
-              policies={[
-                {
-                  id: 1,
-                  type: "한도",
-                  bgColor: "#FFE5E5",
-                  title: "공유 데이터 한도 1GB로 제한",
-                },
-                {
-                  id: 2,
-                  type: "시간",
-                  bgColor: "#E5E5FF",
-                  title: "10:00 ~ 12:00 데이터 사용 제한",
-                },
-                {
-                  id: 3,
-                  type: "앱",
-                  bgColor: "#E5F5E5",
-                  title: "SNS 앱 사용 제한",
-                },
-              ]}
-              title="현재 적용중인 정책"
-            />
-          </div>
+          {appliedPolicies.length > 0 && (
+            <div className="mb-6">
+              <PolicyScroll
+                policies={appliedPolicies.map((policy, index) => ({
+                  id: index + 1,
+                  type: policy.type,
+                  bgColor: policy.bgColor,
+                  title: policy.title,
+                }))}
+                title="현재 적용중인 정책"
+              />
+            </div>
+          )}
 
           {/* 탭 메뉴 */}
           <div className="mb-4">
@@ -238,8 +317,6 @@ const PolicyDetail = () => {
           <div>
             {activeTab === "애플리케이션" && (
               <ApplicationTab
-                appPolicyStates={appPolicyStates}
-                setAppPolicyStates={setAppPolicyStates}
                 expandedApps={expandedApps}
                 setExpandedApps={setExpandedApps}
                 isListening={isListening}
@@ -247,11 +324,15 @@ const PolicyDetail = () => {
                 setSearchQuery={setSearchQuery}
                 handleVoiceSearch={handleVoiceSearch}
                 cancelVoiceSearch={cancelVoiceSearch}
+                selectedLineId={selectedMember?.lineId}
+                onPolicyChange={refetchAppliedPolicies}
               />
             )}
 
             {activeTab === "차단" && (
-              <BlockTab onBlockApply={handleBlockApply} />
+              <BlockTab 
+                onBlockApply={handleBlockApply}
+              />
             )}
             {activeTab === "제한" && <LimitTab />}
           </div>

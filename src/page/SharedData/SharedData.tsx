@@ -45,6 +45,11 @@ export default function SharedData() {
       await fetchSharedPoolData();
     } catch (error) {
       console.error("Failed to contribute data:", error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        const errorMessage = axiosError.response?.data?.message || "데이터 전송에 실패했습니다.";
+        alert(errorMessage);
+      }
     }
   };
 

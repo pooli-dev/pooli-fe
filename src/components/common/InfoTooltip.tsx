@@ -12,8 +12,8 @@ export default function InfoTooltip({ text }: InfoTooltipProps) {
       <button
         type="button"
         aria-label="정보"
-        className="w-5 h-5 rounded-full bg-[#CCCCCC] flex items-center justify-center text-white cursor-help"
-        style={{ fontSize: '0.75em' }}
+        className="w-4 h-4 rounded-full bg-[#CCCCCC] flex items-center justify-center text-white"
+        style={{ fontSize: '0.65em' }}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
         onFocus={() => setIsVisible(true)}

@@ -438,16 +438,19 @@ export default function BlockPolicyManager({
     setShowAddPanel(false);
     onSave?.(u);
   };
+
   const handleUpdate = (id: number, p: BlockPolicy) => {
     const u = policies.map((m) => (m.id === id ? p : m));
     setPolicies(u);
     onSave?.(u);
   };
+
   const handleDelete = (id: number) => {
     const u = policies.filter((m) => m.id !== id);
     setPolicies(u);
     onSave?.(u);
   };
+
   const handleToggle = (id: number, enabled: boolean) => {
     const u = policies.map((m) => (m.id === id ? { ...m, enabled } : m));
     setPolicies(u);
