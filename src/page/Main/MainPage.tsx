@@ -11,7 +11,7 @@ import { blockService, sharedPoolService } from "@/api";
 import { useUserStore } from "@/store/userStore";
 import { familyService } from "@/api";
 import type { SharedData } from "@/types/SharedData";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export default function Main() {
   const navigate = useNavigate();
@@ -21,12 +21,18 @@ export default function Main() {
     useQuery<FamilyApiResponse>({
       queryKey: ["familyMembers"],
       queryFn: () => familyService.getMembers().then((res) => res.data),
+      refetchInterval: 10000,
+      refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData, // ← v5 방식
     });
 
   const { data: sharedPoolData, isLoading: isPoolLoading } =
     useQuery<SharedData>({
       queryKey: ["sharedPool"],
       queryFn: () => sharedPoolService.getMainRemainingAmount(),
+      refetchInterval: 10000, // 10초마다 자동 폴링
+      refetchIntervalInBackground: true, // 백그라운드에서도 폴링
+      placeholderData: keepPreviousData,
     });
 
   const { data: blockStatus } = useQuery<{
@@ -36,6 +42,9 @@ export default function Main() {
     queryKey: ["blockStatus", lineId],
     queryFn: () => blockService.getBlockStatus(lineId!).then((res) => res.data),
     enabled: !!lineId,
+    refetchInterval: 10000, // 10초마다 자동 폴링
+    refetchIntervalInBackground: true, // 백그라운드에서도 폴링
+    placeholderData: keepPreviousData,
   });
 
   const isLoading = isFamilyLoading || isPoolLoading;

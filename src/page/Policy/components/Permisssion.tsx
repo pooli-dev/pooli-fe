@@ -1,120 +1,254 @@
-import { useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
+import { permissionService } from "@/api/services/permissionService";
+import type { PatchPermissionRequest } from "@/types/permission";
 
-// ── 타입 ─────────────────────────────────────────────────────────────────────
-type MemberPermission = {
-  userId: number;
+const PERMISSION_VIEW_DETAIL = "상세페이지 열람 권한";
+const PERMISSION_HIDE_APP_USAGE = "앱 사용량 비공개 허용 권한";
+
+type MemberRow = {
+  lineId: number;
   userName: string;
-  canViewDetail: boolean; // 상세 페이지 열람
-  canHideAppUsage: boolean; // 앱 사용량 비공개 허용
+  viewDetailPermissionId: number;
+  hideAppUsagePermissionId: number;
+  canViewDetail: boolean;
+  canHideAppUsage: boolean;
 };
 
-type Props = {
-  members: MemberPermission[];
-  onApply?: (members: MemberPermission[]) => void;
-};
+export default function PermissionManager() {
+  const [rows, setRows] = useState<MemberRow[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
-// ── PermissionManager ─────────────────────────────────────────────────────────
-export default function PermissionManager({
-  members: initialMembers,
-  onApply,
-}: Props) {
-  const [members, setMembers] = useState<MemberPermission[]>(initialMembers);
+  const { data: permissionsData } = useQuery({
+    queryKey: ["memberPermissions"],
+    queryFn: () =>
+      permissionService.getMemberPermissions().then((res) => res.data),
+  });
+
+  // Derive initial rows from API data using useMemo
+  const initialRows = useMemo(() => {
+    if (!permissionsData) return [];
+
+    const lineIds = [
+      ...new Set(permissionsData.memberPermissions.map((p) => p.lineId)),
+    ];
+
+    return lineIds.map((lineId) => {
+      const permissions = permissionsData.memberPermissions.filter(
+        (p) => p.lineId === lineId,
+      );
+      const viewDetail = permissions.find(
+        (p) => p.permissionTitle === PERMISSION_VIEW_DETAIL,
+      );
+      const hideAppUsage = permissions.find(
+        (p) => p.permissionTitle === PERMISSION_HIDE_APP_USAGE,
+      );
+
+      return {
+        lineId,
+        userName: `회선 ${lineId}`,
+        viewDetailPermissionId: viewDetail?.permissionId ?? 0,
+        hideAppUsagePermissionId: hideAppUsage?.permissionId ?? 0,
+        canViewDetail: viewDetail?.is_enable ?? false,
+        canHideAppUsage: hideAppUsage?.is_enable ?? false,
+      };
+    });
+  }, [permissionsData]);
+
+  // Initialize rows when initialRows changes
+  useEffect(() => {
+    setRows(initialRows);
+  }, [initialRows]);
+
+  const { mutate: patchPermissions } = useMutation({
+    mutationFn: (permissions: PatchPermissionRequest[]) =>
+      permissionService.patchMemberPermissions(permissions),
+    onSuccess: () => {
+      setShowModal(false);
+    },
+  });
 
   const handleToggle = (
-    userId: number,
-    field: keyof Omit<MemberPermission, "userId" | "userName">,
+    lineId: number,
+    field: "canViewDetail" | "canHideAppUsage",
     value: boolean,
   ) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.userId === userId ? { ...m, [field]: value } : m)),
+    setRows((prev) =>
+      prev.map((r) => (r.lineId === lineId ? { ...r, [field]: value } : r)),
     );
   };
 
-  const handleReset = () => setMembers(initialMembers);
+  const handleReset = () => setRows(initialRows);
 
-  const handleApply = () => onApply?.(members);
+  // 변경된 항목만 추출
+  const getChangedPayload = (): PatchPermissionRequest[] => {
+    const changed: PatchPermissionRequest[] = [];
+
+    rows.forEach((row) => {
+      const original = initialRows.find((r) => r.lineId === row.lineId);
+      if (!original) return;
+
+      if (row.canViewDetail !== original.canViewDetail) {
+        changed.push({
+          lineId: row.lineId,
+          permissionId: row.viewDetailPermissionId,
+          is_enable: row.canViewDetail,
+        });
+      }
+      if (row.canHideAppUsage !== original.canHideAppUsage) {
+        changed.push({
+          lineId: row.lineId,
+          permissionId: row.hideAppUsagePermissionId,
+          is_enable: row.canHideAppUsage,
+        });
+      }
+    });
+
+    return changed;
+  };
+
+  const changedPayload = getChangedPayload();
+
+  const handleApplyClick = () => {
+    if (changedPayload.length === 0) return;
+    setShowModal(true);
+  };
+
+  const handleConfirm = () => {
+    patchPermissions(changedPayload);
+  };
 
   return (
-    <GlassCard
-      title=""
-      gradientFrom="#FFFFFF"
-      gradientTo="#CCCCCC"
-      bgGradientFrom="#FFFFFF"
-      bgGradientTo="#F8F8F8"
-      bgOpacity={0.7}
-      borderWidth={1}
-      borderRadius={20}
-      className="w-full"
-    >
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-base font-bold text-gray-800">권한 관리</span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleReset}
-            className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
-          >
-            되돌리기
-          </button>
-          <button
-            onClick={handleApply}
-            className="px-3 py-1.5 text-xs text-white rounded-full transition-opacity active:opacity-80"
-            style={{ backgroundColor: "#678BF7" }}
-          >
-            적용
-          </button>
-        </div>
-      </div>
-
-      {/* 테이블 */}
-      <div className="w-full">
-        {/* 헤더 행 */}
-        <div className="grid grid-cols-3 mb-3 px-2">
-          <span className="text-xs text-gray-400">구성원</span>
-          <span className="text-xs text-gray-400 text-center">
-            상세 페이지 열람
-          </span>
-          <span className="text-xs text-gray-400 text-center">
-            앱 사용량 비공개 허용
-          </span>
+    <>
+      <GlassCard
+        title=""
+        gradientFrom="#FFFFFF"
+        gradientTo="#CCCCCC"
+        bgGradientFrom="#FFFFFF"
+        bgGradientTo="#F8F8F8"
+        bgOpacity={0.7}
+        borderWidth={1}
+        borderRadius={20}
+        className="w-full"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-base font-bold text-gray-800">권한 관리</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleReset}
+              className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+            >
+              되돌리기
+            </button>
+            <button
+              onClick={handleApplyClick}
+              disabled={changedPayload.length === 0}
+              className="px-3 py-1.5 text-xs text-white rounded-full transition-opacity active:opacity-80 disabled:opacity-40"
+              style={{ backgroundColor: "#678BF7" }}
+            >
+              적용
+            </button>
+          </div>
         </div>
 
-        {/* 구분선 */}
-        <div className="w-full h-px bg-gray-100 mb-2" />
+        <div className="w-full">
+          <div className="grid grid-cols-3 mb-3 px-2">
+            <span className="text-xs text-gray-400">구성원</span>
+            <span className="text-xs text-gray-400 text-center">
+              상세 페이지 열람
+            </span>
+            <span className="text-xs text-gray-400 text-center">
+              앱 사용량 비공개 허용
+            </span>
+          </div>
 
-        {/* 멤버 행 */}
-        <div className="flex flex-col">
-          {members.map((member, index) => (
-            <div key={member.userId}>
-              <div className="grid grid-cols-3 items-center py-3 px-2">
-                <span className="text-sm text-gray-700">{member.userName}</span>
-                <div className="flex justify-center">
-                  <Toggle
-                    checked={member.canViewDetail}
-                    onChange={(v) =>
-                      handleToggle(member.userId, "canViewDetail", v)
-                    }
-                  />
+          <div className="w-full h-px bg-gray-100 mb-2" />
+
+          <div className="flex flex-col">
+            {rows.map((row, index) => (
+              <div key={row.lineId}>
+                <div className="grid grid-cols-3 items-center py-3 px-2">
+                  <span className="text-sm text-gray-700">{row.userName}</span>
+                  <div className="flex justify-center">
+                    <Toggle
+                      checked={row.canViewDetail}
+                      onChange={(v) =>
+                        handleToggle(row.lineId, "canViewDetail", v)
+                      }
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <Toggle
+                      checked={row.canHideAppUsage}
+                      onChange={(v) =>
+                        handleToggle(row.lineId, "canHideAppUsage", v)
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-center">
-                  <Toggle
-                    checked={member.canHideAppUsage}
-                    onChange={(v) =>
-                      handleToggle(member.userId, "canHideAppUsage", v)
-                    }
-                  />
-                </div>
+                {index < rows.length - 1 && (
+                  <div className="w-full h-px bg-gray-100" />
+                )}
               </div>
-              {/* 마지막 행 제외 구분선 */}
-              {index < members.length - 1 && (
-                <div className="w-full h-px bg-gray-100" />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </GlassCard>
+      </GlassCard>
+
+      {/* 확인 모달 */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl p-6 w-80 shadow-xl">
+            <h3 className="text-base font-bold text-gray-800 mb-4">
+              변경 사항 확인
+            </h3>
+
+            <div className="flex flex-col gap-2 mb-6">
+              {changedPayload.map((item, i) => {
+                const row = rows.find((r) => r.lineId === item.lineId);
+                const permissionName =
+                  item.permissionId === row?.viewDetailPermissionId
+                    ? "상세 페이지 열람"
+                    : "앱 사용량 비공개";
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2"
+                  >
+                    <span>
+                      회선 {item.lineId} · {permissionName}
+                    </span>
+                    <span
+                      className="font-semibold"
+                      style={{ color: item.is_enable ? "#678BF7" : "#999" }}
+                    >
+                      {item.is_enable ? "허용" : "차단"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 py-2 text-sm text-gray-500 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="flex-1 py-2 text-sm text-white rounded-full transition-opacity active:opacity-80"
+                style={{ backgroundColor: "#678BF7" }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
