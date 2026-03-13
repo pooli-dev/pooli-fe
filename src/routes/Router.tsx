@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
-import Home from "../page/Home";
 import Support from "../page/Support/Support";
 import Policy from "../page/Policy/Policy";
 import Main from "@/page/Main/MainPage";
 import Alarm from "../page/Alarm";
 import Setting from "../page/Setting/Setting";
-import Detail from "../page/Detail";
+import Detail from "../page/Detail/DetailPage";
 import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
 import NotFound from "../page/NotFound";
 import SharedData from "../page/SharedData/SharedData";
@@ -67,7 +66,6 @@ export default function Router() {
                 <Header />
                 <Routes>
                   <Route path="/main" element={<Main />} />
-                  <Route path="/home" element={<Home />} />
                   <Route path="/support" element={<Support />} />
                   <Route path="/policy" element={<Policy />} />
                   <Route path="/alarm" element={<Alarm />} />
