@@ -6,6 +6,7 @@ import type {
   SharedPoolMainData,
   MySharedPoolData,
 } from "../../api/services/sharedPoolService";
+import { useToastStore } from "@/store/toastStore";
 
 const calculateDaysUntilNextMonth = (): number => {
   const today = new Date();
@@ -18,6 +19,7 @@ export default function SharedData() {
   const [mainData, setMainData] = useState<SharedPoolMainData | null>(null);
   const [myData, setMyData] = useState<MySharedPoolData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { show: showToast } = useToastStore();
 
   const fetchSharedPoolData = useCallback(async () => {
     try {
@@ -43,12 +45,15 @@ export default function SharedData() {
     try {
       await sharedPoolService.contributeData({ amount });
       await fetchSharedPoolData();
+      showToast("데이터 공유가 완료되었습니다.", "success");
     } catch (error) {
       console.error("Failed to contribute data:", error);
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string } } };
         const errorMessage = axiosError.response?.data?.message || "데이터 전송에 실패했습니다.";
-        alert(errorMessage);
+        showToast(errorMessage, "error");
+      } else {
+        showToast("데이터 전송에 실패했습니다.", "error");
       }
     }
   };
