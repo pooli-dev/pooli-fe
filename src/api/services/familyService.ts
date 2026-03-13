@@ -2,6 +2,30 @@
 import { apiClient } from "@/api/client";
 import type { FamilyApiResponse } from "@/types/FamilyMember";
 
+interface Permission {
+  familyId: number;
+  lineId: number;
+  permissionId: number;
+  permissionTitle: string;
+  createdAt: string;
+}
+
+interface MemberPermissionsResponse {
+  memberPermissions: Permission[];
+}
+
+interface UpdateVisibilityRequest {
+  lineId: number;
+  isPublic: boolean;
+}
+
 export const familyService = {
   getMembers: () => apiClient.get<FamilyApiResponse>("/families/members"),
+  
+  // 내 권한 조회
+  getMyPermissions: () => apiClient.get<MemberPermissionsResponse>("/member-permissions/me"),
+  
+  // 앱 사용량 공개 설정 변경
+  updateVisibility: (data: UpdateVisibilityRequest) => 
+    apiClient.patch("/families/visibility", data),
 };
