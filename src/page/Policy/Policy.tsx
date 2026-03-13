@@ -10,6 +10,9 @@ import { useState } from "react";
 import Avatar from "@/components/common/Avatar";
 import { createPortal } from "react-dom";
 import { useUserStore } from "@/store/userStore";
+import { useQuery } from "@tanstack/react-query";
+import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
+import { thresholdService } from "@/api";
 
 export default function Policy() {
   const navigate = useNavigate();
@@ -18,6 +21,19 @@ export default function Policy() {
 
   //대표자인가
   const isOwner = userData?.role === "OWNER";
+
+  // 공유 데이터 임계치 받아오기
+  const { data: sharedPoolThreshold } = useQuery<SharedPoolThreshold>({
+    queryKey: ["sharedPoolLimit"],
+    queryFn: () =>
+      thresholdService.getSharedPoolThreshold().then((res) => res.data),
+  });
+
+  // 개인 데이터 임게치 받아오기
+  const { data: lineThreshold } = useQuery<LineThreshold>({
+    queryKey: ["lineThreshold"],
+    queryFn: () => thresholdService.getLineThreshold().then((res) => res.data),
+  });
 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<FamilyMember | null>(
@@ -95,37 +111,17 @@ export default function Policy() {
         /api/shared-pools/limit로 데이터 넘기기
         개인 데이터 임계치 설정: 각자 자신의 것
         /api/lines/thresholds로 데이터 넘기기 */}
-        <DataThresholdSlider
-          isOwner={isOwner}
-          individualThreshold={3}
-          familyThreshold={2}
-        />
+        {sharedPoolThreshold && lineThreshold && (
+          <DataThresholdSlider
+            isOwner={isOwner}
+            sharedPoolThreshold={sharedPoolThreshold}
+            lineThreshold={lineThreshold}
+          />
+        )}
 
         {/* 권한 관리 */}
         {/* /api/member-permissions/family 같은데.. 이런식으로 오지 않음 물어보기 */}
-        <PermissionManager
-          members={[
-            {
-              userId: 1,
-              userName: "김아내",
-              canViewDetail: true,
-              canHideAppUsage: false,
-            },
-            {
-              userId: 2,
-              userName: "박아들",
-              canViewDetail: true,
-              canHideAppUsage: true,
-            },
-            {
-              userId: 3,
-              userName: "박딸",
-              canViewDetail: true,
-              canHideAppUsage: true,
-            },
-          ]}
-          onApply={() => {}}
-        />
+        <PermissionManager />
 
         {/* 구성원별 정책 제어 버튼 */}
         <button

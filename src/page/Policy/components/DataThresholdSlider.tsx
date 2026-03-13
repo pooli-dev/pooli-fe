@@ -1,30 +1,102 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 import RangeSlider from "@/components/common/RangeSlider";
+import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
+import { formatData } from "@/utils/dataFormat";
+import { thresholdService } from "@/api";
 
 type Props = {
   isOwner?: boolean;
-  individualThreshold?: number; // GB
-  familyThreshold?: number;
+  lineThreshold?: LineThreshold;
+  sharedPoolThreshold?: SharedPoolThreshold;
 };
 
 export default function DataThresholdSlider({
   isOwner = true,
-  individualThreshold = 2.5,
-  familyThreshold = 2.5,
+  lineThreshold,
+  sharedPoolThreshold,
 }: Props) {
-  const [enabled, setEnabled] = useState(true);
-  const [familyValue, setFamilyValue] = useState(String(familyThreshold));
-  const [individualValue, setIndividualValue] = useState(
-    String(individualThreshold),
+  const [familyOverride, setFamilyOverride] = useState<{
+    enabled?: boolean;
+    value?: string;
+  }>({});
+  const [individualOverride, setIndividualOverride] = useState<{
+    enabled?: boolean;
+    value?: string;
+  }>({});
+
+  const familyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const individualDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
   );
 
-  const FAMILY_MIN = 1,
-    FAMILY_MAX = 5;
-  const INDIVIDUAL_MIN = 1,
-    INDIVIDUAL_MAX = 5;
-  const contentRef = useRef<HTMLDivElement>(null);
+  // 실제 사용 값 = 유저가 바꾼 값 OR props 값
+  const familyEnabled =
+    familyOverride.enabled ?? sharedPoolThreshold?.isThresholdActive ?? false;
+  const familyValue =
+    familyOverride.value ??
+    String(formatData(sharedPoolThreshold?.familyThreshold ?? 0));
+  const individualEnabled =
+    individualOverride.enabled ?? lineThreshold?.isThresholdActive ?? false;
+  const individualValue =
+    individualOverride.value ??
+    String(formatData(lineThreshold?.individualThreshold ?? 0));
+
+  const FAMILY_MIN = formatData(sharedPoolThreshold?.minThreshold ?? 0);
+  const FAMILY_MAX =
+    sharedPoolThreshold?.maxThreshold === -1
+      ? "무제한"
+      : formatData(sharedPoolThreshold?.maxThreshold ?? 100);
+  const INDIVIDUAL_MIN = formatData(lineThreshold?.thresholdMinValue ?? 0);
+  const INDIVIDUAL_MAX =
+    lineThreshold?.thresholdMaxValue === -1
+      ? "무제한"
+      : formatData(lineThreshold?.thresholdMaxValue ?? 100);
+
+  const isFamilyUnlimited = sharedPoolThreshold?.maxThreshold === -1;
+  const isIndividualUnlimited = lineThreshold?.thresholdMaxValue === -1;
+
+  const handleFamilyChange = (patch: { enabled?: boolean; value?: string }) => {
+    const next = { ...familyOverride, ...patch };
+    setFamilyOverride(next);
+
+    if (familyDebounceRef.current) clearTimeout(familyDebounceRef.current);
+    familyDebounceRef.current = setTimeout(() => {
+      const val = next.value ?? familyValue;
+      thresholdService
+        .patchSharedPoolThreshold(gbToBytes(Number(val)))
+        .catch(console.error);
+    }, 1000);
+  };
+
+  const handleIndividualChange = (patch: {
+    enabled?: boolean;
+    value?: string;
+  }) => {
+    const next = { ...individualOverride, ...patch };
+    setIndividualOverride(next);
+
+    if (individualDebounceRef.current)
+      clearTimeout(individualDebounceRef.current);
+    individualDebounceRef.current = setTimeout(() => {
+      const val = next.value ?? individualValue;
+      const enabled = next.enabled ?? individualEnabled;
+      thresholdService
+        .patchLineThreshold(gbToBytes(Number(val)), enabled)
+        .catch(console.error);
+    }, 1000);
+  };
+
+  // GB → bytes 변환
+  const gbToBytes = (gb: number): number => Math.round(gb * 1e9);
+
+  console.log(lineThreshold, sharedPoolThreshold);
+  console.log("familyThreshold raw:", sharedPoolThreshold?.familyThreshold);
+  console.log(
+    "formatData 결과:",
+    formatData(sharedPoolThreshold?.familyThreshold ?? 0),
+  );
 
   return (
     <GlassCard
@@ -38,113 +110,146 @@ export default function DataThresholdSlider({
       borderRadius={20}
       className="w-full"
     >
-      {/* 헤더: 제목 + 토글 */}
       <div className="flex items-center justify-between mb-0">
         <span className="text-base font-bold text-gray-800">
           데이터 임계치 알림 설정
         </span>
-
-        {/* 토글 버튼 */}
-        <Toggle checked={enabled} onChange={setEnabled} />
       </div>
 
-      {/* 아코디언 영역 */}
       <div
-        ref={contentRef}
         className="overflow-hidden transition-all duration-300 ease-in-out"
-        style={{
-          maxHeight: enabled ? "200px" : "0px",
-          opacity: enabled ? 1 : 0,
-          marginTop: enabled ? "20px" : "0px",
-        }}
+        style={{ maxHeight: "400px", marginTop: "20px" }}
       >
-        {/* 가족 공유 데이터 임계치 - isOwner만 조작 가능 */}
-        {/* 슬라이더 변경되고 몇 초 뒤에 api 요청하기 */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">가족 공유 데이터 임계치</span>
-          <div
-            className="flex items-center gap-1 px-3 py-1 rounded-full"
-            style={{ border: "1px solid #E0E0E0", backgroundColor: "#FAFAFA" }}
-          >
-            <input
-              type="text"
-              inputMode="decimal"
-              value={familyValue}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^\d*\.?\d*$/.test(val)) {
-                  setFamilyValue(val);
-                }
-              }}
-              onBlur={() => {
-                const clamped = Math.min(
-                  FAMILY_MAX,
-                  Math.max(FAMILY_MIN, Number(familyValue)),
-                );
-                setFamilyValue(parseFloat(clamped.toFixed(1)).toString());
-              }}
+        {/* 가족 공유 데이터 임계치 */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">
+              가족 공유 데이터 임계치
+            </span>
+            <Toggle
+              checked={familyEnabled}
+              onChange={(v) => handleFamilyChange({ enabled: v })}
               disabled={!isOwner}
-              className="w-10 text-sm font-semibold text-gray-700 text-center outline-none bg-transparent disabled:text-gray-300"
             />
-            <span className="text-sm font-semibold text-gray-700">GB</span>
+          </div>
+
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={familyValue}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (/^\d*\.?\d*$/.test(val))
+                    handleFamilyChange({ value: val });
+                }}
+                onBlur={() => {
+                  if (!isFamilyUnlimited) {
+                    const maxVal =
+                      typeof FAMILY_MAX === "number"
+                        ? FAMILY_MAX
+                        : parseFloat(FAMILY_MAX);
+                    const clamped = Math.min(
+                      maxVal,
+                      Math.max(FAMILY_MIN, Number(familyValue)),
+                    );
+                    handleFamilyChange({
+                      value: parseFloat(clamped.toFixed(1)).toString(),
+                    });
+                  }
+                }}
+                disabled={!familyEnabled || !isOwner}
+                className="w-20 text-center text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:bg-white/50 rounded px-1 transition-colors disabled:opacity-50"
+              />
+              <span className="text-2xl font-bold text-gray-800">GB</span>
+            </div>
+          </div>
+
+          <RangeSlider
+            value={Number(familyValue)}
+            onChange={(v) => handleFamilyChange({ value: String(v) })}
+            min={FAMILY_MIN}
+            max={
+              isFamilyUnlimited
+                ? 1000
+                : typeof FAMILY_MAX === "number"
+                  ? FAMILY_MAX
+                  : parseFloat(FAMILY_MAX)
+            }
+            step={0.1}
+            disabled={!familyEnabled || !isOwner}
+          />
+          <div className="flex justify-between mt-1">
+            <span className="text-xs text-gray-300">{FAMILY_MIN}GB</span>
+            <span className="text-xs text-gray-300">{FAMILY_MAX}</span>
           </div>
         </div>
 
-        <RangeSlider
-          value={Number(familyValue)}
-          onChange={(v) => setFamilyValue(String(v))}
-          min={FAMILY_MIN}
-          max={FAMILY_MAX}
-          step={0.1}
-          disabled={!isOwner} // 대표자 아니면 비활성화
-        />
-        <div className="flex justify-between mt-1 mb-3">
-          <span className="text-xs text-gray-300">{FAMILY_MIN}GB</span>
-          <span className="text-xs text-gray-300">{FAMILY_MAX}GB</span>
-        </div>
-
-        {/* 개인 데이터 임계치 - 모두 조작 가능 */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">개인 공유 데이터 임계치</span>
-          <div
-            className="flex items-center gap-1 px-3 py-1 rounded-full"
-            style={{ border: "1px solid #E0E0E0", backgroundColor: "#FAFAFA" }}
-          >
-            <input
-              type="text"
-              inputMode="decimal" // 모바일에서 숫자 키패드
-              value={individualValue}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^\d*\.?\d*$/.test(val)) {
-                  // 숫자랑 소수점만 허용
-                  setIndividualValue(val);
-                }
-              }}
-              onBlur={(e) => {
-                const clamped = Math.min(
-                  INDIVIDUAL_MAX,
-                  Math.max(INDIVIDUAL_MIN, Number(e.target.value)),
-                );
-                setIndividualValue(parseFloat(clamped.toFixed(1)).toString());
-              }}
-              className="w-10 text-sm font-semibold text-gray-700 text-center outline-none bg-transparent"
+        {/* 개인 공유 데이터 임계치 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">
+              개인 공유 데이터 임계치
+            </span>
+            <Toggle
+              checked={individualEnabled}
+              onChange={(v) => handleIndividualChange({ enabled: v })}
+              disabled={false}
             />
-            <span className="text-sm font-semibold text-gray-700">GB</span>
           </div>
-        </div>
 
-        <RangeSlider
-          value={Number(individualValue)}
-          onChange={(v) => setIndividualValue(String(v))}
-          min={INDIVIDUAL_MIN}
-          max={INDIVIDUAL_MAX}
-          step={0.1}
-          disabled={false}
-        />
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-300">{INDIVIDUAL_MIN}GB</span>
-          <span className="text-xs text-gray-300">{INDIVIDUAL_MAX}GB</span>
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={individualValue}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (/^\d*\.?\d*$/.test(val))
+                    handleIndividualChange({ value: val });
+                }}
+                onBlur={() => {
+                  if (!isIndividualUnlimited) {
+                    const maxVal =
+                      typeof INDIVIDUAL_MAX === "number"
+                        ? INDIVIDUAL_MAX
+                        : parseFloat(INDIVIDUAL_MAX);
+                    const clamped = Math.min(
+                      maxVal,
+                      Math.max(INDIVIDUAL_MIN, Number(individualValue)),
+                    );
+                    handleIndividualChange({
+                      value: parseFloat(clamped.toFixed(1)).toString(),
+                    });
+                  }
+                }}
+                disabled={!individualEnabled}
+                className="w-20 text-center text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:bg-white/50 rounded px-1 transition-colors disabled:opacity-50"
+              />
+              <span className="text-2xl font-bold text-gray-800">GB</span>
+            </div>
+          </div>
+
+          <RangeSlider
+            value={Number(individualValue)}
+            onChange={(v) => handleIndividualChange({ value: String(v) })}
+            min={INDIVIDUAL_MIN}
+            max={
+              isIndividualUnlimited
+                ? 1000
+                : typeof INDIVIDUAL_MAX === "number"
+                  ? INDIVIDUAL_MAX
+                  : parseFloat(INDIVIDUAL_MAX)
+            }
+            step={0.1}
+            disabled={!individualEnabled}
+          />
+          <div className="flex justify-between mt-1">
+            <span className="text-xs text-gray-300">{INDIVIDUAL_MIN}GB</span>
+            <span className="text-xs text-gray-300">{INDIVIDUAL_MAX}</span>
+          </div>
         </div>
       </div>
     </GlassCard>

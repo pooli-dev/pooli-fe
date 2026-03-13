@@ -11,3 +11,4 @@ export { userService } from "./services/userService";
 export { blockService } from "./services/blockService";
 export { familyService } from "./services/familyService";
 export { lineService } from "./services/lineService";
+export { thresholdService } from "./services/thresholdService";
