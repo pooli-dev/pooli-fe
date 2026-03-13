@@ -20,7 +20,9 @@ export interface ContributeDataRequest {
 }
 
 // Byte를 GB로 변환하는 헬퍼 함수 (1GB = 1e+9 Bytes, 소수점 둘째자리 반올림)
+// 음수 값은 무제한을 의미하므로 그대로 반환
 const bytesToGb = (bytes: number): number => {
+  if (bytes < 0) return bytes; // 음수는 그대로 반환 (무제한)
   return Math.round((bytes / 1e9) * 100) / 100;
 };
 
@@ -44,7 +46,6 @@ export const sharedPoolService = {
     const response = await apiClient.get<MySharedPoolData>('/shared-pools/my');
     const data = response.data;
     
-    // Bytes를 GB로 변환
     return {
       remainingData: bytesToGb(data.remainingData),
       contributionAmount: bytesToGb(data.contributionAmount),

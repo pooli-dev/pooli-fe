@@ -14,16 +14,7 @@ export default function NotificationSettings() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        console.log('=== 알림 설정 조회 시작 ===');
         const data = await settingService.getNotifications();
-        console.log('✅ 알림 설정 조회 성공:', {
-          familyAlarm: data.familyAlarm,
-          userAlarm: data.userAlarm,
-          policyChangeAlarm: data.policyChangeAlarm,
-          policyLimitAlarm: data.policyLimitAlarm,
-          permissionAlarm: data.permissionAlarm,
-          questionAlarm: data.questionAlarm,
-        });
         setFamilyDataNotification(data.familyAlarm);
         setPersonalDataNotification(data.userAlarm);
         setPolicyChangeNotification(data.policyChangeAlarm);
@@ -31,7 +22,7 @@ export default function NotificationSettings() {
         setPermissionChangeNotification(data.permissionAlarm);
         setInquiryNotification(data.questionAlarm);
       } catch (error) {
-        console.error('❌ 알림 설정 조회 실패:', error);
+        console.error('알림 설정 조회 실패:', error);
       }
     };
     void fetchNotifications();
@@ -42,22 +33,9 @@ export default function NotificationSettings() {
     const prevValue = familyDataNotification;
     setFamilyDataNotification(enabled);
     try {
-      console.log(`=== 가족 데이터 알림 변경 시작 ===`);
-      console.log(`요청: PATCH /notifications/settings?code=FAMILY`);
-      console.log(`Body:`, { enabled });
       await settingService.updateFamilyAlarm(enabled);
-      console.log(`✅ 가족 데이터 알림 변경 성공`);
-    } catch (error: unknown) {
-      console.error('❌ 가족 데이터 알림 변경 실패:', error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number; statusText?: string; data?: unknown; headers?: unknown } };
-        console.error('에러 상세:', {
-          status: axiosError.response?.status,
-          statusText: axiosError.response?.statusText,
-          data: axiosError.response?.data,
-          headers: axiosError.response?.headers,
-        });
-      }
+    } catch (error) {
+      console.error('가족 데이터 알림 변경 실패:', error);
       setFamilyDataNotification(prevValue);
       alert('알림 설정 변경에 실패했습니다.');
     }

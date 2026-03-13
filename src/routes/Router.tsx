@@ -21,6 +21,7 @@ import NotificationManagement from "../page/Admin/NotificationManagement";
 import Login from "@/page/Login/LoginPage";
 import Log from "@/page/Log/LogPage";
 import { getAppType } from "@/utils/domain";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function Router() {
   const appType = getAppType();
@@ -33,14 +34,17 @@ export default function Router() {
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/login" element={<Login />} />
           
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
             <Route index element={<PolicyManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="inquiries" element={<InquiryManagement />} />
             <Route path="notifications" element={<NotificationManagement />} />
           </Route>
 
-          {/* 잘못된 경로는 admin으로 리다이렉트 */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </BrowserRouter>
@@ -57,25 +61,27 @@ export default function Router() {
         <Route
           path="/*"
           element={
-            <Layout>
-              <StatusBar />
-              <Header />
-              <Routes>
-                <Route path="/main" element={<Main />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/policy" element={<Policy />} />
-                <Route path="/alarm" element={<Alarm />} />
-                <Route path="/setting" element={<Setting />} />
-                <Route path="/detail" element={<Detail />} />
-                <Route path="/policy-detail" element={<PolicyDetail />} />
-                <Route path="/shared-data" element={<SharedData />} />
-                <Route path="/404" element={<NotFound />} />
-                <Route path="/log" element={<Log />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-              <BottomBar />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <StatusBar />
+                <Header />
+                <Routes>
+                  <Route path="/main" element={<Main />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/policy" element={<Policy />} />
+                  <Route path="/alarm" element={<Alarm />} />
+                  <Route path="/setting" element={<Setting />} />
+                  <Route path="/detail" element={<Detail />} />
+                  <Route path="/policy-detail" element={<PolicyDetail />} />
+                  <Route path="/shared-data" element={<SharedData />} />
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="/log" element={<Log />} />
+                  <Route path="*" element={<Navigate to="/404" replace />} />
+                </Routes>
+                <BottomBar />
+              </Layout>
+            </ProtectedRoute>
           }
         />
       </Routes>

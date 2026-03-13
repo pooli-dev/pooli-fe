@@ -17,7 +17,7 @@ export const useUserStore = create(
       clear: () => set({ userInfo: null }),
     }),
     {
-      name: "user-storage", // localStorage 키
+      name: "user-storage",
     },
   ),
 );

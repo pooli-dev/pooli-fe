@@ -11,6 +11,7 @@ interface DataTransferCardProps {
 
 const GB_TO_BYTES = 1e9;
 const MIN_TRANSFER_AMOUNT = 0;
+const MAX_MONTHLY_TRANSFER = 50; // 한 달 최대 전송 가능 데이터 (GB)
 
 const COLORS = {
   primary: "#678BF7",
@@ -28,15 +29,27 @@ export default function DataTransferCard({
   contributedData,
   onTransfer,
 }: DataTransferCardProps) {
+  const isUnlimited = personalDataRemaining < 0;
+  
   const limitData = useMemo(
-    () => Math.max(0, Math.floor(personalDataRemaining) - 1),
-    [personalDataRemaining]
+    () => {
+      if (isUnlimited) {
+        return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedData));
+      }
+      
+      if (personalDataRemaining >= MAX_MONTHLY_TRANSFER) {
+        return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedData));
+      }
+      
+      return Math.max(0, Math.floor(personalDataRemaining - 1));
+    },
+    [personalDataRemaining, contributedData, isUnlimited]
   );
 
   const [sharedAmount, setSharedAmount] = useState(MIN_TRANSFER_AMOUNT);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const formattedPersonalGB = personalDataRemaining.toFixed(2);
+  const formattedPersonalGB = isUnlimited ? "무제한" : personalDataRemaining.toFixed(2);
   const formattedContributedGB = contributedData.toFixed(2);
 
   const clampAmount = (value: number) =>
@@ -53,7 +66,8 @@ export default function DataTransferCard({
   const handleShare = () => setShowConfirmModal(true);
 
   const handleConfirmShare = () => {
-    onTransfer(sharedAmount * GB_TO_BYTES);
+    const amountInBytes = sharedAmount * GB_TO_BYTES;
+    onTransfer(amountInBytes);
     setShowConfirmModal(false);
   };
 
@@ -108,7 +122,6 @@ function DataCard({
       <DataStats
         contributedGB={contributedGB}
         limitData={limitData}
-        sharedAmount={sharedAmount}
       />
       <DataInputControl
         sharedAmount={sharedAmount}
@@ -122,6 +135,8 @@ function DataCard({
 }
 
 function PersonalDataHeader({ personalGB }: { personalGB: string }) {
+  const isUnlimitedDisplay = personalGB === "무제한";
+  
   return (
     <div className="flex items-center gap-2 mb-6">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -135,7 +150,7 @@ function PersonalDataHeader({ personalGB }: { personalGB: string }) {
         <circle cx="12" cy="7" r="4" stroke={COLORS.primary} strokeWidth="2" />
       </svg>
       <span className="font-normal text-gray-800">
-        개인 데이터 잔여량: <span className="font-medium">{personalGB}GB</span>
+        개인 데이터 잔여량: <span className="font-medium">{personalGB}{!isUnlimitedDisplay && "GB"}</span>
       </span>
     </div>
   );
@@ -144,18 +159,16 @@ function PersonalDataHeader({ personalGB }: { personalGB: string }) {
 interface DataStatsProps {
   contributedGB: string;
   limitData: number;
-  sharedAmount: number;
 }
 
-function DataStats({ contributedGB, limitData, sharedAmount }: DataStatsProps) {
+function DataStats({ contributedGB, limitData }: DataStatsProps) {
+  const limitDisplay = limitData.toString();
+  
   return (
     <div className="mb-8">
       <div className="flex justify-between items-start mb-3">
-        <DataStatItem label="공유한 데이터" value={contributedGB} color={COLORS.primary} />
-        <DataStatItem label="한도 데이터" value={limitData.toString()} color={COLORS.textGray} />
-      </div>
-      <div className="text-center">
-        <DataStatItem label="담을 데이터" value={sharedAmount.toString()} color={COLORS.primary} />
+        <DataStatItem label="공유한 데이터" value={contributedGB} color={COLORS.primary} showUnit={true} />
+        <DataStatItem label="한도 데이터" value={limitDisplay} color={COLORS.textGray} showUnit={true} />
       </div>
     </div>
   );
@@ -165,16 +178,17 @@ interface DataStatItemProps {
   label: string;
   value: string;
   color: string;
+  showUnit?: boolean;
 }
 
-function DataStatItem({ label, value, color }: DataStatItemProps) {
+function DataStatItem({ label, value, color, showUnit = true }: DataStatItemProps) {
   return (
     <div className="flex-1 text-center">
       <div className="text-sm mb-1" style={{ color: COLORS.textLight }}>
         {label}
       </div>
       <div className="text-2xl font-medium" style={{ color }}>
-        {value} GB
+        {value} {showUnit && "GB"}
       </div>
     </div>
   );
@@ -253,7 +267,7 @@ function DataInput({ value, max, onChange }: DataInputProps) {
 function InfoSection() {
   const infoItems = [
     "개인 데이터 잔여량이 1GB 이상일 때만 전송 가능합니다",
-    "데이터는 1GB 단위로 전송할 수 있습니다.",
+    "데이터는 1GB 단위로 한 달 최대 50GB까지 전송 가능합니다",
     "전송 완료 후에는 취소가 불가능하니 주의해주세요",
   ];
 

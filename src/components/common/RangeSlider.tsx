@@ -15,6 +15,7 @@
 interface RangeSliderProps {
   value: number;
   onChange: (value: number) => void;
+  onChangeEnd?: (value: number) => void;
   min: number;
   max: number;
   step?: number;
@@ -24,6 +25,7 @@ interface RangeSliderProps {
 export default function RangeSlider({ 
   value, 
   onChange, 
+  onChangeEnd,
   min, 
   max, 
   step = 1,
@@ -40,6 +42,8 @@ export default function RangeSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        onMouseUp={(e) => onChangeEnd?.(Number((e.target as HTMLInputElement).value))}
+        onTouchEnd={(e) => onChangeEnd?.(Number((e.target as HTMLInputElement).value))}
         disabled={disabled}
         className="w-full h-2 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         style={{
