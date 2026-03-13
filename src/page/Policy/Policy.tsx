@@ -13,6 +13,7 @@ import { useUserStore } from "@/store/userStore";
 import { useQuery } from "@tanstack/react-query";
 import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
 import { thresholdService } from "@/api";
+import { useAppliedPolicies } from "../PolicyDetail/hooks/useAppliedPolicies";
 
 export default function Policy() {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ export default function Policy() {
 
   //대표자인가
   const isOwner = userData?.role === "OWNER";
+
+  // 현재 적용중인 정책 가져오기
+  const { appliedPolicies } = useAppliedPolicies(userData?.lineId);
 
   // 공유 데이터 임계치 받아오기
   const { data: sharedPoolThreshold } = useQuery<SharedPoolThreshold>({
@@ -81,30 +85,17 @@ export default function Policy() {
         {userData && <UserInfoCard userData={userData} />}
 
         {/* 현재 적용중인 정책 영역 */}
-        {/* /api/data/usages/balances로 데이터 넘기기 */}
-        <PolicyScroll
-          policies={[
-            {
-              id: 1,
-              type: "한도",
-              bgColor: "#FFE5E5",
-              title: "공유 데이터 한도 1GB로 제한",
-            },
-            {
-              id: 2,
-              type: "시간",
-              bgColor: "#E5E5FF",
-              title: "10:00 ~ 12:00 데이터 사용 제한",
-            },
-            {
-              id: 3,
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: "SNS 앱 사용 제한",
-            },
-          ]}
-          title="현재 적용중인 정책"
-        />
+        {appliedPolicies.length > 0 && (
+          <PolicyScroll
+            policies={appliedPolicies.map((policy, index) => ({
+              id: index + 1,
+              type: policy.type,
+              bgColor: policy.bgColor,
+              title: policy.title,
+            }))}
+            title="현재 적용중인 정책"
+          />
+        )}
 
         {/* 데이터 임계치 설정 영역(가족 공유 데이터 임계치, 개인 데이터 임계치) */}
         {/* 가족 공유 데이터: 대표자만 접근 가능
