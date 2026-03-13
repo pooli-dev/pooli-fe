@@ -11,8 +11,8 @@ export const bytesToMb = (bytes: number): number => {
 };
 
 // GB/MB 자동 선택해서 포맷 (예: "1.5GB", "500MB")
-export const formatData = (bytes: number): string => {
+export const formatData = (bytes: number): number => {
   const gb = bytes / 1e9;
-  if (gb >= 1) return `${Math.round(gb * 10) / 10}GB`;
-  return `${Math.round(bytes / 1e6)}MB`;
+  if (gb >= 1) return Math.round(gb * 10) / 10;
+  return Math.round(bytes / 1e6);
 };
