@@ -101,7 +101,7 @@ export type AppliedPoliciesResponse = {
   }[];
 };
 
-export const policyService = {
+export const blockService = {
   getBlockStatus: (lineId: number) =>
     apiClient.get<BlockStatus>("/policies/lines/block-status", {
       params: { lineId },

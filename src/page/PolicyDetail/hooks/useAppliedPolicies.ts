@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { policyService } from "@/api";
+import { blockService } from "@/api";
 
 export type PolicyItem = {
   type: "한도" | "시간" | "앱";
@@ -29,7 +29,7 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
 
     setLoading(true);
     try {
-      const res = await policyService.getAppliedPolicies(lineId);
+      const res = await blockService.getAppliedPolicies(lineId);
       const policies: PolicyItem[] = [];
       const data = res.data;
 

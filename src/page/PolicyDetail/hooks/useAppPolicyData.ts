@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { policyService } from "@/api";
+import { blockService } from "@/api";
 import type { AppPolicy } from "../../../data/policyDetailDummyData";
 
 const MAX_DATA_LIMIT_MB = 5000;
@@ -14,7 +14,7 @@ export const useAppPolicyData = (
   useEffect(() => {
     if (!selectedLineId) return;
 
-    policyService
+    blockService
       .getLineApps({
         lineId: selectedLineId,
         pageNumber: 0,
@@ -56,7 +56,7 @@ export const useAppPolicyData = (
     if (!app) return;
 
     try {
-      const response = await policyService.toggleAppPolicy(
+      const response = await blockService.toggleAppPolicy(
         selectedLineId,
         app.appId
       );
@@ -100,7 +100,7 @@ export const useAppPolicyData = (
 
     try {
       const valueInBytes = value * 1024 * 1024;
-      const response = await policyService.updateAppLimit(appPolicyId, valueInBytes);
+      const response = await blockService.updateAppLimit(appPolicyId, valueInBytes);
       
       const dailyLimitData = response.data.dailyLimitData ?? 0;
       const dailyLimitSpeed = response.data.dailyLimitSpeed ?? 0;
@@ -145,7 +145,7 @@ export const useAppPolicyData = (
 
     try {
       const valueInKbps = value * 1000;
-      const response = await policyService.updateAppSpeed(appPolicyId, valueInKbps);
+      const response = await blockService.updateAppSpeed(appPolicyId, valueInKbps);
       
       const dailyLimitData = response.data.dailyLimitData ?? 0;
       const dailyLimitSpeed = response.data.dailyLimitSpeed ?? 0;
@@ -183,7 +183,7 @@ export const useAppPolicyData = (
 
   const handleBlockAdsToggle = async (appPolicyId: number) => {
     try {
-      const response = await policyService.toggleWhitelist(appPolicyId);
+      const response = await blockService.toggleWhitelist(appPolicyId);
 
       setAppPolicyStates((prev) =>
         prev.map((app) =>

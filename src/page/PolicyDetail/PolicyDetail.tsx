@@ -5,7 +5,7 @@ import BlockTab from "./components/BlockTab";
 import LimitTab from "./components/LimitTab";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
 import Avatar from "@/components/common/Avatar";
-import { policyService } from "@/api";
+import { blockService } from "@/api";
 import { useUserStore } from "@/store/userStore";
 import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
 
@@ -78,7 +78,7 @@ const PolicyDetail = () => {
 
   // 구성원 목록 조회 (페이지 로드 시 한 번만)
   useEffect(() => {
-    policyService
+    blockService
       .getFamilyMembersSimple()
       .then((res) => {
         console.log("백엔드 /families/members-simple 응답:", res.data);
