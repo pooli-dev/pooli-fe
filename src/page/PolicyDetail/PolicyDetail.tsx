@@ -110,6 +110,7 @@ const PolicyDetail = () => {
         setFamilyMembers(dummyMembers);
         setSelectedMember(dummyMembers[0]);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // lineId 의존성 제거 - 페이지 로드 시 한 번만 실행
 
   // 음성 인식 초기화

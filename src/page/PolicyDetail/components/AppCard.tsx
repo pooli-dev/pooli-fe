@@ -42,14 +42,6 @@ const AppCard = ({
   const [tempDataLimit, setTempDataLimit] = useState(app.dailyLimitMb);
   const [tempSpeedLimit, setTempSpeedLimit] = useState(app.maxSpeedMbps || 0);
 
-  // Props 변경 시 로컬 상태 동기화
-  if (tempDataLimit !== app.dailyLimitMb) {
-    setTempDataLimit(app.dailyLimitMb);
-  }
-  if (tempSpeedLimit !== (app.maxSpeedMbps || 0)) {
-    setTempSpeedLimit(app.maxSpeedMbps || 0);
-  }
-
   const appIcon = useMemo(() => getAppIcon(app.appName), [app.appName]);
   const displayName = useMemo(() => getDisplayAppName(app.appName), [app.appName]);
   const isDataUnlimited = tempDataLimit >= MAX_DATA_LIMIT_MB;
