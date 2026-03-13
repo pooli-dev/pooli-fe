@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAlarmStore } from "../store/alarmStore";
 import { useSettingStore } from "../store/settingStore";
+import { useUserStore } from "../store/userStore";
 import logo from "../assets/img/logo.svg";
 import alarmIcon from "../assets/icon/alarm-icon.png";
 import settingIcon from "../assets/icon/setting-icon.png";
@@ -27,6 +28,7 @@ export default function Header({
     (state) => state.alarms.filter((a) => !a.isRead).length,
   );
   const darkMode = useSettingStore((state) => state.darkMode);
+  const userInfo = useUserStore((state) => state.userInfo);
 
   const isHome = location.pathname === "/main";
   const isAlarm = location.pathname === "/alarm";
@@ -46,8 +48,10 @@ export default function Header({
         return "알림";
       case "/setting":
         return "설정";
-      case "/detail":
-        return "상세페이지";
+      case "/detail": {
+        const userName = location.state?.userName || userInfo?.userName || "";
+        return userName ? `${userName} 상세페이지` : "상세페이지";
+      }
       case "/policy-detail":
         return "구성원 정책제어";
       case "/shared-data":

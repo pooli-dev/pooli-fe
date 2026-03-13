@@ -44,7 +44,7 @@ export default function Toast() {
   const { toasts, hide } = useToastStore();
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 w-[360px] max-w-[calc(100vw-32px)]">
+    <div className="fixed top-[120px] left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 w-[360px] max-w-[calc(100vw-32px)]">
       {toasts.map((toast) => {
         const color = COLORS[toast.type];
         return (

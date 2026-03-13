@@ -63,6 +63,7 @@ export const useAppPolicyData = (
 
       const dailyLimitData = response.data.dailyLimitData ?? 0;
       const dailyLimitSpeed = response.data.dailyLimitSpeed ?? 0;
+      const newEnabled = response.data.isActive ?? false;
 
       setAppPolicyStates((prev) =>
         prev.map((a) =>
@@ -70,7 +71,7 @@ export const useAppPolicyData = (
             ? {
                 ...a,
                 appPolicyId: response.data.appPolicyId || a.appPolicyId,
-                enabled: response.data.isActive ?? false,
+                enabled: newEnabled,
                 dailyLimitMb: dailyLimitData > 0
                   ? Math.max(0, Math.round(dailyLimitData / (1024 * 1024)))
                   : 0,
@@ -83,8 +84,16 @@ export const useAppPolicyData = (
         )
       );
 
+      // OFF -> ON으로 변경된 경우, 기본값(0, 0)을 API에 전송
+      if (!app.enabled && newEnabled) {
+        const newAppPolicyId = response.data.appPolicyId || appPolicyId;
+        
+        await blockService.updateAppLimit(newAppPolicyId, 0);
+        await blockService.updateAppSpeed(newAppPolicyId, 0);
+      }
+
       onPolicyChange?.();
-      return !app.enabled;
+      return newEnabled;
     } catch (error) {
       console.error("앱 정책 토글 실패:", error);
       return null;

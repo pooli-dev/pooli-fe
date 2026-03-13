@@ -46,12 +46,13 @@ export default function FamilyMemberCard({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-base font-semibold text-black">
               {member.userName}
+              {member.isMe && <span className="text-sm font-normal">(나)</span>}
             </span>
             {/* 본인 이거나 혹은 대표자일 때 조건부 렌더링 */}
             {canViewDetail && (
               <button
                 onClick={() =>
-                  navigate("/detail", { state: { lineId: member.lineId } })
+                  navigate("/detail", { state: { lineId: member.lineId, userName: member.userName } })
                 }
                 className="flex items-center justify-center gap-0.2 text-xs text-[#0F4E7A] hover:text-[#4A7FB5] transition-colors"
               >
