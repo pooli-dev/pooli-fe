@@ -19,13 +19,13 @@ export default function ModeSettings() {
           <rect x="2" y="11" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
           <rect x="11" y="11" width="7" height="7" rx="1" stroke="#333333" strokeWidth="1.5" />
         </svg>
-        <h2 className="font-semibold text-[#333333] text-[16px]">모드 설정</h2>
+        <h2 className="font-semibold text-[#333333] text-base">모드 설정</h2>
       </div>
 
       <div className="bg-white rounded-2xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between px-5">
           <div className="flex items-center gap-2">
-            <span className="text-[#333333] font-medium text-[14px]">다크 모드</span>
+            <span className="text-[#333333] font-medium text-sm">다크 모드</span>
             <InfoTooltip text="화면 밝기 다크 모드를 바꿀 수 있습니다." />
           </div>
           <DarkModeToggle checked={darkMode} onChange={setDarkMode} />
@@ -33,7 +33,7 @@ export default function ModeSettings() {
 
         <div className="flex items-center justify-between px-5">
           <div className="flex items-center gap-2">
-            <span className="text-[#333333] font-medium text-[14px]">큰글씨 모드</span>
+            <span className="text-[#333333] font-medium text-sm">큰글씨 모드</span>
             <InfoTooltip text="글자 크기가 커지며 좀 더 글자가 잘 보이도록 합니다." />
           </div>
           <LargeTextToggle checked={largeTextMode} onChange={setLargeTextMode} />
@@ -41,7 +41,7 @@ export default function ModeSettings() {
 
         <div className="flex items-center justify-between px-5">
           <div className="flex items-center gap-2">
-            <span className="text-[#333333] font-medium text-[14px]">어린이 모드</span>
+            <span className="text-[#333333] font-medium text-sm">어린이 모드</span>
             <InfoTooltip text="이해가 어려운 데이터 관련 용어들을 쉬운 언어로 번역합니다." />
           </div>
           <ChildModeToggle checked={childMode} onChange={setChildMode} />
