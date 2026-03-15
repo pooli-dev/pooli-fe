@@ -12,6 +12,8 @@ export default function DataRemainingCard({
   amount: number;
   icon: "share" | "person";
 }) {
+  const displayAmount = amount === -1 ? "무제한" : `${formatData(amount)}GB`;
+
   return (
     <GlassCard
       title=""
@@ -27,9 +29,7 @@ export default function DataRemainingCard({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs text-gray-400 mb-1">{label}</p>
-          <p className="text-xl font-bold text-gray-800">
-            {formatData(amount)}
-          </p>
+          <p className="text-xl font-bold text-gray-800">{displayAmount}</p>
         </div>
         <div className="w-8 h-8 rounded-full bg-[#EEF0FF] flex items-center justify-center flex-shrink-0">
           {icon === "share" ? (
