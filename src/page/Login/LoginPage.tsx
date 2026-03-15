@@ -12,6 +12,7 @@ import { authService } from "../../api";
 import { userService } from "../../api";
 import { getErrorMessage } from "../../api";
 import { useUserStore } from "../../store/userStore";
+import { getAppType } from "../../utils/domain";
 
 const backgrounds = [loginBg1, loginBg2, loginBg3];
 
@@ -25,14 +26,16 @@ export default function LoginPage() {
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
   const navigate = useNavigate();
   const setUserInfo = useUserStore((state) => state.setUserInfo);
+  const appType = getAppType();
+  const homePath = appType === 'admin' ? '/admin' : '/main';
 
-  // 이미 로그인되어 있으면 메인으로 리다이렉트
+  // 이미 로그인되어 있으면 홈으로 리다이렉트
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      navigate("/main", { replace: true });
+      navigate(homePath, { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, homePath]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -73,10 +76,7 @@ export default function LoginPage() {
         setUserInfo(data);
         console.log("유저 데이터 가져오기 성공", data);
 
-        navigate("/main");
-
-        // 메인 페이지로 이동
-        navigate("/main");
+        navigate(homePath);
       } else {
         setError(response.message || "로그인에 실패했습니다.");
       }
