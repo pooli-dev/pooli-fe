@@ -10,12 +10,17 @@ import PieChart from "../Main/components/PieChart";
 import { blockService, sharedPoolService } from "@/api";
 import { useUserStore } from "@/store/userStore";
 import { familyService } from "@/api";
-import type { SharedData } from "@/types/SharedData";
+import type { SharedData, UsageData } from "@/types/SharedData";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export default function Main() {
   const navigate = useNavigate();
   const lineId = useUserStore((state) => state.userInfo?.lineId);
+  // store에 저장된 user 정보 가져오기
+  const userData = useUserStore((state) => state.userInfo);
+
+  // 현재 로그인한 사용자가 대표자인가
+  const isOwner = userData?.role === "OWNER";
 
   const { data: familyData, isLoading: isFamilyLoading } =
     useQuery<FamilyApiResponse>({
@@ -25,6 +30,28 @@ export default function Main() {
       refetchIntervalInBackground: true,
       placeholderData: keepPreviousData, // ← v5 방식
     });
+
+  const { data: usageData } = useQuery<UsageData>({
+    queryKey: ["UsageData"],
+    queryFn: () => sharedPoolService.getUsageData().then((res) => res.data),
+  });
+
+  const COLORS = [
+    "#B6DF82",
+    "#57CAFB",
+    "#FAC0B5",
+    "#CAA6DB",
+    "#FFD580",
+    "#A0C4FF",
+  ];
+
+  const usageUsers = usageData?.membersUsageList.map((member, index) => ({
+    name: member.userName,
+    percentage: Math.round(
+      (member.monthlySharedPoolUsage / usageData.sharedPoolTotalData) * 100,
+    ),
+    color: COLORS[index % COLORS.length],
+  }));
 
   const { data: sharedPoolData, isLoading: isPoolLoading } =
     useQuery<SharedData>({
@@ -120,15 +147,16 @@ export default function Main() {
         {/* 공유풀 사용량 */}
         {/* /api/families/members 요청후 각 member에 대해 sharedPoolRemainingAmount로 각각 사용량 계산 후 넘기기(%) */}
         <div className="w-full max-w-md">
-          <SharedPoolUsage />
+          <SharedPoolUsage users={usageUsers} />
         </div>
 
         {/* 구성원별 데이터 정보 */}
         {/* /api/families/members 요청후 members 넘기기 */}
-        {familyData?.isEnable && (
+        {familyData && (
           <FamilyMemberList
             members={familyData.members}
             isEnable={familyData.isEnable}
+            isUserOwner={isOwner}
           />
         )}
       </div>

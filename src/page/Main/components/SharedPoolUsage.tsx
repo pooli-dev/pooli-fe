@@ -11,15 +11,7 @@ type Props = {
   className?: string;
 };
 
-export default function SharedPoolUsage({
-  users = [
-    { name: "김영희", percentage: 10, color: "#B6DF82" },
-    { name: "김철수", percentage: 15, color: "#57CAFB" },
-    { name: "김옥자", percentage: 30, color: "#FAC0B5" },
-    { name: "김민우", percentage: 15, color: "#CAA6DB" },
-  ],
-  className = "",
-}: Props) {
+export default function SharedPoolUsage({ users = [], className = "" }: Props) {
   return (
     <GlassCard
       title="공유풀 사용량"
@@ -34,34 +26,30 @@ export default function SharedPoolUsage({
       <div className="space-y-4">
         {/* 막대 그래프 */}
         <div className="relative w-full my-3">
-          {/* 글로우 레이어 - 흰색 막대의 파란 네온 */}
-          <div
-            className="absolute w-full h-4 rounded-full"
-            style={{
-              backgroundColor: "#FFFFFF",
-              opacity: 0.9,
-              transform: "scaleY(0.3)",
-              boxShadow: "0 0 20px 5px #93C5FD",
-            }}
-          />
-
           {/* 실제 흰색 막대 */}
           <div
             className="relative w-full h-4 rounded-full overflow-hidden"
-            style={{ backgroundColor: "#F0F5FF" }}
+            style={{
+              backgroundColor: "#F0F5FF",
+              boxShadow:
+                "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
+            }}
           >
             {users.map((user, index) => {
-              const leftOffset = users
-                .slice(0, index)
-                .reduce((sum, u) => sum + u.percentage, 0);
+              const leftOffset = Math.min(
+                users.slice(0, index).reduce((sum, u) => sum + u.percentage, 0),
+                100,
+              );
               return (
                 <div
                   key={user.name}
                   className="absolute top-0 h-full transition-all duration-500 ease-out"
                   style={{
                     left: `${leftOffset}%`,
-                    width: `${user.percentage}%`,
+                    width: `${Math.min(user.percentage, 100 - leftOffset)}%`,
                     backgroundColor: user.color,
+                    boxShadow:
+                      "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
                   }}
                 />
               );

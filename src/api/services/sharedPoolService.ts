@@ -1,4 +1,5 @@
-import apiClient from '../client';
+import type { UsageData } from "@/types/SharedData";
+import apiClient from "../client";
 
 // 공유풀 메인 데이터 타입
 export interface SharedPoolMainData {
@@ -29,9 +30,11 @@ const bytesToGb = (bytes: number): number => {
 export const sharedPoolService = {
   // 공유풀 메인 데이터 조회
   getMainRemainingAmount: async () => {
-    const response = await apiClient.get<SharedPoolMainData>('/shared-pools/main/remaining-amount');
+    const response = await apiClient.get<SharedPoolMainData>(
+      "/shared-pools/main/remaining-amount",
+    );
     const data = response.data;
-    
+
     // Bytes를 GB로 변환
     return {
       sharedPoolBaseData: bytesToGb(data.sharedPoolBaseData),
@@ -43,9 +46,9 @@ export const sharedPoolService = {
 
   // 내 공유 데이터 조회
   getMySharedPool: async () => {
-    const response = await apiClient.get<MySharedPoolData>('/shared-pools/my');
+    const response = await apiClient.get<MySharedPoolData>("/shared-pools/my");
     const data = response.data;
-    
+
     return {
       remainingData: bytesToGb(data.remainingData),
       contributionAmount: bytesToGb(data.contributionAmount),
@@ -54,7 +57,10 @@ export const sharedPoolService = {
 
   // 공유 데이터 담기
   contributeData: async (data: ContributeDataRequest) => {
-    const response = await apiClient.post('/shared-pools', data);
+    const response = await apiClient.post("/shared-pools", data);
     return response.data;
   },
+
+  getUsageData: () =>
+    apiClient.get<UsageData>("/shared-pools/usage/monthly-total"),
 };
