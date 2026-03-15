@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
+import { blockService } from "@/api/index";
+import { useToastStore } from "@/store/toastStore";
 
 type Props = {
-  initialEnabled?: boolean;
-  onToggle?: (enabled: boolean) => void;
-  onDurationChange?: (minutes: number) => void;
+  lineId?: number;
+  onApply?: (blockEndAt: string) => void;
 };
 
 const PRESETS = [
@@ -15,32 +17,84 @@ const PRESETS = [
   { label: "8시간", minutes: 480 },
 ];
 
-function calcEndTime(minutes: number): string {
+function calcBlockEndAt(minutes: number): string {
   const now = new Date();
   now.setMinutes(now.getMinutes() + minutes);
-  const h = String(now.getHours()).padStart(2, "0");
-  const m = String(now.getMinutes()).padStart(2, "0");
+  // UTC 아닌 로컬 시간으로
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
+function calcEndTimeDisplay(blockEndAt: string | undefined): string {
+  if (!blockEndAt) return "--:--";
+  const date = new Date(blockEndAt);
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
   return `${h}:${m}`;
 }
 
-export default function ImmediateBlockPolicy({
-  initialEnabled = true,
-  onToggle,
-  onDurationChange,
-}: Props) {
-  const [enabled, setEnabled] = useState(initialEnabled);
+function isBlockActive(blockEndAt: string | undefined): boolean {
+  if (!blockEndAt) return false;
+  return new Date(blockEndAt) > new Date();
+}
+
+export default function ImmediateBlockPolicy({ lineId, onApply }: Props) {
+  const queryClient = useQueryClient();
   const [selectedMinutes, setSelectedMinutes] = useState<number>(60);
   const [isDirect, setIsDirect] = useState(false);
-
-  // 직접 입력 - 시/분 분리
   const [directHour, setDirectHour] = useState("");
   const [directMin, setDirectMin] = useState("");
   const [directError, setDirectError] = useState("");
   const [isApplied, setIsApplied] = useState(false);
+  const [optimisticEnabled, setOptimisticEnabled] = useState<boolean | null>(
+    null,
+  );
+  const previewEndTime = calcBlockEndAt(selectedMinutes);
+  const { show } = useToastStore();
+
+  // 현재 차단 상태 조회
+  const { data } = useQuery({
+    queryKey: ["immediateBlock", lineId],
+    queryFn: () =>
+      blockService.getImmediateBlock(lineId!).then((res) => res.data),
+    enabled: !!lineId,
+  });
+
+  const enabled = optimisticEnabled ?? isBlockActive(data?.blockEndAt);
+
+  // 차단 적용/해제
+  const { mutate: patchBlock } = useMutation({
+    mutationFn: (blockEndAt: string) =>
+      blockService.patchImmediateBlock(lineId!, blockEndAt),
+    onMutate: (blockEndAt) => {
+      setOptimisticEnabled(new Date(blockEndAt) > new Date());
+    },
+    onSuccess: (_, blockEndAt) => {
+      setOptimisticEnabled(null);
+      queryClient.invalidateQueries({ queryKey: ["immediateBlock", lineId] });
+      onApply?.(blockEndAt);
+
+      const isActive = new Date(blockEndAt) > new Date();
+      if (isActive) {
+        show("차단 정책이 적용되었습니다.");
+      } else {
+        show("차단이 해제되었습니다.");
+      }
+    },
+    onError: () => {
+      setOptimisticEnabled(null);
+      show("차단 정책 추가에 실패했습니다.", "error");
+    },
+  });
 
   const handleToggle = (v: boolean) => {
-    setEnabled(v);
-    onToggle?.(v);
+    if (v) {
+      // 켜기 → 선택된 시간만큼 차단
+      patchBlock(calcBlockEndAt(selectedMinutes));
+    } else {
+      // 끄기 → 현재 시간으로 즉시 해제
+      patchBlock(new Date().toISOString().slice(0, 19));
+    }
   };
 
   const handlePreset = (minutes: number) => {
@@ -50,7 +104,6 @@ export default function ImmediateBlockPolicy({
     setDirectError("");
     setIsApplied(false);
     setSelectedMinutes(minutes);
-    onDurationChange?.(minutes);
   };
 
   const handleDirectClick = () => {
@@ -81,12 +134,9 @@ export default function ImmediateBlockPolicy({
     const total = h * 60 + m;
     setDirectError("");
     setSelectedMinutes(total);
-    onDurationChange?.(total);
     setIsApplied(true);
     setTimeout(() => setIsApplied(false), 2000);
   };
-
-  const endTime = calcEndTime(selectedMinutes);
 
   return (
     <GlassCard
@@ -100,7 +150,6 @@ export default function ImmediateBlockPolicy({
       borderRadius={20}
       className="w-full"
     >
-      {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-base font-bold text-gray-800">
           즉시 차단 정책
@@ -108,7 +157,6 @@ export default function ImmediateBlockPolicy({
         <Toggle checked={enabled} onChange={handleToggle} />
       </div>
 
-      {/* 프리셋 탭 */}
       <div
         className="flex items-center rounded-2xl p-1"
         style={{ backgroundColor: "rgba(243,244,246,0.8)" }}
@@ -117,6 +165,7 @@ export default function ImmediateBlockPolicy({
           <button
             key={preset.minutes}
             onClick={() => handlePreset(preset.minutes)}
+            disabled={enabled}
             className="flex-1 py-2.5 text-sm font-semibold transition-all rounded-xl"
             style={{
               color:
@@ -141,6 +190,7 @@ export default function ImmediateBlockPolicy({
 
         <button
           onClick={handleDirectClick}
+          disabled={enabled}
           className="flex-1 py-2.5 text-sm font-semibold transition-all rounded-xl"
           style={{
             color: isDirect ? "#678BF7" : "#9CA3AF",
@@ -152,15 +202,12 @@ export default function ImmediateBlockPolicy({
         </button>
       </div>
 
-      {/* 직접 입력 영역 */}
       {isDirect && (
         <div
           className="mt-4 p-4 rounded-2xl"
           style={{ backgroundColor: "rgba(243,244,246,0.6)" }}
         >
-          {/* 시/분 입력 */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            {/* 시간 */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-xs text-gray-400">시간</span>
               <input
@@ -187,7 +234,6 @@ export default function ImmediateBlockPolicy({
 
             <span className="text-2xl font-bold text-gray-300 mt-4">:</span>
 
-            {/* 분 */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-xs text-gray-400">분</span>
               <input
@@ -213,7 +259,6 @@ export default function ImmediateBlockPolicy({
             </div>
           </div>
 
-          {/* 에러 / 성공 메시지 */}
           {directError && (
             <p className="text-xs text-red-400 text-center mb-3">
               {directError}
@@ -225,7 +270,6 @@ export default function ImmediateBlockPolicy({
             </p>
           )}
 
-          {/* 적용 버튼 */}
           <button
             onClick={applyDirectInput}
             className="w-full py-2.5 rounded-full text-sm font-semibold text-white transition-opacity active:opacity-80"
@@ -236,7 +280,9 @@ export default function ImmediateBlockPolicy({
         </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-3">종료 시간: {endTime}</p>
+      <p className="text-xs text-gray-400 mt-3">
+        종료 시간: {calcEndTimeDisplay(previewEndTime)}
+      </p>
     </GlassCard>
   );
 }
