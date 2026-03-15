@@ -1,9 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, memo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 import { permissionService } from "@/api/services/permissionService";
 import type { PatchPermissionRequest } from "@/types/permission";
+import { useToastStore } from "@/store/toastStore";
 
 const PERMISSION_VIEW_DETAIL = "상세페이지 열람 권한";
 const PERMISSION_HIDE_APP_USAGE = "앱 사용량 비공개 허용 권한";
@@ -17,9 +18,10 @@ type MemberRow = {
   canHideAppUsage: boolean;
 };
 
-export default function PermissionManager() {
+function PermissionManager() {
   const [rows, setRows] = useState<MemberRow[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const { show } = useToastStore();
 
   const { data: permissionsData } = useQuery({
     queryKey: ["memberPermissions"],
@@ -27,10 +29,15 @@ export default function PermissionManager() {
       permissionService.getMemberPermissions().then((res) => res.data),
   });
 
+  console.log("permissionsData:", permissionsData);
+  console.log("memberPermissions:", permissionsData?.memberPermissions);
+
   // Derive initial rows from API data using useMemo
   const initialRows = useMemo(() => {
     if (!permissionsData) return [];
+    if (!permissionsData.memberPermissions) return [];
 
+    // 회선별로 권한 정보 저장하기
     const lineIds = [
       ...new Set(permissionsData.memberPermissions.map((p) => p.lineId)),
     ];
@@ -48,7 +55,7 @@ export default function PermissionManager() {
 
       return {
         lineId,
-        userName: `회선 ${lineId}`,
+        userName: permissions[0]?.userName ?? `회선 ${lineId}`,
         viewDetailPermissionId: viewDetail?.permissionId ?? 0,
         hideAppUsagePermissionId: hideAppUsage?.permissionId ?? 0,
         canViewDetail: viewDetail?.is_enable ?? false,
@@ -67,6 +74,10 @@ export default function PermissionManager() {
       permissionService.patchMemberPermissions(permissions),
     onSuccess: () => {
       setShowModal(false);
+      show("권한이 적용되었습니다.");
+    },
+    onError: () => {
+      show("권한 적용에 실패했습니다. 다시 시도해주세요.", "error");
     },
   });
 
@@ -199,7 +210,7 @@ export default function PermissionManager() {
 
       {/* 확인 모달 */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl p-6 w-80 shadow-xl">
             <h3 className="text-base font-bold text-gray-800 mb-4">
               변경 사항 확인
@@ -252,3 +263,5 @@ export default function PermissionManager() {
     </>
   );
 }
+
+export default memo(PermissionManager);

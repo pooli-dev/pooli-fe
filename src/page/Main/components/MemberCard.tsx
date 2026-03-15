@@ -9,13 +9,16 @@ import RightIcon from "@/assets/icon/right.svg";
 export default function FamilyMemberCard({
   member,
   isEnable,
+  isUserOwner,
 }: {
   member: FamilyMember;
   isEnable: boolean;
+  isUserOwner: boolean;
 }) {
-  const isOwner = member.role === "OWNER";
   const navigate = useNavigate();
-  const canViewDetail = isEnable || isOwner || member.isMe;
+  // 이 카드의 유저가 대표자 인가
+  const isOwner = member?.role === "OWNER";
+  const canViewDetail = isEnable || isUserOwner || member.isMe;
 
   const isUsingShared =
     member.remainingData === 0 &&
@@ -93,7 +96,8 @@ export default function FamilyMemberCard({
           total={member.basicDataAmount}
           color="#ADE6FF"
         />
-        {member.sharedPoolTotalAmount > 0 && (
+        {(member.sharedPoolTotalAmount === -1 ||
+          member.sharedPoolTotalAmount > 0) && (
           <DataBar
             label="제공받은 공유데이터"
             remaining={member.sharedPoolRemainingAmount}

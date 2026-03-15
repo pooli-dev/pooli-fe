@@ -9,8 +9,8 @@ type Props = {
 };
 
 export default function PieChart({
-  size = 260,
-  strokeWidth = 20,
+  size = 320,
+  strokeWidth = 25,
   sharedPoolData,
 }: Props) {
   const remaining = sharedPoolData?.sharedPoolRemainingData ?? 0;

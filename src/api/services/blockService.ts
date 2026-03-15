@@ -1,3 +1,4 @@
+import type { RepeatBlockResponse } from "@/types/block";
 import { apiClient } from "../client";
 
 export type BlockStatus = {
@@ -51,38 +52,12 @@ export type GetLineAppsParams = {
   sortType?: "ACTIVE" | "NAME";
 };
 
-export type RepeatBlockDay = {
-  dayOfWeek: "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
-  startAt: string; // "HH:mm:ss" 형식
-  endAt: string; // "HH:mm:ss" 형식
-};
-
-export type RepeatBlockPolicy = {
-  repeatBlockId: number;
-  lineId: number;
-  isActive: boolean;
-  days: RepeatBlockDay[];
-};
-
-export type RepeatBlockCreateRequest = {
-  lineId: number;
-  isActive: boolean;
-  days: RepeatBlockDay[];
-};
-
-export type RepeatBlockUpdateRequest = {
-  lineId: number;
-  repeatBlockId: number;
-  isActive: boolean;
-  days: RepeatBlockDay[];
-};
-
 export type AppliedPoliciesResponse = {
   immediateBlock: {
     lineId: number;
     blockEndAt: string;
   } | null;
-  repeatBlockPolicyList: RepeatBlockPolicy[];
+  repeatBlockPolicyList: RepeatBlockResponse[];
   limitPolicy: {
     dailyLimitId: number;
     dailyDataLimit: number;
@@ -148,20 +123,17 @@ export const blockService = {
 
   // 반복 차단 정책 조회
   getRepeatBlockPolicies: (lineId: number) =>
-    apiClient.get<RepeatBlockPolicy[]>("/policies/lines/repeat-block", {
+    apiClient.get<RepeatBlockResponse[]>("/policies/lines/repeat-block", {
       params: { lineId },
     }),
 
   // 반복 차단 정책 추가
-  createRepeatBlockPolicy: (data: RepeatBlockCreateRequest) =>
-    apiClient.post<RepeatBlockPolicy>("/policies/lines/repeat-block", data),
+  createRepeatBlockPolicy: (data: RepeatBlockResponse) =>
+    apiClient.post<RepeatBlockResponse>("/policies/lines/repeat-block", data),
 
   // 반복 차단 정책 수정
-  updateRepeatBlockPolicy: (
-    repeatBlockId: number,
-    data: RepeatBlockUpdateRequest,
-  ) =>
-    apiClient.patch<RepeatBlockPolicy>("/policies/lines/repeat-block", data, {
+  updateRepeatBlockPolicy: (repeatBlockId: number, data: RepeatBlockResponse) =>
+    apiClient.patch<RepeatBlockResponse>("/policies/lines/repeat-block", data, {
       params: { repeatBlockId },
     }),
 
@@ -173,19 +145,34 @@ export const blockService = {
 
   // 즉시 차단 조회
   getImmediateBlock: (lineId: number) =>
-    apiClient.get<{ lineId: number; blockEndAt: string }>("/policies/lines/immediate-block", {
-      params: { lineId },
-    }),
+    apiClient.get<{ lineId: number; blockEndAt: string }>(
+      "/policies/lines/immediate-block",
+      {
+        params: { lineId },
+      },
+    ),
 
   // 즉시 차단 토글/수정
   updateImmediateBlock: (lineId: number, blockEndAt: string) =>
-    apiClient.patch("/policies/lines/immediate-block", { blockEndAt }, {
-      params: { lineId },
-    }),
+    apiClient.patch(
+      "/policies/lines/immediate-block",
+      { blockEndAt },
+      {
+        params: { lineId },
+      },
+    ),
 
   // 적용 중인 모든 정책 조회
   getAppliedPolicies: (lineId: number) =>
     apiClient.get<AppliedPoliciesResponse>("/policies/lines/applied", {
       params: { lineId },
     }),
+
+  // 즉시 차단 적용
+  patchImmediateBlock: (lineId: number, blockEndAt: string) =>
+    apiClient.patch<{ lineId: number; blockEndAt: string }>(
+      "/policies/lines/immediate-block",
+      { blockEndAt },
+      { params: { lineId } },
+    ),
 };

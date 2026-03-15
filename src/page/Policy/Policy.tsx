@@ -1,24 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import PolicyScroll from "@/components/common/PolicyScroll";
 import DataThresholdSlider from "./components/DataThresholdSlider";
-import PermissionManager from "./components/Permisssion";
 import UserInfoCard from "./components/UserInfoCard";
 import SettingIcon from "@/assets/icon/setting.svg";
 import AssignIcon from "@/assets/icon/assignment.svg";
-import type { FamilyMember } from "@/types/FamilyMember";
+import type { SimpleMember } from "@/types/FamilyMember";
 import { useState } from "react";
 import Avatar from "@/components/common/Avatar";
 import { createPortal } from "react-dom";
 import { useUserStore } from "@/store/userStore";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
-import { thresholdService } from "@/api";
 import { useAppliedPolicies } from "../PolicyDetail/hooks/useAppliedPolicies";
+import { familyService, thresholdService, userService } from "@/api";
+import PermissionManager from "./components/Permisssion";
 
 export default function Policy() {
   const navigate = useNavigate();
   // store에 저장된 user 정보 가져오기
   const userData = useUserStore((state) => state.userInfo);
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
 
   //대표자인가
   const isOwner = userData?.role === "OWNER";
@@ -31,51 +32,53 @@ export default function Policy() {
     queryKey: ["sharedPoolLimit"],
     queryFn: () =>
       thresholdService.getSharedPoolThreshold().then((res) => res.data),
+    staleTime: 0, //페이지에 다시 진입할 때 마다 요청하기
   });
 
-  // 개인 데이터 임게치 받아오기
+  // 개인 데이터 임계치 받아오기
   const { data: lineThreshold } = useQuery<LineThreshold>({
     queryKey: ["lineThreshold"],
     queryFn: () => thresholdService.getLineThreshold().then((res) => res.data),
+    staleTime: 0,
   });
 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [selectedTarget, setSelectedTarget] = useState<FamilyMember | null>(
+  const [selectedTarget, setSelectedTarget] = useState<SimpleMember | null>(
     null,
   );
   const [confirmText, setConfirmText] = useState("");
-  const [familyMembers] = useState<FamilyMember[]>([
-    {
-      isMe: false,
-      lineId: 100,
-      userId: 1,
-      userName: "김아내",
-      role: "MEMBER",
-      remainingData: 1600,
-      basicDataAmount: 2000,
-      sharedPoolRemainingAmount: 2000,
-      sharedPoolTotalAmount: 2000,
-    },
-    {
-      isMe: false,
-      lineId: 102,
-      userId: 2,
-      userName: "박아들",
-      role: "MEMBER",
-      remainingData: 1600,
-      basicDataAmount: 2000,
-      sharedPoolRemainingAmount: 2000,
-      sharedPoolTotalAmount: 2000,
-    },
-  ]);
 
-  async function handleTransfer() {
-    await fetch(`/api/families/owner?userId=${selectedTarget?.userId}`, {
-      method: "PATCH",
-    });
+  // 가족 목록 조회
+  const { data: familyMembers = [] } = useQuery<SimpleMember[]>({
+    queryKey: ["familyMembersSimple"],
+    queryFn: () => familyService.getMembersSimple().then((res) => res.data),
+    enabled: isTransferModalOpen, // 모달 열릴 때만 요청
+  });
+
+  // 권한 양도 mutation
+  const { mutate: transferOwner, isPending } = useMutation({
+    mutationFn: (changeLineId: number) =>
+      familyService.transferOwner(changeLineId),
+    onSuccess: async () => {
+      setIsTransferModalOpen(false);
+      setSelectedTarget(null);
+      setConfirmText("");
+      // 유저 정보 다시 fetch해서 store 업데이트
+      const { data } = await userService.getMyInfo();
+      setUserInfo(data);
+    },
+  });
+
+  const handleTransfer = () => {
+    if (!selectedTarget) return;
+    transferOwner(selectedTarget.lineId);
+  };
+
+  const handleCloseModal = () => {
     setIsTransferModalOpen(false);
-    window.location.reload();
-  }
+    setSelectedTarget(null);
+    setConfirmText("");
+  };
 
   return (
     <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
@@ -111,50 +114,53 @@ export default function Policy() {
         )}
 
         {/* 권한 관리 */}
-        {/* /api/member-permissions/family 같은데.. 이런식으로 오지 않음 물어보기 */}
-        <PermissionManager />
+        {isOwner && <PermissionManager />}
 
         {/* 구성원별 정책 제어 버튼 */}
-        <button
-          onClick={() => navigate("/policy-detail")}
-          className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
-        >
-          {/* 아이콘 영역 */}
-          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <img src={SettingIcon} />
-          </div>
+        {isOwner && (
+          <button
+            onClick={() => navigate("/policy-detail")}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+          >
+            {/* 아이콘 영역 */}
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <img src={SettingIcon} />
+            </div>
 
-          {/* 텍스트 */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold text-gray-800">
-              구성원별 정책 제어
-            </span>
-            <span className="text-xs text-gray-400">
-              데이터 한도, 속도 등을 설정하세요.
-            </span>
-          </div>
-        </button>
+            {/* 텍스트 */}
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-gray-800">
+                구성원별 정책 제어
+              </span>
+              <span className="text-xs text-gray-400">
+                데이터 한도, 속도 등을 설정하세요.
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* 권한 양도 버튼 */}
-        <button
-          onClick={() => setIsTransferModalOpen(true)}
-          className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
-        >
-          {/* 아이콘 영역 */}
-          <div className="w-12 h-12 rounded-xl bg-lime-100 flex items-center justify-center flex-shrink-0">
-            <img src={AssignIcon} />
-          </div>
+        {isOwner && (
+          <button
+            onClick={() => setIsTransferModalOpen(true)}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+          >
+            {/* 아이콘 영역 */}
+            <div className="w-12 h-12 rounded-xl bg-lime-100 flex items-center justify-center flex-shrink-0">
+              <img src={AssignIcon} />
+            </div>
 
-          {/* 텍스트 */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold text-gray-800">
-              권한 양도
-            </span>
-            <span className="text-xs text-gray-400">
-              대표자 권한을 양도할 구성원을 고르세요.
-            </span>
-          </div>
-        </button>
+            {/* 텍스트 */}
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-gray-800">
+                대표자 권한 양도
+              </span>
+              <span className="text-xs text-gray-400">
+                대표자 권한을 양도할 구성원을 고르세요.
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* 권한 양도 모달 */}
         {/* createPortal을 사용하면 부모 컴포넌트의 overflow, z-index 영향을 받지 않고 렌더링 가능 */}
@@ -163,11 +169,7 @@ export default function Policy() {
             <>
               <div
                 className="fixed inset-0 bg-black/40 z-[200]"
-                onClick={() => {
-                  setIsTransferModalOpen(false);
-                  setSelectedTarget(null);
-                  setConfirmText("");
-                }}
+                onClick={handleCloseModal}
               />
               <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[201] bg-white rounded-2xl p-6 max-w-sm mx-auto">
                 <h3 className="text-base font-bold text-gray-800 mb-4">
@@ -180,7 +182,7 @@ export default function Policy() {
                 </p>
                 <div className="flex flex-col gap-2 mb-5">
                   {familyMembers
-                    .filter((m) => m.role !== "OWNER")
+                    .filter((member) => member.lineId !== userData?.lineId)
                     .map((member, index) => (
                       <button
                         key={member.userId}
@@ -233,11 +235,13 @@ export default function Policy() {
                   <button
                     onClick={handleTransfer}
                     disabled={
-                      !selectedTarget || confirmText !== "권한을 양도합니다"
+                      !selectedTarget ||
+                      confirmText !== "권한을 양도합니다" ||
+                      isPending
                     }
                     className="flex-1 py-3 bg-[#678BF7] text-white rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    양도하기
+                    {isPending ? "처리중..." : "양도하기"}
                   </button>
                 </div>
               </div>

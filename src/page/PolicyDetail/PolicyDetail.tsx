@@ -5,9 +5,11 @@ import BlockTab from "./components/BlockTab";
 import LimitTab from "./components/LimitTab";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
 import Avatar from "@/components/common/Avatar";
-import { blockService, getErrorMessage } from "@/api";
+import { blockService } from "@/api";
 import { useUserStore } from "@/store/userStore";
 import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToastStore } from "@/store/toastStore";
 
 type FamilyMember = {
   lineId: number;
@@ -20,19 +22,22 @@ type TabType = "차단" | "제한" | "애플리케이션";
 
 const PolicyDetail = () => {
   const lineId = useUserStore((state) => state.userInfo?.lineId);
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
     null,
   );
   const [activeTab, setActiveTab] = useState<TabType>("차단");
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
-  
+
+  const queryClient = useQueryClient();
+
   // 사용자 선택 드래그 스크롤 상태
   const userScrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+
+  const { show } = useToastStore();
   // 음성 인식 타입 정의
   interface SpeechRecognitionResult {
     transcript: string;
@@ -65,53 +70,71 @@ const PolicyDetail = () => {
   const [activeBlockEndTime, setActiveBlockEndTime] = useState<Date | null>(
     null,
   );
-  
-  const { appliedPolicies, refetch: refetchAppliedPolicies } = useAppliedPolicies(selectedMember?.lineId);
 
-  const handleBlockApply = (minutes: number) => {
-    const end = new Date();
-    end.setMinutes(end.getMinutes() + minutes);
-    setActiveBlockEndTime(end);
+  const { appliedPolicies, refetch: refetchAppliedPolicies } =
+    useAppliedPolicies(selectedMember?.lineId);
+
+  // 차단 되어 있는가를 확인하기
+  const { data: immediateBlockData } = useQuery({
+    queryKey: ["immediateBlock", selectedMember?.lineId],
+    queryFn: () =>
+      blockService
+        .getImmediateBlock(selectedMember!.lineId)
+        .then((res) => res.data),
+    enabled: !!selectedMember?.lineId,
+  });
+
+  // immediateBlockData가 바뀔 때 activeBlockEndTime 동기화
+  const [prevImmediateBlockData, setPrevImmediateBlockData] =
+    useState(immediateBlockData);
+  if (immediateBlockData !== prevImmediateBlockData) {
+    setPrevImmediateBlockData(immediateBlockData);
+    if (
+      immediateBlockData?.blockEndAt &&
+      new Date(immediateBlockData.blockEndAt) > new Date()
+    ) {
+      setActiveBlockEndTime(new Date(immediateBlockData.blockEndAt));
+    } else {
+      setActiveBlockEndTime(null);
+    }
+  }
+
+  // handleBlockApply 수정
+  const handleBlockApply = (blockEndAt: string) => {
+    setActiveBlockEndTime(new Date(blockEndAt));
+  };
+
+  // 배너에서 차단 해제를 클릭했을 경우
+  const handleBlockRelease = async () => {
+    if (!selectedMember?.lineId) return;
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    await blockService.patchImmediateBlock(selectedMember.lineId, nowStr);
+    setActiveBlockEndTime(null); // 배너 숨김
+    queryClient.invalidateQueries({
+      queryKey: ["immediateBlock", selectedMember.lineId],
+    });
+    show("차단이 해제되었습니다."); // 토글 업데이트
   };
 
   const [expandedApps, setExpandedApps] = useState<Set<number>>(new Set());
 
   // 구성원 목록 조회 (페이지 로드 시 한 번만)
-  useEffect(() => {
-    blockService
-      .getFamilyMembersSimple()
-      .then((res) => {
-        console.log("백엔드 /families/members-simple 응답:", res.data);
-        setFamilyMembers(res.data);
-        if (res.data.length > 0) {
-          // 로그인한 사용자의 lineId와 일치하는 구성원을 기본 선택
-          const currentUser = res.data.find((m) => m.lineId === lineId);
-          const selected = currentUser || res.data[0];
-          setSelectedMember(selected);
-        }
-      })
-      .catch((error) => {
-        console.error("구성원 목록 조회 실패:", getErrorMessage(error));
-        // 에러 발생 시 더미 데이터 사용 (개발 중)
-        const dummyMembers = [
-          {
-            lineId: 10,
-            userId: 3,
-            userName: "홍길동",
-            phone: "01012345678",
-          },
-          {
-            lineId: 11,
-            userId: 4,
-            userName: "김철수",
-            phone: "01023456789",
-          },
-        ];
-        setFamilyMembers(dummyMembers);
-        setSelectedMember(dummyMembers[0]);
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // lineId 의존성 제거 - 페이지 로드 시 한 번만 실행
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["familyMembersSimple"],
+    queryFn: () =>
+      blockService.getFamilyMembersSimple().then((res) => res.data),
+  });
+
+  // selectedMember 초기화
+  const [prevFamilyMembers, setPrevFamilyMembers] = useState(familyMembers);
+  if (familyMembers !== prevFamilyMembers && familyMembers.length > 0) {
+    setPrevFamilyMembers(familyMembers);
+    const currentUser = familyMembers.find((m) => m.lineId === lineId);
+    setSelectedMember(currentUser || familyMembers[0]);
+  }
 
   // 음성 인식 초기화
   useEffect(() => {
@@ -266,7 +289,7 @@ const PolicyDetail = () => {
           {activeBlockEndTime && (
             <ActiveBlockBanner
               endTime={activeBlockEndTime}
-              onRelease={() => setActiveBlockEndTime(null)}
+              onRelease={handleBlockRelease} // ← 수정
             />
           )}
 
@@ -331,11 +354,14 @@ const PolicyDetail = () => {
             )}
 
             {activeTab === "차단" && (
-              <BlockTab 
+              <BlockTab
                 onBlockApply={handleBlockApply}
+                lineId={selectedMember?.lineId}
               />
             )}
-            {activeTab === "제한" && <LimitTab />}
+            {activeTab === "제한" && (
+              <LimitTab lineId={selectedMember?.lineId} />
+            )}
           </div>
         </div>
       </div>

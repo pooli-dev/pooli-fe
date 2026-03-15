@@ -5,6 +5,7 @@ import RangeSlider from "@/components/common/RangeSlider";
 import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
 import { formatData } from "@/utils/dataFormat";
 import { thresholdService } from "@/api";
+import { useToastStore } from "@/store/toastStore";
 
 type Props = {
   isOwner?: boolean;
@@ -13,90 +14,116 @@ type Props = {
 };
 
 export default function DataThresholdSlider({
-  isOwner = true,
+  isOwner = false,
   lineThreshold,
   sharedPoolThreshold,
 }: Props) {
+  // 사용자가 변경한 값만 override로 관리
   const [familyOverride, setFamilyOverride] = useState<{
     enabled?: boolean;
-    value?: string;
+    bytes?: number;
   }>({});
   const [individualOverride, setIndividualOverride] = useState<{
     enabled?: boolean;
-    value?: string;
+    bytes?: number;
   }>({});
 
   const familyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const individualDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const [prevLineThreshold, setPrevLineThreshold] = useState(lineThreshold);
+  const [prevSharedPoolThreshold, setPrevSharedPoolThreshold] =
+    useState(sharedPoolThreshold);
 
-  // 실제 사용 값 = 유저가 바꾼 값 OR props 값
+  const { show } = useToastStore();
+
+  if (lineThreshold !== prevLineThreshold) {
+    setPrevLineThreshold(lineThreshold);
+    setIndividualOverride({});
+  }
+
+  if (sharedPoolThreshold !== prevSharedPoolThreshold) {
+    setPrevSharedPoolThreshold(sharedPoolThreshold);
+    setFamilyOverride({});
+  }
+
+  const toGB = (bytes: number) => formatData(bytes);
+  const toBytes = (gb: number) => Math.round(gb * 1e9);
+
+  // 실제 값 = override가 있으면 override, 없으면 props
   const familyEnabled =
     familyOverride.enabled ?? sharedPoolThreshold?.isThresholdActive ?? false;
-  const familyValue =
-    familyOverride.value ??
-    String(formatData(sharedPoolThreshold?.familyThreshold ?? 0));
+  const familyBytes =
+    familyOverride.bytes ?? sharedPoolThreshold?.familyThreshold ?? 0;
   const individualEnabled =
     individualOverride.enabled ?? lineThreshold?.isThresholdActive ?? false;
-  const individualValue =
-    individualOverride.value ??
-    String(formatData(lineThreshold?.individualThreshold ?? 0));
+  const individualBytes =
+    individualOverride.bytes ?? lineThreshold?.individualThreshold ?? 0;
 
-  const FAMILY_MIN = formatData(sharedPoolThreshold?.minThreshold ?? 0);
-  const FAMILY_MAX =
+  const familyGB = toGB(familyBytes);
+  const individualGB = toGB(individualBytes);
+
+  const familyMin = toGB(sharedPoolThreshold?.minThreshold ?? 0);
+  const familyMax =
     sharedPoolThreshold?.maxThreshold === -1
-      ? "무제한"
-      : formatData(sharedPoolThreshold?.maxThreshold ?? 100);
-  const INDIVIDUAL_MIN = formatData(lineThreshold?.thresholdMinValue ?? 0);
-  const INDIVIDUAL_MAX =
+      ? null
+      : toGB(sharedPoolThreshold?.maxThreshold ?? 0);
+
+  const individualMin = toGB(lineThreshold?.thresholdMinValue ?? 0);
+  const individualMax =
     lineThreshold?.thresholdMaxValue === -1
-      ? "무제한"
-      : formatData(lineThreshold?.thresholdMaxValue ?? 100);
+      ? null
+      : toGB(lineThreshold?.thresholdMaxValue ?? 0);
 
-  const isFamilyUnlimited = sharedPoolThreshold?.maxThreshold === -1;
-  const isIndividualUnlimited = lineThreshold?.thresholdMaxValue === -1;
-
-  const handleFamilyChange = (patch: { enabled?: boolean; value?: string }) => {
-    const next = { ...familyOverride, ...patch };
-    setFamilyOverride(next);
-
+  const handleFamilyChange = (newBytes: number) => {
+    setFamilyOverride((prev) => ({ ...prev, bytes: newBytes }));
     if (familyDebounceRef.current) clearTimeout(familyDebounceRef.current);
     familyDebounceRef.current = setTimeout(() => {
-      const val = next.value ?? familyValue;
       thresholdService
-        .patchSharedPoolThreshold(gbToBytes(Number(val)))
-        .catch(console.error);
+        .patchSharedPoolThreshold(newBytes)
+        .then(() => show("가족 공유 데이터 임계치가 저장되었습니다."))
+        .catch(() => show("저장에 실패했습니다.", "error"));
     }, 1000);
   };
 
-  const handleIndividualChange = (patch: {
-    enabled?: boolean;
-    value?: string;
-  }) => {
-    const next = { ...individualOverride, ...patch };
-    setIndividualOverride(next);
+  const handleFamilyToggle = (enabled: boolean) => {
+    setFamilyOverride((prev) => ({ ...prev, enabled }));
+    if (familyDebounceRef.current) clearTimeout(familyDebounceRef.current);
+    familyDebounceRef.current = setTimeout(() => {
+      thresholdService
+        .patchSharedPoolThreshold(familyBytes)
+        .then(() => show("가족 공유 데이터 임계치가 저장되었습니다."))
+        .catch(() => show("저장에 실패했습니다.", "error"));
+    }, 1000);
+  };
 
+  const handleIndividualChange = (newBytes: number) => {
+    setIndividualOverride((prev) => ({ ...prev, bytes: newBytes }));
     if (individualDebounceRef.current)
       clearTimeout(individualDebounceRef.current);
     individualDebounceRef.current = setTimeout(() => {
-      const val = next.value ?? individualValue;
-      const enabled = next.enabled ?? individualEnabled;
       thresholdService
-        .patchLineThreshold(gbToBytes(Number(val)), enabled)
-        .catch(console.error);
+        .patchLineThreshold(newBytes, individualEnabled)
+        .then(() => show("개인 데이터 임계치가 저장되었습니다."))
+        .catch(() => show("저장에 실패했습니다.", "error"));
     }, 1000);
   };
 
-  // GB → bytes 변환
-  const gbToBytes = (gb: number): number => Math.round(gb * 1e9);
+  const handleIndividualToggle = (enabled: boolean) => {
+    setIndividualOverride((prev) => ({ ...prev, enabled }));
+    if (individualDebounceRef.current)
+      clearTimeout(individualDebounceRef.current);
+    individualDebounceRef.current = setTimeout(() => {
+      thresholdService
+        .patchLineThreshold(individualBytes, enabled)
+        .then(() => show("개인 데이터 임계치가 저장되었습니다."))
+        .catch(() => show("저장에 실패했습니다.", "error"));
+    }, 1000);
+  };
 
-  console.log(lineThreshold, sharedPoolThreshold);
-  console.log("familyThreshold raw:", sharedPoolThreshold?.familyThreshold);
-  console.log(
-    "formatData 결과:",
-    formatData(sharedPoolThreshold?.familyThreshold ?? 0),
-  );
+  const familyDisabled = !isOwner;
+  const individualControlDisabled = !individualEnabled;
 
   return (
     <GlassCard
@@ -128,8 +155,8 @@ export default function DataThresholdSlider({
             </span>
             <Toggle
               checked={familyEnabled}
-              onChange={(v) => handleFamilyChange({ enabled: v })}
-              disabled={!isOwner}
+              onChange={handleFamilyToggle}
+              disabled={familyDisabled}
             />
           </div>
 
@@ -138,28 +165,19 @@ export default function DataThresholdSlider({
               <input
                 type="text"
                 inputMode="decimal"
-                value={familyValue}
+                value={familyGB}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (/^\d*\.?\d*$/.test(val))
-                    handleFamilyChange({ value: val });
-                }}
-                onBlur={() => {
-                  if (!isFamilyUnlimited) {
-                    const maxVal =
-                      typeof FAMILY_MAX === "number"
-                        ? FAMILY_MAX
-                        : parseFloat(FAMILY_MAX);
-                    const clamped = Math.min(
-                      maxVal,
-                      Math.max(FAMILY_MIN, Number(familyValue)),
-                    );
-                    handleFamilyChange({
-                      value: parseFloat(clamped.toFixed(1)).toString(),
-                    });
+                  if (/^\d*\.?\d*$/.test(val)) {
+                    handleFamilyChange(toBytes(Number(val)));
                   }
                 }}
-                disabled={!familyEnabled || !isOwner}
+                onBlur={() => {
+                  const max = familyMax ?? Infinity;
+                  const clamped = Math.min(max, Math.max(familyMin, familyGB));
+                  handleFamilyChange(toBytes(clamped));
+                }}
+                disabled={familyDisabled || !familyEnabled}
                 className="w-20 text-center text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:bg-white/50 rounded px-1 transition-colors disabled:opacity-50"
               />
               <span className="text-2xl font-bold text-gray-800">GB</span>
@@ -167,22 +185,18 @@ export default function DataThresholdSlider({
           </div>
 
           <RangeSlider
-            value={Number(familyValue)}
-            onChange={(v) => handleFamilyChange({ value: String(v) })}
-            min={FAMILY_MIN}
-            max={
-              isFamilyUnlimited
-                ? 1000
-                : typeof FAMILY_MAX === "number"
-                  ? FAMILY_MAX
-                  : parseFloat(FAMILY_MAX)
-            }
+            value={familyGB}
+            onChange={(v) => handleFamilyChange(toBytes(v))}
+            min={familyMin}
+            max={familyMax ?? 1000}
             step={0.1}
-            disabled={!familyEnabled || !isOwner}
+            disabled={familyDisabled || !familyEnabled}
           />
           <div className="flex justify-between mt-1">
-            <span className="text-xs text-gray-300">{FAMILY_MIN}GB</span>
-            <span className="text-xs text-gray-300">{FAMILY_MAX}</span>
+            <span className="text-xs text-gray-300">{familyMin}GB</span>
+            <span className="text-xs text-gray-300">
+              {familyMax === null ? "무제한" : `${familyMax}GB`}
+            </span>
           </div>
         </div>
 
@@ -194,8 +208,7 @@ export default function DataThresholdSlider({
             </span>
             <Toggle
               checked={individualEnabled}
-              onChange={(v) => handleIndividualChange({ enabled: v })}
-              disabled={false}
+              onChange={handleIndividualToggle}
             />
           </div>
 
@@ -204,28 +217,22 @@ export default function DataThresholdSlider({
               <input
                 type="text"
                 inputMode="decimal"
-                value={individualValue}
+                value={individualGB}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (/^\d*\.?\d*$/.test(val))
-                    handleIndividualChange({ value: val });
-                }}
-                onBlur={() => {
-                  if (!isIndividualUnlimited) {
-                    const maxVal =
-                      typeof INDIVIDUAL_MAX === "number"
-                        ? INDIVIDUAL_MAX
-                        : parseFloat(INDIVIDUAL_MAX);
-                    const clamped = Math.min(
-                      maxVal,
-                      Math.max(INDIVIDUAL_MIN, Number(individualValue)),
-                    );
-                    handleIndividualChange({
-                      value: parseFloat(clamped.toFixed(1)).toString(),
-                    });
+                  if (/^\d*\.?\d*$/.test(val)) {
+                    handleIndividualChange(toBytes(Number(val)));
                   }
                 }}
-                disabled={!individualEnabled}
+                onBlur={() => {
+                  const max = individualMax ?? Infinity;
+                  const clamped = Math.min(
+                    max,
+                    Math.max(individualMin, individualGB),
+                  );
+                  handleIndividualChange(toBytes(clamped));
+                }}
+                disabled={individualControlDisabled}
                 className="w-20 text-center text-2xl font-bold text-gray-800 bg-transparent border-none outline-none focus:bg-white/50 rounded px-1 transition-colors disabled:opacity-50"
               />
               <span className="text-2xl font-bold text-gray-800">GB</span>
@@ -233,22 +240,18 @@ export default function DataThresholdSlider({
           </div>
 
           <RangeSlider
-            value={Number(individualValue)}
-            onChange={(v) => handleIndividualChange({ value: String(v) })}
-            min={INDIVIDUAL_MIN}
-            max={
-              isIndividualUnlimited
-                ? 1000
-                : typeof INDIVIDUAL_MAX === "number"
-                  ? INDIVIDUAL_MAX
-                  : parseFloat(INDIVIDUAL_MAX)
-            }
+            value={individualGB}
+            onChange={(v) => handleIndividualChange(toBytes(v))}
+            min={individualMin}
+            max={individualMax ?? 1000}
             step={0.1}
-            disabled={!individualEnabled}
+            disabled={individualControlDisabled}
           />
           <div className="flex justify-between mt-1">
-            <span className="text-xs text-gray-300">{INDIVIDUAL_MIN}GB</span>
-            <span className="text-xs text-gray-300">{INDIVIDUAL_MAX}</span>
+            <span className="text-xs text-gray-300">{individualMin}GB</span>
+            <span className="text-xs text-gray-300">
+              {individualMax === null ? "무제한" : `${individualMax}GB`}
+            </span>
           </div>
         </div>
       </div>

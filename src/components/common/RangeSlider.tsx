@@ -1,8 +1,8 @@
 /**
  * RangeSlider 공용 컴포넌트
- * 
+ *
  * 사용 방법:
- * <RangeSlider 
+ * <RangeSlider
  *   value={500}
  *   onChange={(value) => console.log(value)}
  *   min={0}
@@ -22,16 +22,19 @@ interface RangeSliderProps {
   disabled?: boolean;
 }
 
-export default function RangeSlider({ 
-  value, 
-  onChange, 
+export default function RangeSlider({
+  value,
+  onChange,
   onChangeEnd,
-  min, 
-  max, 
+  min,
+  max,
   step = 1,
-  disabled = false 
+  disabled = false,
 }: RangeSliderProps) {
-  const percentage = ((value - min) / (max - min)) * 100;
+  const percentage =
+    max === min
+      ? 0
+      : Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
 
   return (
     <div className="relative w-full">
@@ -42,12 +45,16 @@ export default function RangeSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        onMouseUp={(e) => onChangeEnd?.(Number((e.target as HTMLInputElement).value))}
-        onTouchEnd={(e) => onChangeEnd?.(Number((e.target as HTMLInputElement).value))}
+        onMouseUp={(e) =>
+          onChangeEnd?.(Number((e.target as HTMLInputElement).value))
+        }
+        onTouchEnd={(e) =>
+          onChangeEnd?.(Number((e.target as HTMLInputElement).value))
+        }
         disabled={disabled}
         className="w-full h-2 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         style={{
-          background: `linear-gradient(to right, #678BF7 0%, #9A9CEA ${percentage}%, #E5E7EB ${percentage}%, #E5E7EB 100%)`
+          background: `linear-gradient(to right, #678BF7 0%, #9A9CEA ${percentage}%, #E5E7EB ${percentage}%, #E5E7EB 100%)`,
         }}
       />
       <style>{`

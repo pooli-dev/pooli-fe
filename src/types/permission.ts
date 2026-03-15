@@ -1,20 +1,7 @@
-// types/permission.ts
-export type FamilyMember = {
-  lineId: number;
-  userId: number;
-  userName: string;
-  phone: string;
-  role: string;
-};
-
-export type FamilyMembersResponse = {
-  familyId: number;
-  members: FamilyMember[];
-};
-
 export type MemberPermission = {
   familyId: number;
   lineId: number;
+  userName: string;
   permissionId: number;
   permissionTitle: string;
   createdAt: string;

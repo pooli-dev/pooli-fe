@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { AlarmCategory } from "../types/alarm";
-import { useAlarmStore } from "../store/alarmStore";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { notificationService } from "@/api";
+import { getAlarmMessage, getAlarmCategory } from "@/utils/alarmUtils";
 
-/**
- * 카테고리별 아이콘 컴포넌트
- * @param category - 알림 카테고리 (data, policy, permission, etc)
- * @param isRead - 읽음 여부
- * @returns 카테고리에 맞는 아이콘 JSX
- */
 const CategoryIcon = ({
   category,
   isRead,
@@ -78,6 +78,7 @@ const CategoryIcon = ({
         </div>
       );
     case "etc":
+    default:
       return (
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -103,15 +104,11 @@ const CategoryIcon = ({
   }
 };
 
-/**
- * 알림 페이지 컴포넌트
- * 카테고리별 알림 필터링 및 읽음 처리 기능을 제공합니다.
- * @returns 알림 페이지 JSX
- */
 export default function Alarm() {
   const [selectedCategory, setSelectedCategory] =
     useState<AlarmCategory>("all");
-  const { alarms, markAsRead, markAllAsRead } = useAlarmStore();
+  const queryClient = useQueryClient();
+  const observerRef = useRef<HTMLDivElement>(null);
 
   const categories: { key: AlarmCategory; label: string }[] = [
     { key: "all", label: "전체" },
@@ -121,10 +118,63 @@ export default function Alarm() {
     { key: "etc", label: "기타" },
   ];
 
-  const filteredAlarms =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["notifications"],
+      queryFn: ({ pageParam = 0 }) =>
+        notificationService
+          .getNotifications({
+            pageNumber: pageParam as number,
+            pageSize: 20,
+          })
+          .then((res) => res.data),
+      getNextPageParam: (lastPage) =>
+        lastPage.page + 1 < lastPage.totalPages ? lastPage.page + 1 : undefined,
+      initialPageParam: 0,
+    });
+
+  const { mutate: markAsRead } = useMutation({
+    mutationFn: (alarmHistoryId: number) =>
+      notificationService.markAsRead(alarmHistoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
+  const { mutate: markAllAsRead } = useMutation({
+    mutationFn: () => notificationService.markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const allNotifications = data?.pages.flatMap((page) => page.content) ?? [];
+
+  // 프론트에서 카테고리 필터링
+  const filteredNotifications =
     selectedCategory === "all"
-      ? alarms
-      : alarms.filter((alarm) => alarm.category === selectedCategory);
+      ? allNotifications
+      : allNotifications.filter(
+          (alarm) => getAlarmCategory(alarm.alarmCode) === selectedCategory,
+        );
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getMonth() + 1}.${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  };
 
   return (
     <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
@@ -149,7 +199,7 @@ export default function Alarm() {
         {/* 전체 읽음 버튼 */}
         <div className="flex justify-end mb-4">
           <button
-            onClick={markAllAsRead}
+            onClick={() => markAllAsRead()}
             className="text-[#678BF7] font-medium"
             style={{ fontSize: "0.875em" }}
           >
@@ -159,65 +209,82 @@ export default function Alarm() {
 
         {/* 알림 리스트 */}
         <div className="space-y-3">
-          {filteredAlarms.map((alarm) => (
-            <div
-              key={alarm.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => markAsRead(alarm.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  markAsRead(alarm.id);
-                }
-              }}
-              className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
-                alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"
-              }`}
-            >
-              <CategoryIcon category={alarm.category} isRead={alarm.isRead} />
+          {filteredNotifications.map((alarm, index) => {
+            const category = getAlarmCategory(alarm.alarmCode);
+            const message = getAlarmMessage(alarm);
 
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  {!alarm.isRead && (
+            return (
+              <div
+                key={alarm.alarmHistoryId ?? `${alarm.createdAt}-${index}`}
+                role="button"
+                tabIndex={0}
+                onClick={() =>
+                  alarm.alarmHistoryId &&
+                  !alarm.isRead &&
+                  markAsRead(alarm.alarmHistoryId)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (alarm.alarmHistoryId && !alarm.isRead)
+                      markAsRead(alarm.alarmHistoryId);
+                  }
+                }}
+                className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
+                  alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"
+                }`}
+              >
+                <CategoryIcon
+                  category={category === "all" ? "etc" : category}
+                  isRead={alarm.isRead}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    {!alarm.isRead ? (
+                      <span
+                        className="font-bold text-[#FF6B6B]"
+                        style={{ fontSize: "0.75em" }}
+                      >
+                        NEW
+                      </span>
+                    ) : (
+                      <span
+                        className="font-medium text-[#CCCCCC]"
+                        style={{ fontSize: "0.75em" }}
+                      >
+                        READ
+                      </span>
+                    )}
                     <span
-                      className="font-bold text-[#FF6B6B]"
+                      className={
+                        alarm.isRead ? "text-[#CCCCCC]" : "text-[#999999]"
+                      }
                       style={{ fontSize: "0.75em" }}
                     >
-                      NEW
+                      {formatDate(alarm.createdAt)}
                     </span>
-                  )}
-                  {alarm.isRead && (
-                    <span
-                      className="font-medium text-[#CCCCCC]"
-                      style={{ fontSize: "0.75em" }}
-                    >
-                      READ
-                    </span>
-                  )}
-                  <span
-                    className={
-                      alarm.isRead ? "text-[#CCCCCC]" : "text-[#999999]"
-                    }
-                    style={{ fontSize: "0.75em" }}
+                  </div>
+                  <p
+                    className={`leading-relaxed ${alarm.isRead ? "text-[#AAAAAA]" : "text-[#333333]"}`}
+                    style={{ fontSize: "0.875em" }}
                   >
-                    {alarm.date}
-                  </span>
+                    {message}
+                  </p>
                 </div>
-                <p
-                  className={`leading-relaxed ${
-                    alarm.isRead ? "text-[#AAAAAA]" : "text-[#333333]"
-                  }`}
-                  style={{ fontSize: "0.875em" }}
-                >
-                  {alarm.title}
-                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {filteredAlarms.length === 0 && (
+        {/* 무한스크롤 트리거 */}
+        <div
+          ref={observerRef}
+          className="py-4 text-center text-sm text-[#CCCCCC]"
+        >
+          {isFetchingNextPage && "불러오는 중..."}
+        </div>
+
+        {filteredNotifications.length === 0 && (
           <div className="text-center py-20 text-[#999999]">
             알림이 없습니다.
           </div>

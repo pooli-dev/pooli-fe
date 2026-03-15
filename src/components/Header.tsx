@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAlarmStore } from "../store/alarmStore";
 import { useSettingStore } from "../store/settingStore";
 import { useUserStore } from "../store/userStore";
 import logo from "../assets/img/logo.svg";
 import alarmIcon from "../assets/icon/alarm-icon.png";
 import settingIcon from "../assets/icon/setting-icon.png";
+import { useQuery } from "@tanstack/react-query";
+import { notificationService } from "@/api";
 
 interface HeaderProps {
   showAlarm?: boolean;
@@ -24,9 +25,13 @@ export default function Header({
 }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const unreadCount = useAlarmStore(
-    (state) => state.alarms.filter((a) => !a.isRead).length,
-  );
+  const { data: unreadData } = useQuery({
+    queryKey: ["unreadCount"],
+    queryFn: () => notificationService.getUnreadCount().then((res) => res.data),
+    refetchInterval: 30000, // 30초마다 폴링
+  });
+
+  const unreadCount = unreadData?.unreadCount ?? 0;
   const darkMode = useSettingStore((state) => state.darkMode);
   const userInfo = useUserStore((state) => state.userInfo);
 

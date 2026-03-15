@@ -13,5 +13,6 @@ export { blockService } from "./services/blockService";
 export { familyService } from "./services/familyService";
 export { lineService } from "./services/lineService";
 export { thresholdService } from "./services/thresholdService";
+export { limitService } from "./services/limitService";
 export { adminPolicyService } from "./services/adminPolicyService";
 export { notificationService } from "./services/notificationService";
