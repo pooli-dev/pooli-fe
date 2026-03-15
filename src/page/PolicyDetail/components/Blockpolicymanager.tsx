@@ -1,461 +1,76 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import GlassCard from "../../../components/common/GlassCard";
-import Toggle from "@/components/common/Toggle";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import GlassCard from "@/components/common/GlassCard";
+import BlockItem from "./Block/BlockItem";
+import EditPanel from "./Block/EditPanel";
+import { blockService } from "@/api/index";
+import { toBlockPolicy, toApiPayload } from "@/utils/dataFormat";
+import type { BlockPolicy } from "@/types/block";
+import { useToastStore } from "@/store/toastStore";
 
-type DayKey = "월" | "화" | "수" | "목" | "금" | "토" | "일";
-const DAYS: DayKey[] = ["월", "화", "수", "목", "금", "토", "일"];
-
-type BlockPolicy = {
-  id: number;
-  startHour: number;
-  startMin: number;
-  endHour: number;
-  endMin: number;
-  days: DayKey[];
-  enabled: boolean;
-};
-
-type Props = {
-  initialPolicies?: BlockPolicy[];
-  onSave?: (policies: BlockPolicy[]) => void;
-};
-
-function formatTime(h: number, m: number) {
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function formatDays(days: DayKey[]) {
-  return days.join(", ") + " 적용됨";
-}
-
-function clampEndTime(
-  startH: number,
-  startM: number,
-  endH: number,
-  endM: number,
-) {
-  const startTotal = startH * 60 + startM;
-  const endTotal = endH * 60 + endM;
-  const diff =
-    endTotal >= startTotal
-      ? endTotal - startTotal
-      : endTotal + 1440 - startTotal;
-  if (diff > 24 * 60) {
-    const maxTotal = (startTotal + 24 * 60) % (24 * 60);
-    return { endHour: Math.floor(maxTotal / 60), endMin: maxTotal % 60 };
-  }
-  return { endHour: endH, endMin: endM };
-}
-
-// ── 드럼롤 스크롤 피커 ────────────────────────────────────────────────────────
-const ITEM_HEIGHT = 40;
-const VISIBLE_COUNT = 5;
-
-function ScrollPicker({
-  values,
-  selected,
-  onChange,
-}: {
-  values: number[];
-  selected: number;
-  onChange: (v: number) => void;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isScrolling = useRef(false);
-
-  const scrollToValue = useCallback(
-    (val: number, smooth = true) => {
-      const el = containerRef.current;
-      if (!el) return;
-      const idx = values.indexOf(val);
-      el.scrollTo({
-        top: idx * ITEM_HEIGHT,
-        behavior: smooth ? "smooth" : "auto",
-      });
-    },
-    [values],
-  );
-
-  useEffect(() => {
-    scrollToValue(selected, false);
-  }, [scrollToValue, selected]);
-
-  const handleScroll = () => {
-    if (isScrolling.current) return;
-    const el = containerRef.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
-    const snapped = values[Math.min(Math.max(idx, 0), values.length - 1)];
-    if (snapped !== selected) onChange(snapped);
-  };
-
-  const handleScrollEnd = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
-    const snapped = values[Math.min(Math.max(idx, 0), values.length - 1)];
-    isScrolling.current = true;
-    scrollToValue(snapped);
-    setTimeout(() => {
-      isScrolling.current = false;
-    }, 300);
-    if (snapped !== selected) onChange(snapped);
-  };
-
-  return (
-    <div
-      className="relative"
-      style={{ width: 48, height: ITEM_HEIGHT * VISIBLE_COUNT }}
-    >
-      {/* 선택 영역 하이라이트 */}
-      <div
-        className="absolute left-0 right-0 pointer-events-none rounded-xl"
-        style={{
-          top: ITEM_HEIGHT * Math.floor(VISIBLE_COUNT / 2),
-          height: ITEM_HEIGHT,
-          backgroundColor: "rgba(103, 139, 247, 0.12)",
-          border: "1.5px solid rgba(103, 139, 247, 0.25)",
-        }}
-      />
-      {/* 위아래 페이드 */}
-      <div
-        className="absolute inset-x-0 top-0 h-16 pointer-events-none z-10"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(248,249,255,1), transparent)",
-        }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-16 pointer-events-none z-10"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(248,249,255,1), transparent)",
-        }}
-      />
-
-      <div
-        ref={containerRef}
-        className="h-full overflow-y-scroll"
-        style={{ scrollSnapType: "y mandatory", scrollbarWidth: "none" }}
-        onScroll={handleScroll}
-        onScrollCapture={handleScroll}
-        onMouseUp={handleScrollEnd}
-        onTouchEnd={handleScrollEnd}
-      >
-        {/* 상단 패딩 */}
-        {Array.from({ length: Math.floor(VISIBLE_COUNT / 2) }).map((_, i) => (
-          <div key={`top-${i}`} style={{ height: ITEM_HEIGHT }} />
-        ))}
-        {values.map((val) => (
-          <div
-            key={val}
-            onClick={() => {
-              onChange(val);
-              scrollToValue(val);
-            }}
-            className="flex items-center justify-center cursor-pointer transition-all"
-            style={{
-              height: ITEM_HEIGHT,
-              scrollSnapAlign: "center",
-              fontSize: val === selected ? 22 : 16,
-              fontWeight: val === selected ? 700 : 400,
-              color: val === selected ? "#678BF7" : "#9CA3AF",
-            }}
-          >
-            {String(val).padStart(2, "0")}
-          </div>
-        ))}
-        {/* 하단 패딩 */}
-        {Array.from({ length: Math.floor(VISIBLE_COUNT / 2) }).map((_, i) => (
-          <div key={`bot-${i}`} style={{ height: ITEM_HEIGHT }} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINS = Array.from({ length: 60 }, (_, i) => i);
-
-// ── 시간 피커 ─────────────────────────────────────────────────────────────────
-function TimePicker({
-  label,
-  hour,
-  min,
-  onHourChange,
-  onMinChange,
-}: {
-  label: string;
-  hour: number;
-  min: number;
-  onHourChange: (h: number) => void;
-  onMinChange: (m: number) => void;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-xs text-gray-400">{label}</span>
-      <div className="flex items-center gap-1">
-        <ScrollPicker values={HOURS} selected={hour} onChange={onHourChange} />
-        <span className="text-2xl font-bold text-gray-300 pb-1">:</span>
-        <ScrollPicker values={MINS} selected={min} onChange={onMinChange} />
-      </div>
-    </div>
-  );
-}
-
-// ── 편집 패널 ─────────────────────────────────────────────────────────────────
-function EditPanel({
-  policy,
-  mode,
-  onConfirm,
-  onDelete,
-  onCancel,
-}: {
-  policy: BlockPolicy;
-  mode: "add" | "edit";
-  onConfirm: (p: BlockPolicy) => void;
-  onDelete?: () => void;
-  onCancel: () => void;
-}) {
-  const [draft, setDraft] = useState<BlockPolicy>({ ...policy });
-
-  const setStartHour = (h: number) => {
-    const clamped = clampEndTime(
-      h,
-      draft.startMin,
-      draft.endHour,
-      draft.endMin,
-    );
-    setDraft((d) => ({ ...d, startHour: h, ...clamped }));
-  };
-  const setStartMin = (m: number) => {
-    const clamped = clampEndTime(
-      draft.startHour,
-      m,
-      draft.endHour,
-      draft.endMin,
-    );
-    setDraft((d) => ({ ...d, startMin: m, ...clamped }));
-  };
-  const setEndHour = (h: number) => {
-    const clamped = clampEndTime(
-      draft.startHour,
-      draft.startMin,
-      h,
-      draft.endMin,
-    );
-    setDraft((d) => ({ ...d, ...clamped }));
-  };
-  const setEndMin = (m: number) => {
-    const clamped = clampEndTime(
-      draft.startHour,
-      draft.startMin,
-      draft.endHour,
-      m,
-    );
-    setDraft((d) => ({ ...d, ...clamped }));
-  };
-  const toggleDay = (day: DayKey) => {
-    setDraft((d) => ({
-      ...d,
-      days: d.days.includes(day)
-        ? d.days.filter((x) => x !== day)
-        : [...d.days, day],
-    }));
-  };
-
-  return (
-    <div
-      className="mt-2 rounded-2xl p-4 border border-dashed border-gray-200"
-      style={{ backgroundColor: "rgba(248,249,255,0.8)" }}
-    >
-      {/* 요일 선택 */}
-      <div className="flex justify-between mb-5">
-        {DAYS.map((day) => {
-          const selected = draft.days.includes(day);
-          return (
-            <button
-              key={day}
-              onClick={() => toggleDay(day)}
-              className="w-9 h-9 rounded-full text-sm font-semibold transition-all"
-              style={{
-                backgroundColor: selected ? "#678BF7" : "transparent",
-                color: selected ? "white" : "#9CA3AF",
-                border: selected ? "none" : "1.5px solid #E5E7EB",
-              }}
-            >
-              {day}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 시간 피커 */}
-      <div className="flex items-center justify-center gap-6">
-        <TimePicker
-          label="시작 시간"
-          hour={draft.startHour}
-          min={draft.startMin}
-          onHourChange={setStartHour}
-          onMinChange={setStartMin}
-        />
-        <span className="text-xl text-gray-300 mt-4">~</span>
-        <TimePicker
-          label="종료 시간"
-          hour={draft.endHour}
-          min={draft.endMin}
-          onHourChange={setEndHour}
-          onMinChange={setEndMin}
-        />
-      </div>
-
-      {/* 안내 */}
-      <div className="mt-4 space-y-1">
-        <p className="text-xs text-gray-400 text-left">
-          • 요일 설정은 시작일 기준입니다.
-        </p>
-        <p className="text-xs text-gray-400 text-left">
-          • 차단 시간은 최대 24시간까지만 설정할 수 있습니다.
-        </p>
-      </div>
-
-      {/* 버튼 */}
-      <div className="flex gap-2 mt-4">
-        {mode === "add" ? (
-          <>
-            <button
-              onClick={() => onConfirm(draft)}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
-              style={{ backgroundColor: "#678BF7" }}
-            >
-              정책 추가하기
-            </button>
-            <button
-              onClick={onCancel}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-gray-500 border border-gray-200"
-            >
-              취소하기
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={() => onConfirm({ ...draft, enabled: true })}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
-              style={{ backgroundColor: "#678BF7" }}
-            >
-              정책 수정하기
-            </button>
-            <button
-              onClick={onDelete}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
-              style={{ backgroundColor: "#F87171" }}
-            >
-              삭제하기
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── 정책 아이템 ───────────────────────────────────────────────────────────────
-function PolicyItem({
-  policy,
-  onUpdate,
-  onDelete,
-  onToggle,
-}: {
-  policy: BlockPolicy;
-  onUpdate: (p: BlockPolicy) => void;
-  onDelete: () => void;
-  onToggle: (enabled: boolean) => void;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div>
-      <div
-        className="flex items-start gap-3 cursor-pointer py-1"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800 text-left">
-            {formatTime(policy.startHour, policy.startMin)} ~{" "}
-            {formatTime(policy.endHour, policy.endMin)}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5 text-left">
-            {formatDays(policy.days)}
-          </p>
-        </div>
-        <div onClick={(e) => e.stopPropagation()}>
-          <Toggle checked={policy.enabled} onChange={onToggle} />
-        </div>
-      </div>
-      {open && (
-        <EditPanel
-          policy={policy}
-          mode="edit"
-          onConfirm={(updated) => {
-            onUpdate(updated);
-            setOpen(false);
-          }}
-          onDelete={() => {
-            onDelete();
-            setOpen(false);
-          }}
-          onCancel={() => setOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// ── BlockPolicyManager ────────────────────────────────────────────────────────
-let nextId = 100;
-
-export default function BlockPolicyManager({
-  initialPolicies = [],
-  onSave,
-}: Props) {
-  const [policies, setPolicies] = useState<BlockPolicy[]>(initialPolicies);
+export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const queryClient = useQueryClient();
+  const { show } = useToastStore();
 
-  const newDraft = (): BlockPolicy => ({
-    id: ++nextId,
-    startHour: 22,
-    startMin: 0,
-    endHour: 7,
-    endMin: 0,
-    days: ["월", "수", "금"],
-    enabled: true,
+  const { data: policies = [] } = useQuery({
+    queryKey: ["repeatBlocks", lineId],
+    queryFn: () =>
+      blockService
+        .getRepeatBlockPolicies(lineId!)
+        .then((res) => res.data.map(toBlockPolicy)),
+    enabled: !!lineId,
   });
 
-  const handleAdd = (p: BlockPolicy) => {
-    const u = [...policies, p];
-    setPolicies(u);
-    setShowAddPanel(false);
-    onSave?.(u);
-  };
+  const { mutate: createBlock } = useMutation({
+    mutationFn: (policy: BlockPolicy) =>
+      blockService.createRepeatBlockPolicy(toApiPayload(policy)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
+      show("차단 정책이 추가되었습니다.");
+    },
+    onError: () => show("차단 정책 추가에 실패했습니다.", "error"),
+  });
 
-  const handleUpdate = (id: number, p: BlockPolicy) => {
-    const u = policies.map((m) => (m.id === id ? p : m));
-    setPolicies(u);
-    onSave?.(u);
-  };
+  const { mutate: updateBlock } = useMutation({
+    mutationFn: (policy: BlockPolicy) =>
+      blockService.updateRepeatBlockPolicy(policy.id, toApiPayload(policy)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
+      show("차단 정책이 수정되었습니다.");
+    },
+    onError: () => show("차단 정책 수정에 실패했습니다.", "error"),
+  });
 
-  const handleDelete = (id: number) => {
-    const u = policies.filter((m) => m.id !== id);
-    setPolicies(u);
-    onSave?.(u);
-  };
+  const { mutate: deleteBlock } = useMutation({
+    mutationFn: (id: number) => blockService.deleteRepeatBlockPolicy(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
+      show("차단 정책이 삭제되었습니다.");
+    },
+    onError: () => show("차단 정책 삭제에 실패했습니다.", "error"),
+  });
 
-  const handleToggle = (id: number, enabled: boolean) => {
-    const u = policies.map((m) => (m.id === id ? { ...m, enabled } : m));
-    setPolicies(u);
-    onSave?.(u);
-  };
+  const { mutate: toggleBlock } = useMutation({
+    mutationFn: (policy: BlockPolicy) =>
+      blockService.updateRepeatBlockPolicy(policy.id, toApiPayload(policy)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks"] });
+      show("차단 정책이 변경되었습니다.");
+    },
+    onError: () => show("차단 정책 변경에 실패했습니다.", "error"),
+  });
+
+  const newDraft = (): BlockPolicy => ({
+    id: 0,
+    lineId: lineId!,
+    startHour: 0,
+    startMin: 0,
+    endHour: 0,
+    endMin: 0,
+    days: [],
+    enabled: true,
+  });
 
   return (
     <GlassCard
@@ -475,11 +90,11 @@ export default function BlockPolicyManager({
       <div className="flex flex-col divide-y divide-gray-100">
         {policies.map((policy) => (
           <div key={policy.id} className="py-2 first:pt-0 last:pb-0">
-            <PolicyItem
+            <BlockItem
               policy={policy}
-              onUpdate={(p) => handleUpdate(policy.id, p)}
-              onDelete={() => handleDelete(policy.id)}
-              onToggle={(enabled) => handleToggle(policy.id, enabled)}
+              onUpdate={(p) => updateBlock(p)}
+              onDelete={() => deleteBlock(policy.id)}
+              onToggle={(enabled) => toggleBlock({ ...policy, enabled })}
             />
           </div>
         ))}
@@ -489,7 +104,10 @@ export default function BlockPolicyManager({
           <EditPanel
             policy={newDraft()}
             mode="add"
-            onConfirm={handleAdd}
+            onConfirm={(p) => {
+              createBlock(p);
+              setShowAddPanel(false);
+            }}
             onCancel={() => setShowAddPanel(false)}
           />
         </div>
