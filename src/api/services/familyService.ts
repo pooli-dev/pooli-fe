@@ -1,6 +1,6 @@
 // api/services/main/familyService.ts
 import { apiClient } from "@/api/client";
-import type { FamilyApiResponse } from "@/types/FamilyMember";
+import type { FamilyApiResponse, SimpleMember } from "@/types/FamilyMember";
 
 interface Permission {
   familyId: number;

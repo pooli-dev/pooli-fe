@@ -168,13 +168,6 @@ export const blockService = {
       params: { lineId },
     }),
 
-  // 즉시 차단 조회
-  getImmediateBlock: (lineId: number) =>
-    apiClient.get<{ lineId: number; blockEndAt: string }>(
-      "/policies/lines/immediate-block",
-      { params: { lineId } },
-    ),
-
   // 즉시 차단 적용
   patchImmediateBlock: (lineId: number, blockEndAt: string) =>
     apiClient.patch<{ lineId: number; blockEndAt: string }>(

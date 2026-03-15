@@ -2,19 +2,31 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import GlassCard from "@/components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 import { blockService } from "@/api";
-import type { RepeatBlockPolicy, RepeatBlockDay } from "@/api/services/blockService";
+import type { RepeatBlockResponse, RepeatBlockDay } from "@/types/block";
 import { getErrorMessage } from "@/api/client";
 import ConfirmModal from "@/components/common/ConfirmModal";
 
 type DayKey = "월" | "화" | "수" | "목" | "금" | "토" | "일";
 const DAYS: DayKey[] = ["월", "화", "수", "목", "금", "토", "일"];
 
-const DAY_MAP: Record<DayKey, RepeatBlockDay['dayOfWeek']> = {
-  "월": "MON", "화": "TUE", "수": "WED", "목": "THU", "금": "FRI", "토": "SAT", "일": "SUN"
+const DAY_MAP: Record<DayKey, RepeatBlockDay["dayOfWeek"]> = {
+  월: "MON",
+  화: "TUE",
+  수: "WED",
+  목: "THU",
+  금: "FRI",
+  토: "SAT",
+  일: "SUN",
 };
 
-const DAY_MAP_REVERSE: Record<RepeatBlockDay['dayOfWeek'], DayKey> = {
-  "MON": "월", "TUE": "화", "WED": "수", "THU": "목", "FRI": "금", "SAT": "토", "SUN": "일"
+const DAY_MAP_REVERSE: Record<RepeatBlockDay["dayOfWeek"], DayKey> = {
+  MON: "월",
+  TUE: "화",
+  WED: "수",
+  THU: "목",
+  FRI: "금",
+  SAT: "토",
+  SUN: "일",
 };
 
 type BlockPolicy = {
@@ -431,8 +443,14 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
   const [policies, setPolicies] = useState<BlockPolicy[]>([]);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [confirmModal, setConfirmModal] = useState<{ show: boolean; message: string; onConfirm: () => void }>({
-    show: false, message: '', onConfirm: () => {}
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    message: "",
+    onConfirm: () => {},
   });
 
   useEffect(() => {
@@ -446,33 +464,33 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
       const res = await blockService.getRepeatBlockPolicies(lineId);
       setPolicies(res.data.map(convertToDraft));
     } catch (err) {
-      console.error('반복 차단 정책 조회 실패:', err);
+      console.error("반복 차단 정책 조회 실패:", err);
       alert(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const convertToDraft = (rp: RepeatBlockPolicy): BlockPolicy => {
+  const convertToDraft = (rp: RepeatBlockResponse): BlockPolicy => {
     const firstDay = rp.days[0];
-    const [startH, startM] = firstDay.startAt.split(':').map(Number);
-    const [endH, endM] = firstDay.endAt.split(':').map(Number);
+    const [startH, startM] = firstDay.startAt.split(":").map(Number);
+    const [endH, endM] = firstDay.endAt.split(":").map(Number);
     return {
       id: rp.repeatBlockId,
       startHour: startH,
       startMin: startM,
       endHour: endH,
       endMin: endM,
-      days: rp.days.map(d => DAY_MAP_REVERSE[d.dayOfWeek]),
-      enabled: rp.isActive
+      days: rp.days.map((d) => DAY_MAP_REVERSE[d.dayOfWeek]),
+      enabled: rp.isActive,
     };
   };
 
   const convertToAPI = (draft: BlockPolicy): RepeatBlockDay[] => {
-    const formatTime = (h: number, m: number) => 
-      `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
-    
-    return draft.days.map(day => ({
+    const formatTime = (h: number, m: number) =>
+      `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
+
+    return draft.days.map((day) => ({
       dayOfWeek: DAY_MAP[day],
       startAt: formatTime(draft.startHour, draft.startMin),
       endAt: formatTime(draft.endHour, draft.endMin),
@@ -482,22 +500,22 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
   const updatePolicyOptimistically = async (
     id: number,
     updater: (policies: BlockPolicy[]) => BlockPolicy[],
-    apiCall: () => Promise<{ data: RepeatBlockPolicy }>,
-    successMessage?: string
+    apiCall: () => Promise<{ data: RepeatBlockResponse }>,
+    successMessage?: string,
   ) => {
     const prevPolicies = [...policies];
     setPolicies(updater(policies));
-    
+
     try {
       const response = await apiCall();
       if (response?.data) {
         const updated = convertToDraft(response.data);
-        setPolicies(prev => prev.map(p => p.id === id ? updated : p));
+        setPolicies((prev) => prev.map((p) => (p.id === id ? updated : p)));
       }
       if (successMessage) console.log(successMessage);
       onPolicyChange?.();
     } catch (err) {
-      console.error('작업 실패:', err);
+      console.error("작업 실패:", err);
       setPolicies(prevPolicies);
       alert(getErrorMessage(err));
     }
@@ -518,7 +536,8 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
       const response = await blockService.createRepeatBlockPolicy({
         lineId,
         isActive: true,
-        days: convertToAPI(p)
+        days: convertToAPI(p),
+        repeatBlockId: 0,
       });
       setPolicies([...policies, convertToDraft(response.data)]);
       setShowAddPanel(false);
@@ -531,52 +550,54 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
   const handleUpdate = (id: number, p: BlockPolicy) => {
     updatePolicyOptimistically(
       id,
-      policies => policies.map(policy => policy.id === id ? p : policy),
-      () => blockService.updateRepeatBlockPolicy(id, {
-        lineId,
-        repeatBlockId: id,
-        isActive: p.enabled,
-        days: convertToAPI(p)
-      }),
-      '수정 성공'
+      (policies) => policies.map((policy) => (policy.id === id ? p : policy)),
+      () =>
+        blockService.updateRepeatBlockPolicy(id, {
+          lineId,
+          repeatBlockId: id,
+          isActive: p.enabled,
+          days: convertToAPI(p),
+        }),
+      "수정 성공",
     );
   };
 
   const handleDelete = (id: number) => {
     setConfirmModal({
       show: true,
-      message: '이 차단 일정을 삭제하시겠습니까?',
+      message: "이 차단 일정을 삭제하시겠습니까?",
       onConfirm: async () => {
         const prevPolicies = [...policies];
-        setPolicies(policies.filter(p => p.id !== id));
-        setConfirmModal({ show: false, message: '', onConfirm: () => {} });
-        
+        setPolicies(policies.filter((p) => p.id !== id));
+        setConfirmModal({ show: false, message: "", onConfirm: () => {} });
+
         try {
           await blockService.deleteRepeatBlockPolicy(id);
           onPolicyChange?.();
         } catch (err) {
-          console.error('삭제 실패:', err);
+          console.error("삭제 실패:", err);
           setPolicies(prevPolicies);
           alert(getErrorMessage(err));
         }
-      }
+      },
     });
   };
 
   const handleToggle = (id: number, enabled: boolean) => {
-    const policy = policies.find(p => p.id === id);
+    const policy = policies.find((p) => p.id === id);
     if (!policy) return;
-    
+
     updatePolicyOptimistically(
       id,
-      policies => policies.map(p => p.id === id ? { ...p, enabled } : p),
-      () => blockService.updateRepeatBlockPolicy(id, {
-        lineId,
-        repeatBlockId: id,
-        isActive: enabled,
-        days: convertToAPI(policy)
-      }),
-      '토글 성공'
+      (policies) => policies.map((p) => (p.id === id ? { ...p, enabled } : p)),
+      () =>
+        blockService.updateRepeatBlockPolicy(id, {
+          lineId,
+          repeatBlockId: id,
+          isActive: enabled,
+          days: convertToAPI(policy),
+        }),
+      "토글 성공",
     );
   };
 
@@ -657,7 +678,9 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
           isOpen={confirmModal.show}
           message={confirmModal.message}
           onConfirm={confirmModal.onConfirm}
-          onClose={() => setConfirmModal({ show: false, message: '', onConfirm: () => {} })}
+          onClose={() =>
+            setConfirmModal({ show: false, message: "", onConfirm: () => {} })
+          }
         />
       )}
     </GlassCard>
