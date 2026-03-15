@@ -116,3 +116,22 @@
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
+
+/* 큰글씨 모드 - 텍스트 크기만 스케일 (간격/레이아웃은 유지) */
+.large-text-content {
+  font-size: 1.13em;
+}
+
+/* 큰글씨 모드에서 Tailwind rem 기반 텍스트 클래스 오버라이드 */
+.large-text-content .text-xs { font-size: 0.85em !important; }
+.large-text-content .text-sm { font-size: 0.975em !important; }
+.large-text-content .text-base { font-size: 1.13em !important; }
+.large-text-content .text-lg { font-size: 1.27em !important; }
+.large-text-content .text-xl { font-size: 1.41em !important; }
+.large-text-content .text-2xl { font-size: 1.69em !important; }
+.large-text-content .text-3xl { font-size: 2.1em !important; }
+
+/* 큰글씨 모드에서 상태바는 고정 크기 유지 */
+.large-text-content .status-bar {
+  font-size: 14px !important;
+}

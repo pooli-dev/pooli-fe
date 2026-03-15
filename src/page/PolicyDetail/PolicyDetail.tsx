@@ -5,7 +5,7 @@ import BlockTab from "./components/BlockTab";
 import LimitTab from "./components/LimitTab";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
 import Avatar from "@/components/common/Avatar";
-import { blockService } from "@/api";
+import { blockService, getErrorMessage } from "@/api";
 import { useUserStore } from "@/store/userStore";
 import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
 
@@ -91,7 +91,7 @@ const PolicyDetail = () => {
         }
       })
       .catch((error) => {
-        console.error("구성원 목록 조회 실패:", error);
+        console.error("구성원 목록 조회 실패:", getErrorMessage(error));
         // 에러 발생 시 더미 데이터 사용 (개발 중)
         const dummyMembers = [
           {

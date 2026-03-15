@@ -1,5 +1,6 @@
 // API 서비스 통합 export
-export { default as apiClient } from "./client";
+export { default as apiClient, getErrorMessage, getErrorCode } from "./client";
+export type { ApiErrorResponse } from "./client";
 export * from "./types";
 
 // 구현된 서비스

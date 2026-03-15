@@ -11,7 +11,6 @@ interface AppUsageChartProps {
   apps: AppUsage[];
   totalUsedAmount: number;
   isPublic: boolean;
-  canToggle?: boolean; // 토글 변경 권한
   onPublicToggle: (value: boolean) => void;
 }
 
@@ -42,7 +41,6 @@ export default function AppUsageChart({
   apps,
   totalUsedAmount,
   isPublic,
-  canToggle = false,
   onPublicToggle,
 }: AppUsageChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -97,7 +95,6 @@ export default function AppUsageChart({
                 checked={isPublic} 
                 onChange={onPublicToggle} 
                 aria-label="가족 공개"
-                disabled={!canToggle}
               />
             </div>
           </div>

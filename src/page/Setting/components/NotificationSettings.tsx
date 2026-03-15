@@ -108,24 +108,24 @@ export default function NotificationSettings() {
           <path d="M10 2a6 6 0 0 1 6 6c0 3.5 1 5 2 6H2c1-1 2-2.5 2-6a6 6 0 0 1 6-6z" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M8 17a2 2 0 1 0 4 0" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <h2 className="font-semibold text-[#333333] text-[16px]">알림 설정</h2>
+        <h2 className="font-semibold text-[#333333] text-base">알림 설정</h2>
       </div>
 
       <div className="bg-white rounded-2xl p-5 space-y-5 shadow-sm">
         {/* 데이터 */}
         <div className="pr-[18px] pt-[2px]">
           <div className="mb-3 pl-4">
-            <span className="text-[#0E8EFF] font-semibold text-[14px]">데이터</span>
+            <span className="text-[#0E8EFF] font-semibold text-sm">데이터</span>
           </div>
           <div className="space-y-3 pl-5">
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">가족 데이터 알림</span>
+              <span className="text-[#333333] text-sm">가족 데이터 알림</span>
               <div className="scale-90">
                 <Toggle checked={familyDataNotification} onChange={handleFamilyDataChange} aria-label="가족 데이터 알림" />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">개인 데이터 알림</span>
+              <span className="text-[#333333] text-sm">개인 데이터 알림</span>
               <div className="scale-90">
                 <Toggle checked={personalDataNotification} onChange={handlePersonalDataChange} aria-label="개인 데이터 알림" />
               </div>
@@ -136,17 +136,17 @@ export default function NotificationSettings() {
         {/* 정책 */}
         <div className="pr-[18px] pt-[2px]">
           <div className="mb-3 pl-4">
-            <span className="text-[#0E8EFF] font-semibold text-[14px]">정책</span>
+            <span className="text-[#0E8EFF] font-semibold text-sm">정책</span>
           </div>
           <div className="space-y-3 pl-5">
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">정책 변경 알림</span>
+              <span className="text-[#333333] text-sm">정책 변경 알림</span>
               <div className="scale-90">
                 <Toggle checked={policyChangeNotification} onChange={handlePolicyChangeChange} aria-label="정책 변경 알림" />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">정책 한도 알림</span>
+              <span className="text-[#333333] text-sm">정책 한도 알림</span>
               <div className="scale-90">
                 <Toggle checked={policyLimitNotification} onChange={handlePolicyLimitChange} aria-label="정책 한도 알림" />
               </div>
@@ -157,17 +157,17 @@ export default function NotificationSettings() {
         {/* 기타 */}
         <div className="pr-[18px] pt-[2px]">
           <div className="mb-3 pl-4">
-            <span className="text-[#0E8EFF] font-semibold text-[14px]">기타</span>
+            <span className="text-[#0E8EFF] font-semibold text-sm">기타</span>
           </div>
           <div className="space-y-3 pl-5">
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">권한 변경 알림</span>
+              <span className="text-[#333333] text-sm">권한 변경 알림</span>
               <div className="scale-90">
                 <Toggle checked={permissionChangeNotification} onChange={handlePermissionChange} aria-label="권한 변경 알림" />
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#333333] text-[14px]">문의사항 알림</span>
+              <span className="text-[#333333] text-sm">문의사항 알림</span>
               <div className="scale-90">
                 <Toggle checked={inquiryNotification} onChange={handleInquiryChange} aria-label="문의사항 알림" />
               </div>
