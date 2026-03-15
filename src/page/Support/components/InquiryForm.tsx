@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ConfirmModal from '../../../components/common/ConfirmModal';
 import { questionService, getCategoryDisplayName, type QuestionCategory } from '../../../api/services/questionService';
+import { getErrorMessage } from '../../../api';
 
 interface InquiryFormProps {
   categories: QuestionCategory[];
@@ -131,13 +132,10 @@ export default function InquiryForm({ categories, onSubmitSuccess }: InquiryForm
       
       onSubmitSuccess();
     } catch (error) {
-      console.error('문의 생성 실패:', error);
+      console.error('문의 생성 실패:', getErrorMessage(error));
       
-      if (error instanceof Error && error.message === 'Network Error') {
-        alert('문의 접수 기능은 현재 백엔드 CORS 설정이 필요합니다.\n백엔드 팀에 문의해주세요.');
-      } else {
-        alert('문의 접수에 실패했습니다. 다시 시도해주세요.');
-      }
+      const errorMsg = getErrorMessage(error);
+      alert(`문의 접수에 실패했습니다.\n${errorMsg}`);
       setIsLoading(false);
     }
   };

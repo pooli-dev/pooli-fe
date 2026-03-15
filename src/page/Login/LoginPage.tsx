@@ -8,10 +8,11 @@ import loginBg1 from "../../assets/img/loginBg1.png";
 import loginBg2 from "../../assets/img/loginBg2.png";
 import loginBg3 from "../../assets/img/loginBg3.png";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { authService } from "../../api";
 import { userService } from "../../api";
+import { getErrorMessage } from "../../api";
 import { useUserStore } from "../../store/userStore";
+import { getAppType } from "../../utils/domain";
 
 const backgrounds = [loginBg1, loginBg2, loginBg3];
 
@@ -25,14 +26,16 @@ export default function LoginPage() {
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
   const navigate = useNavigate();
   const setUserInfo = useUserStore((state) => state.setUserInfo);
+  const appType = getAppType();
+  const homePath = appType === 'admin' ? '/admin' : '/main';
 
-  // 이미 로그인되어 있으면 메인으로 리다이렉트
+  // 이미 로그인되어 있으면 홈으로 리다이렉트
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      navigate("/main", { replace: true });
+      navigate(homePath, { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, homePath]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -73,30 +76,14 @@ export default function LoginPage() {
         setUserInfo(data);
         console.log("유저 데이터 가져오기 성공", data);
 
-        navigate("/main");
-
-        // 메인 페이지로 이동
-        navigate("/main");
+        navigate(homePath);
       } else {
         setError(response.message || "로그인에 실패했습니다.");
       }
     } catch (err) {
-      if (err instanceof Error) {
-        console.error("에러 메시지:", err.message);
-      }
-
-      // Axios 에러인 경우 상태 코드에 따라 메시지 변경
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 401) {
-          setError("아이디 또는 비밀번호가 올바르지 않습니다.");
-        } else if (err.response?.status === 500) {
-          setError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-        } else {
-          setError("로그인에 실패했습니다. 다시 시도해주세요.");
-        }
-      } else {
-        setError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
-      }
+      const errorMsg = getErrorMessage(err);
+      console.error("로그인 실패:", errorMsg);
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

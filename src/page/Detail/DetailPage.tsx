@@ -6,6 +6,7 @@ import { useUserStore } from "@/store/userStore";
 import { useToastStore } from "@/store/toastStore";
 import { userService } from "@/api/services/userService";
 import { familyService } from "@/api/services/familyService";
+import { getErrorMessage } from "@/api/client";
 import DataBalance from "./components/DataBalance";
 import UsageTrend from "./components/UsageTrend";
 import DateSelector from "./components/DateSelector";
@@ -29,19 +30,74 @@ interface AppUsage {
   apps: Array<{ appName: string; usedAmount: number }>;
 }
 
+/** yearMonth 포맷: "202506" */
+const formatYearMonth = (date: Date) =>
+  `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+/** 기본 앱 사용량 (데이터 없음 상태) */
+const emptyAppUsage = (isPublic: boolean): AppUsage => ({
+  isPublic, totalUsedAmount: 0, apps: [],
+});
+
+/** DEV 환경에서 에러 로깅 */
+const logApiError = (label: string, error: unknown) => {
+  if (!import.meta.env.DEV) return;
+  const apiErr = error && typeof error === 'object' && 'apiError' in error
+    ? (error as { apiError: { status: number; code?: string; message: string } }).apiError
+    : null;
+  console.error(`❌ ${label}:`, apiErr || getErrorMessage(error));
+};
+
+/** 앱 사용량 API 응답 파싱 */
+function parseAppUsageResponse(
+  appRes: { headers?: Record<string, unknown>; data: unknown },
+  fallbackIsPublic: boolean,
+): { data: AppUsage; updatedIsPublic?: boolean } | null {
+  const contentType = String(appRes.headers?.['content-type'] || '');
+  const isJson = contentType.includes('application/json');
+
+  // HTML 응답 = 백엔드에 해당 데이터 없음 (Vite SPA fallback)
+  if (!isJson) {
+    if (import.meta.env.DEV) {
+      console.log("📱 앱 사용량: 데이터 없음 (HTML 응답)");
+    }
+    return { data: emptyAppUsage(fallbackIsPublic) };
+  }
+
+  const d = appRes.data as Record<string, unknown> | null;
+  if (d && typeof d === 'object' && !Array.isArray(d) && 'isPublic' in d) {
+    if (import.meta.env.DEV) {
+      console.log("📱 앱 사용량 원본 응답:", d);
+    }
+    return {
+      data: {
+        isPublic: (d.isPublic as boolean) ?? true,
+        totalUsedAmount: (d.totalUsedAmount as number) ?? 0,
+        apps: (d.apps as AppUsage['apps']) ?? [],
+      },
+      updatedIsPublic: (d.isPublic as boolean) ?? true,
+    };
+  }
+
+  if (import.meta.env.DEV) {
+    console.error("❌ 앱 사용량 API 응답 형식 오류:", d);
+  }
+  return { data: emptyAppUsage(fallbackIsPublic) };
+}
+
 export default function Detail() {
   const location = useLocation();
   const userInfo = useUserStore((state) => state.userInfo);
   const { show: showToast } = useToastStore();
-  
+
   const lineId = location.state?.lineId || userInfo?.lineId;
   const { appliedPolicies } = useAppliedPolicies(lineId);
   const isOwnData = lineId === userInfo?.lineId;
-  
+
   const today = new Date();
   const currentMonthLimit = new Date(today.getFullYear(), today.getMonth(), 1);
   const [currentDate, setCurrentDate] = useState(currentMonthLimit);
-  
+
   const [dataUsage, setDataUsage] = useState<DataUsage | null>(null);
   const [monthlyUsage, setMonthlyUsage] = useState<MonthlyUsage | null>(null);
   const [appUsage, setAppUsage] = useState<AppUsage | null>(null);
@@ -49,30 +105,48 @@ export default function Detail() {
   const [hasPrivacyPermission, setHasPrivacyPermission] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // 권한 조회
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
         const { data } = await familyService.getMyPermissions();
-        const hasPermission = data.memberPermissions.some(
-          (permission) => permission.permissionTitle === "앱 사용량 비공개 허용 권한"
+        setHasPrivacyPermission(
+          data.memberPermissions.some(
+            (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한"
+          )
         );
-        setHasPrivacyPermission(hasPermission);
       } catch {
         setHasPrivacyPermission(false);
       }
     };
-
     fetchPermissions();
   }, []);
 
+  /** 앱 사용량 fetch + 파싱 (공통) */
+  const fetchAppUsage = async (
+    targetLineId: number,
+    yearMonth: string,
+    fallbackIsPublic: boolean,
+  ): Promise<AppUsage> => {
+    try {
+      const appRes = await userService.getAppUsage(targetLineId, yearMonth);
+      const result = parseAppUsageResponse(appRes, fallbackIsPublic);
+      return result?.data ?? emptyAppUsage(fallbackIsPublic);
+    } catch (error) {
+      logApiError("앱 사용량 API 에러", error);
+      return emptyAppUsage(fallbackIsPublic);
+    }
+  };
+
+  // 메인 데이터 로드
   useEffect(() => {
     if (!lineId) return;
 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const yearMonth = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-        
+        const yearMonth = formatYearMonth(currentDate);
+
         const [dataRes, monthlyRes] = await Promise.all([
           userService.getDataUsage(lineId, yearMonth),
           userService.getMonthlyUsage(lineId, yearMonth),
@@ -80,56 +154,25 @@ export default function Detail() {
 
         setDataUsage(dataRes.data);
         setMonthlyUsage(monthlyRes.data);
-        
-        try {
-          const appRes = await userService.getAppUsage(lineId, yearMonth);
-          const contentType = appRes.headers?.['content-type'] || '';
-          const isJson = contentType.includes('application/json');
-          
-          if (import.meta.env.DEV && isJson) {
-            console.log("📱 앱 사용량:", appRes.data);
-          }
-          
-          if (isJson && appRes.data && typeof appRes.data === 'object' && !Array.isArray(appRes.data) && 'isPublic' in appRes.data) {
-            const normalizedData = {
-              isPublic: appRes.data.isPublic ?? true,
-              totalUsedAmount: appRes.data.totalUsedAmount ?? 0,
-              apps: appRes.data.apps ?? []
-            };
-            
-            setAppUsage(normalizedData);
-            setGlobalIsPublic(appRes.data.isPublic ?? true);
-          } else {
-            if (import.meta.env.DEV) {
-              console.error("❌ 앱 사용량 API 응답 오류 (백엔드 확인 필요)");
-            }
-            const defaultIsPublic = loading ? true : globalIsPublic;
-            setAppUsage({
-              isPublic: defaultIsPublic,
-              totalUsedAmount: 0,
-              apps: []
-            });
-            if (loading) {
-              setGlobalIsPublic(true);
-            }
-          }
-        } catch {
-          const defaultIsPublic = loading ? true : globalIsPublic;
-          setAppUsage({
-            isPublic: defaultIsPublic,
-            totalUsedAmount: 0,
-            apps: []
-          });
-          if (loading) {
+
+        const fallback = loading ? true : globalIsPublic;
+        const appRes = await userService.getAppUsage(lineId, yearMonth);
+        const parsed = parseAppUsageResponse(appRes, fallback);
+
+        if (parsed) {
+          setAppUsage(parsed.data);
+          if (parsed.updatedIsPublic != null) {
+            setGlobalIsPublic(parsed.updatedIsPublic);
+          } else if (loading) {
             setGlobalIsPublic(true);
           }
+        } else {
+          setAppUsage(emptyAppUsage(fallback));
+          if (loading) setGlobalIsPublic(true);
         }
-      } catch {
-        setAppUsage({
-          isPublic: globalIsPublic,
-          totalUsedAmount: 0,
-          apps: []
-        });
+      } catch (error) {
+        logApiError("상세페이지 데이터 로드 실패", error);
+        setAppUsage(emptyAppUsage(globalIsPublic));
       } finally {
         setLoading(false);
       }
@@ -139,135 +182,84 @@ export default function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineId, currentDate]);
 
+  /** 월 이동 시 데이터 fetch */
   const fetchMonthData = async (newDate: Date) => {
-    const yearMonth = `${newDate.getFullYear()}${String(newDate.getMonth() + 1).padStart(2, "0")}`;
-    
-    const [dataRes, monthlyRes, appRes] = await Promise.all([
+    const yearMonth = formatYearMonth(newDate);
+
+    const [dataRes, monthlyRes] = await Promise.all([
       userService.getDataUsage(lineId!, yearMonth),
       userService.getMonthlyUsage(lineId!, yearMonth),
-      userService.getAppUsage(lineId!, yearMonth),
     ]);
-    
-    const hasValidMonthlyUsage = 
-      monthlyRes?.data && 
-      Array.isArray(monthlyRes.data.usages) && 
+
+    const hasValidMonthly =
+      monthlyRes?.data &&
+      Array.isArray(monthlyRes.data.usages) &&
       monthlyRes.data.usages.length > 0 &&
-      typeof monthlyRes.data.averageAmount === 'number';
-    
-    if (!hasValidMonthlyUsage) {
-      return false;
-    }
-    
-    const hasValidDataUsage = 
-      dataRes?.data && 
-      typeof dataRes.data.personalUsedAmount === 'number' &&
-      typeof dataRes.data.sharedPoolUsedAmount === 'number';
-    
+      typeof monthlyRes.data.averageAmount === "number";
+
+    if (!hasValidMonthly) return false;
+
     setCurrentDate(newDate);
-    if (hasValidDataUsage) {
-      setDataUsage(dataRes.data);
-    }
+
+    const hasValidData =
+      dataRes?.data &&
+      typeof dataRes.data.personalUsedAmount === "number" &&
+      typeof dataRes.data.sharedPoolUsedAmount === "number";
+
+    if (hasValidData) setDataUsage(dataRes.data);
     setMonthlyUsage(monthlyRes.data);
-    
-    const contentType = appRes.headers?.['content-type'] || '';
-    const isJson = contentType.includes('application/json');
-    
-    if (isJson && appRes.data && typeof appRes.data === 'object' && 'isPublic' in appRes.data) {
-      const normalizedData = {
-        isPublic: globalIsPublic,
-        totalUsedAmount: appRes.data.totalUsedAmount ?? 0,
-        apps: appRes.data.apps ?? []
-      };
-      setAppUsage(normalizedData);
-    } else {
-      setAppUsage({
-        isPublic: globalIsPublic,
-        totalUsedAmount: 0,
-        apps: []
-      });
-    }
-    
+
+    const appData = await fetchAppUsage(lineId!, yearMonth, globalIsPublic);
+    setAppUsage(appData);
+
     return true;
   };
 
-  const handlePrevMonth = async () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    if (newDate.getFullYear() < 2024) {
-      showToast("이전 달 데이터가 없습니다.", "info");
-      return;
-    }
-    
-    try {
-      const success = await fetchMonthData(newDate);
-      if (!success) {
-        showToast("이전 달 데이터가 없습니다.", "info");
-      }
-    } catch {
-      showToast("이전 달 데이터가 없습니다.", "info");
-    }
-  };
+  const handleMonthChange = async (direction: "prev" | "next") => {
+    const offset = direction === "prev" ? -1 : 1;
+    const msg = direction === "prev" ? "이전 달" : "다음 달";
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
 
-  const handleNextMonth = async () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    if (newDate > currentMonthLimit) {
-      showToast("다음 달 데이터가 없습니다.", "info");
+    if (direction === "prev" && newDate.getFullYear() < 2024) {
+      showToast(`${msg} 데이터가 없습니다.`, "info");
       return;
     }
-    
+    if (direction === "next" && newDate > currentMonthLimit) {
+      showToast(`${msg} 데이터가 없습니다.`, "info");
+      return;
+    }
+
     try {
       const success = await fetchMonthData(newDate);
-      if (!success) {
-        showToast("다음 달 데이터가 없습니다.", "info");
-      }
+      if (!success) showToast(`${msg} 데이터가 없습니다.`, "info");
     } catch {
-      showToast("다음 달 데이터가 없습니다.", "info");
+      showToast(`${msg} 데이터가 없습니다.`, "info");
     }
   };
 
   const handleVisibilityToggle = async (newValue: boolean) => {
-    if (!lineId || !hasPrivacyPermission || !isOwnData) {
+    if (!lineId) return;
+
+    if (!isOwnData) {
+      showToast("본인의 공개 설정만 변경할 수 있습니다.", "info");
+      return;
+    }
+
+    if (!hasPrivacyPermission) {
+      showToast("앱 사용량 비공개 권한이 없습니다.", "info");
       return;
     }
 
     try {
       await familyService.updateVisibility({ lineId, isPublic: newValue });
-      
       setGlobalIsPublic(newValue);
-      if (appUsage) {
-        setAppUsage({ ...appUsage, isPublic: newValue });
-      }
-      
-      const yearMonth = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-      try {
-        const appRes = await userService.getAppUsage(lineId, yearMonth);
-        const contentType = appRes.headers?.['content-type'] || '';
-        const isJson = contentType.includes('application/json');
-        
-        if (isJson && appRes.data && typeof appRes.data === 'object' && 'isPublic' in appRes.data) {
-          const normalizedData = {
-            isPublic: newValue,
-            totalUsedAmount: appRes.data.totalUsedAmount ?? 0,
-            apps: appRes.data.apps ?? []
-          };
-          setAppUsage(normalizedData);
-        } else {
-          setAppUsage({
-            isPublic: newValue,
-            totalUsedAmount: 0,
-            apps: []
-          });
-        }
-      } catch {
-        setAppUsage({
-          isPublic: newValue,
-          totalUsedAmount: 0,
-          apps: []
-        });
-      }
+
+      const yearMonth = formatYearMonth(currentDate);
+      const appData = await fetchAppUsage(lineId, yearMonth, newValue);
+      setAppUsage({ ...appData, isPublic: newValue });
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("❌ 공개 설정 변경 실패:", error);
-      }
+      logApiError("공개 설정 변경 실패", error);
+      showToast(getErrorMessage(error), "error");
     }
   };
 
@@ -291,21 +283,21 @@ export default function Detail() {
     <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="flex flex-col gap-3 px-[24px] py-5 pb-[60px]">
         {appliedPolicies.length > 0 && (
-          <PolicyScroll 
+          <PolicyScroll
             policies={appliedPolicies.map((policy, index) => ({
               id: index + 1,
               type: policy.type,
               bgColor: policy.bgColor,
               title: policy.title,
-            }))} 
-            title="현재 적용중인 정책" 
+            }))}
+            title="현재 적용중인 정책"
           />
         )}
 
         <DateSelector
           currentDate={currentDate}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
+          onPrevMonth={() => handleMonthChange("prev")}
+          onNextMonth={() => handleMonthChange("next")}
         />
 
         <DataBalance
@@ -324,7 +316,6 @@ export default function Detail() {
           apps={appUsage.apps}
           totalUsedAmount={appUsage.totalUsedAmount}
           isPublic={appUsage.isPublic}
-          canToggle={hasPrivacyPermission && isOwnData}
           onPublicToggle={handleVisibilityToggle}
         />
       </div>
