@@ -13,7 +13,7 @@ export const isAdminDomain = (): boolean => {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return window.location.pathname.startsWith('/admin');
   }
-  // 프로덕션에서는 도메인으로 구분 (정확히 일치하거나 office 포함)
+  // 프로덕션에서는 도메인으로 구분
   return hostname === ADMIN_DOMAIN || hostname.includes('office');
 };
 

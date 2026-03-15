@@ -1,9 +1,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import logoSvg from '@/assets/img/logo.svg';
 import { authService } from '@/api';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [adminEmail] = useState(() => localStorage.getItem('adminEmail') || '');
 
   const handleLogout = async () => {
     if (confirm('로그아웃 하시겠습니까?')) {
@@ -12,14 +14,17 @@ export default function AdminLayout() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.removeItem('adminAuthenticated');
+        localStorage.removeItem('adminEmail');
+        navigate('/admin/login');
       } catch (error) {
         console.error('로그아웃 실패:', error);
-        // 에러가 발생해도 로컬 스토리지는 정리하고 로그인 페이지로 이동
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.removeItem('adminAuthenticated');
+        localStorage.removeItem('adminEmail');
+        navigate('/admin/login');
       }
     }
   };
@@ -96,11 +101,11 @@ export default function AdminLayout() {
         {/* 관리자 정보 및 로그아웃 */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-white font-semibold">
-              김
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              {adminEmail ? adminEmail.charAt(0).toUpperCase() : 'A'}
             </div>
-            <div className="text-sm flex-1">
-              <div className="font-semibold text-gray-900">관리자 김태희</div>
+            <div className="text-sm flex-1 min-w-0">
+              <div className="font-semibold text-gray-900 truncate">{adminEmail ? adminEmail.split('@')[0] : '관리자'}</div>
               <div className="text-xs text-gray-500">SUPER ADMIN</div>
             </div>
           </div>

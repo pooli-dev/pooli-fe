@@ -161,7 +161,7 @@ export const blockService = {
     repeatBlockId: number,
     data: RepeatBlockUpdateRequest,
   ) =>
-    apiClient.put<RepeatBlockPolicy>("/policies/lines/repeat-block", data, {
+    apiClient.patch<RepeatBlockPolicy>("/policies/lines/repeat-block", data, {
       params: { repeatBlockId },
     }),
 
@@ -169,6 +169,18 @@ export const blockService = {
   deleteRepeatBlockPolicy: (repeatBlockId: number) =>
     apiClient.delete("/policies/lines/repeat-block", {
       params: { repeatBlockId },
+    }),
+
+  // 즉시 차단 조회
+  getImmediateBlock: (lineId: number) =>
+    apiClient.get<{ lineId: number; blockEndAt: string }>("/policies/lines/immediate-block", {
+      params: { lineId },
+    }),
+
+  // 즉시 차단 토글/수정
+  updateImmediateBlock: (lineId: number, blockEndAt: string) =>
+    apiClient.patch("/policies/lines/immediate-block", { blockEndAt }, {
+      params: { lineId },
     }),
 
   // 적용 중인 모든 정책 조회

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { questionService } from '../../../api/services/questionService';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 
 // 첨부파일
 export interface Attachment {
@@ -28,12 +29,14 @@ interface InquiryHistoryProps {
   inquiries: Inquiry[];
   sortOrder: 'latest' | 'oldest';
   onSortChange: (order: 'latest' | 'oldest') => void;
+  onDeleteInquiry?: (id: number) => void;
 }
 
-export default function InquiryHistory({ inquiries, sortOrder, onSortChange }: InquiryHistoryProps) {
+export default function InquiryHistory({ inquiries, sortOrder, onSortChange, onDeleteInquiry }: InquiryHistoryProps) {
   const [expandedInquiries, setExpandedInquiries] = useState<number[]>([]);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   // s3Key로 다운로드 URL 가져오기
   useEffect(() => {
@@ -307,12 +310,39 @@ export default function InquiryHistory({ inquiries, sortOrder, onSortChange }: I
                       )}
                     </div>
                   )}
+
+                  {/* 문의 삭제 버튼 */}
+                  {onDeleteInquiry && !inquiry.response && (
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(inquiry.id);
+                        }}
+                        className="px-4 py-2 text-xs font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        문의 삭제
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget !== null && onDeleteInquiry) {
+            onDeleteInquiry(deleteTarget);
+            setDeleteTarget(null);
+          }
+        }}
+        message="이 문의를 삭제하시겠습니까?"
+      />
     </div>
   );
 }

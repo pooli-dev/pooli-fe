@@ -19,6 +19,19 @@ interface UpdateVisibilityRequest {
   isPublic: boolean;
 }
 
+export interface FamilyMember {
+  lineId: number;
+  userId: number;
+  userName: string;
+  phone: string;
+  role: string;
+}
+
+export interface FamilyMembersByLineResponse {
+  familyId: number;
+  members: FamilyMember[];
+}
+
 export const familyService = {
   getMembers: () => apiClient.get<FamilyApiResponse>("/families/members"),
   
@@ -28,4 +41,8 @@ export const familyService = {
   // 앱 사용량 공개 설정 변경
   updateVisibility: (data: UpdateVisibilityRequest) => 
     apiClient.patch("/families/visibility", data),
+  
+  // [어드민] lineId로 가족 구성원 조회
+  getMembersByLine: (lineId: number) =>
+    apiClient.get<FamilyMembersByLineResponse>("/families/members/by-line", { params: { lineId } }),
 };

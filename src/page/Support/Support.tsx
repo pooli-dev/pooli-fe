@@ -4,7 +4,7 @@ import {
   getCategoryDisplayName,
   type QuestionCategory,
 } from "../../api/services/questionService";
-import { getErrorMessage } from "../../api";
+import { getErrorMessage } from "../../api/client";
 import InquiryForm from "./components/InquiryForm";
 import InquiryHistory, { type Inquiry } from "./components/InquiryHistory";
 
@@ -116,6 +116,16 @@ export default function Support() {
     void fetchInquiries();
   };
 
+  const handleDeleteInquiry = async (questionId: number) => {
+    try {
+      await questionService.deleteQuestion(questionId);
+      void fetchInquiries();
+    } catch (error) {
+      console.error("문의 삭제 실패:", error);
+      alert(getErrorMessage(error));
+    }
+  };
+
   return (
     <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
       <div className="py-5 pb-[60px]">
@@ -155,6 +165,7 @@ export default function Support() {
             inquiries={inquiries}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
+            onDeleteInquiry={handleDeleteInquiry}
           />
         )}
       </div>

@@ -61,6 +61,38 @@ export const authService = {
     }
   },
 
+  // 관리자 로그인
+  adminLogin: async (credentials: LoginRequest): Promise<LoginResult> => {
+    try {
+      const response = await apiClient.post('/auth/admin/login', credentials);
+
+      try {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const trimmed = cookie.trim();
+          if (trimmed.startsWith('XSRF-TOKEN=')) {
+            const token = decodeURIComponent(trimmed.substring('XSRF-TOKEN='.length));
+            const { setCsrfToken } = await import('../client');
+            setCsrfToken(token);
+            break;
+          }
+        }
+      } catch (csrfError) {
+        console.warn('CSRF 토큰 읽기 실패:', csrfError);
+      }
+
+      return {
+        success: response.status === 200,
+        status: response.status,
+        data: response.data || null,
+        message: response.status === 200 ? '로그인 성공' : '로그인 실패'
+      };
+    } catch (error) {
+      console.error("관리자 로그인 에러:", error);
+      throw error;
+    }
+  },
+
   // 로그아웃
   logout: async () => {
     const response = await apiClient.post('/auth/logout');
