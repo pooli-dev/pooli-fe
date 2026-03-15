@@ -18,3 +18,10 @@ export type FamilyMember = {
   sharedPoolRemainingAmount: number;
   sharedPoolTotalAmount: number;
 };
+
+export type SimpleMember = {
+  lineId: number;
+  userId: number;
+  userName: string;
+  phone: string;
+};
