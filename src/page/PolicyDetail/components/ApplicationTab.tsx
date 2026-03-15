@@ -154,30 +154,32 @@ const ApplicationTab = ({
 
               return (
                 <AppCard
-                  key={app.appPolicyId}
+                  key={`${app.appPolicyId}-${app.appId}`}
                   app={app}
                   isExpanded={isExpanded}
                   showDataBadge={showDataBadge}
                   showSpeedBadge={showSpeedBadge}
                   onToggle={async () => {
                     const currentEnabled = app.enabled;
-                    const wasEnabled = await handleToggleApp(app.appPolicyId);
+                    const newEnabled = await handleToggleApp(app.appPolicyId);
                     
-                    // off -> on으로 변경되었을 때 펼치기
-                    if (!currentEnabled && wasEnabled && !isExpanded) {
-                      setExpandedApps((prev) => {
-                        const newSet = new Set(prev);
-                        newSet.add(app.appPolicyId);
-                        return newSet;
-                      });
-                    } 
-                    // on -> off로 변경되었을 때 접기
-                    else if (currentEnabled && wasEnabled === false && isExpanded) {
-                      setExpandedApps((prev) => {
-                        const newSet = new Set(prev);
-                        newSet.delete(app.appPolicyId);
-                        return newSet;
-                      });
+                    if (newEnabled !== null) {
+                      // off -> on: 펼치기
+                      if (!currentEnabled && newEnabled) {
+                        setExpandedApps((prev) => {
+                          const newSet = new Set(prev);
+                          newSet.add(app.appPolicyId);
+                          return newSet;
+                        });
+                      }
+                      // on -> off: 접기
+                      else if (currentEnabled && !newEnabled) {
+                        setExpandedApps((prev) => {
+                          const newSet = new Set(prev);
+                          newSet.delete(app.appPolicyId);
+                          return newSet;
+                        });
+                      }
                     }
                   }}
                   onExpand={() => handleCardExpand(app.appPolicyId)}

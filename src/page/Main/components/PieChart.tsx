@@ -184,14 +184,14 @@ export default function PieChart({
         </div>
 
         {/* 글래스모피즘 칩 */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-center">
           <Chip
             gradientFrom="#ffffff"
             gradientTo="#CAF1FF"
             bgColor="173, 230, 255"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">기본 {base}GB</span>
+            <span className="text-xs text-gray-700 whitespace-nowrap">기본 {base}GB</span>
           </Chip>
           <Chip
             gradientFrom="#ffffff"
@@ -199,7 +199,7 @@ export default function PieChart({
             bgColor="246, 202, 221"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700">추가 {additional}GB</span>
+            <span className="text-xs text-gray-700 whitespace-nowrap">추가 {additional}GB</span>
           </Chip>
         </div>
       </div>

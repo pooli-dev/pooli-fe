@@ -2,7 +2,16 @@ import axios from 'axios';
 
 // 백엔드 API URL
 // 개발 환경에서는 Vite 프록시를 통해 CORS 우회
-const API_BASE_URL = import.meta.env.DEV ? '/api' : 'https://www.pooliapp.com/api';
+// 프로덕션에서는 현재 도메인의 /api 사용 (office.pooliapp.com -> office.pooliapp.com/api)
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return '/api';
+  }
+  // 프로덕션: 현재 도메인 사용
+  return `${window.location.origin}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -65,11 +74,45 @@ apiClient.interceptors.response.use(
     // 401 에러 처리 (인증 실패) - 로그인 페이지에서는 리다이렉트 안함
     if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('adminAuthenticated');
       csrfToken = null; // CSRF 토큰도 초기화
-      window.location.href = '/login';
+      const isAdmin = window.location.pathname.startsWith('/admin');
+      window.location.href = isAdmin ? '/admin/login' : '/login';
     }
     return Promise.reject(error);
   }
 );
 
 export default apiClient;
+// 에러 응답 타입
+export interface ApiErrorResponse {
+  errorCode?: string | number;
+  code?: string;
+  message?: string;
+  status?: number;
+  timestamp?: string;
+  traceId?: string;
+}
+
+// 에러 메시지 추출 유틸
+export const getErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as ApiErrorResponse | undefined;
+    if (data?.message) {
+      const code = data.errorCode || data.code;
+      return code ? `[${code}] ${data.message}` : data.message;
+    }
+  }
+  if (error instanceof Error) return error.message;
+  return '알 수 없는 오류가 발생했습니다.';
+};
+
+// 에러 코드 추출 유틸
+export const getErrorCode = (error: unknown): string | null => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as ApiErrorResponse | undefined;
+    const code = data?.errorCode || data?.code;
+    if (code) return String(code);
+  }
+  return null;
+};

@@ -1,5 +1,6 @@
 // API 서비스 통합 export
-export { default as apiClient } from "./client";
+export { default as apiClient, getErrorMessage, getErrorCode } from "./client";
+export type { ApiErrorResponse } from "./client";
 export * from "./types";
 
 // 구현된 서비스
@@ -12,5 +13,6 @@ export { blockService } from "./services/blockService";
 export { familyService } from "./services/familyService";
 export { lineService } from "./services/lineService";
 export { thresholdService } from "./services/thresholdService";
-export { notificationService } from "./services/notificationService";
 export { limitService } from "./services/limitService";
+export { adminPolicyService } from "./services/adminPolicyService";
+export { notificationService } from "./services/notificationService";

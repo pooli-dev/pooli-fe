@@ -15,4 +15,24 @@ export const thresholdService = {
       individualThreshold,
       isThresholdActive,
     }),
+  
+  // 하루 총 사용량 제한 토글
+  toggleDailyLimit: (lineId: number) =>
+    apiClient.patch("/policies/lines/days/limits/enable-toggles", null, {
+      params: { lineId },
+    }),
+  
+  // 하루 총 사용량 제한값 수정 (byte 단위)
+  updateDailyLimit: (lineId: number, value: number) =>
+    apiClient.patch("/policies/lines/days/limits", { lineId, value }),
+  
+  // 공유풀 제한 토글
+  toggleSharedLimit: (lineId: number) =>
+    apiClient.patch("/policies/lines/shares/limits/enable-toggles", null, {
+      params: { lineId },
+    }),
+  
+  // 공유풀 제한값 수정 (byte 단위)
+  updateSharedLimit: (lineId: number, value: number) =>
+    apiClient.patch("/policies/lines/shares/limits", { lineId, value }),
 };

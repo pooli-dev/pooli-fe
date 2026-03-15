@@ -87,10 +87,16 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
 
       // 앱 정책
       if (data.appPolicyList && data.appPolicyList.length > 0) {
-        const enabledApps = data.appPolicyList.filter((app) => app.enabled);
+        interface AppPolicy {
+          enabled?: boolean;
+          isActive?: boolean;
+          appName: string;
+        }
+        
+        const enabledApps = data.appPolicyList.filter((app: AppPolicy) => app.enabled === true || app.isActive === true);
 
         if (enabledApps.length > 0) {
-          const sortedApps = [...enabledApps].sort((a, b) => a.appName.localeCompare(b.appName));
+          const sortedApps = [...enabledApps].sort((a: AppPolicy, b: AppPolicy) => a.appName.localeCompare(b.appName));
 
           if (sortedApps.length === 1) {
             policies.push({
@@ -108,7 +114,7 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
             policies.push({
               type: "앱",
               bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1} 사용 제한`,
+              title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1}개 사용 제한`,
             });
           }
         }

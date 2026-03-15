@@ -4,6 +4,7 @@ import {
   getCategoryDisplayName,
   type QuestionCategory,
 } from "../../api/services/questionService";
+import { getErrorMessage } from "../../api/client";
 import InquiryForm from "./components/InquiryForm";
 import InquiryHistory, { type Inquiry } from "./components/InquiryHistory";
 
@@ -24,7 +25,7 @@ export default function Support() {
         const response = await questionService.getCategories();
         setCategories(response.questionCategories);
       } catch (error) {
-        console.error("카테고리 조회 실패:", error);
+        console.error("카테고리 조회 실패:", getErrorMessage(error));
         // 백엔드 에러 시 기본 카테고리 사용
         const defaultCategories: QuestionCategory[] = [
           { questionCategoryId: 1, questionCategoryName: "policy_inquiry" },
@@ -77,7 +78,7 @@ export default function Support() {
               responseAttachments: detail.answer?.attachments,
             };
           } catch (error) {
-            console.error(`문의 ${item.questionId} 상세 조회 실패:`, error);
+            console.error(`문의 ${item.questionId} 상세 조회 실패:`, getErrorMessage(error));
             const category = categories.find(
               (c) => c.questionCategoryId === item.questionCategoryId,
             );
@@ -98,7 +99,7 @@ export default function Support() {
 
       setInquiries(formattedInquiries);
     } catch (error) {
-      console.error("문의 내역 조회 실패:", error);
+      console.error("문의 내역 조회 실패:", getErrorMessage(error));
       setInquiries([]);
     }
   }, [categories]);
@@ -113,6 +114,16 @@ export default function Support() {
   const handleSubmitSuccess = () => {
     setActiveTab("history");
     void fetchInquiries();
+  };
+
+  const handleDeleteInquiry = async (questionId: number) => {
+    try {
+      await questionService.deleteQuestion(questionId);
+      void fetchInquiries();
+    } catch (error) {
+      console.error("문의 삭제 실패:", error);
+      alert(getErrorMessage(error));
+    }
   };
 
   return (
@@ -154,6 +165,7 @@ export default function Support() {
             inquiries={inquiries}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
+            onDeleteInquiry={handleDeleteInquiry}
           />
         )}
       </div>

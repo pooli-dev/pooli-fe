@@ -22,7 +22,7 @@ export default function Layout({ children }: LayoutProps) {
       className={`flex justify-center min-h-screen bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
     >
       <div
-        className={`w-[480px] max-w-full min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] bg-cover bg-center bg-no-repeat transition-all duration-300 ${darkMode ? "invert" : ""} ${largeTextMode ? "text-[1.25em]" : ""}`}
+        className={`w-[480px] max-w-full min-w-[330px] min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] bg-cover bg-center bg-no-repeat transition-all duration-300 ${darkMode ? "invert" : ""} ${largeTextMode ? "large-text-content" : ""}`}
         style={{
           backgroundImage: `url(${backgroundImg})`,
         }}

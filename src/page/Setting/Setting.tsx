@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useSettingStore } from "../../store/settingStore";
-import { authService } from "../../api";
+import { authService, getErrorMessage } from "../../api";
 import ModeSettings from "./components/ModeSettings";
 import NotificationSettings from "./components/NotificationSettings";
 
@@ -16,7 +16,7 @@ export default function Setting() {
       localStorage.removeItem("user");
       navigate("/login");
     } catch (error) {
-      console.error("로그아웃 에러:", error);
+      console.error("로그아웃 에러:", getErrorMessage(error));
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");

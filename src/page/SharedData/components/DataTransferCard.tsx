@@ -272,7 +272,7 @@ function InfoSection() {
   ];
 
   return (
-    <div className="space-y-0.5 mb-4 px-4 sm:px-[34px]">
+    <div className="space-y-0.5 mb-4 px-6">
       {infoItems.map((item, index) => (
         <p key={index} className="text-xs" style={{ color: COLORS.info }}>
           • {item}
@@ -284,20 +284,17 @@ function InfoSection() {
 
 function ShareButton({ onClick }: { onClick: () => void }) {
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-auto">
-        <GradientButton
-          onClick={onClick}
-          width={150}
-          height={15}
-          borderRadius={20}
-          fontSize={1.5}
-          className="min-w-max"
-        >
-          <img src={SendIcon} className="w-7 h-7 flex-shrink-0" alt="send" />
-          <span className="whitespace-nowrap">공유하기</span>
-        </GradientButton>
-      </div>
+    <div className="flex items-center justify-center px-8">
+      <GradientButton
+        onClick={onClick}
+        width={120}
+        height={15}
+        borderRadius={20}
+        fontSize={1.5}
+      >
+        <img src={SendIcon} className="w-7 h-7 flex-shrink-0" alt="send" />
+        <span className="whitespace-nowrap">공유하기</span>
+      </GradientButton>
     </div>
   );
 }

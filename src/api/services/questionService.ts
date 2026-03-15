@@ -164,4 +164,38 @@ export const questionService = {
     });
     return response.data;
   },
+
+  // 답변 생성
+  createAnswer: async (data: { questionId: number; content: string; attachments?: { s3Key: string; fileSize: number }[] }) => {
+    const response = await apiClient.post<{ answerId: number }>('/answers', data);
+    return response.data;
+  },
+
+  // 답변 삭제
+  deleteAnswer: async (answerId: number) => {
+    const response = await apiClient.delete('/answers', {
+      params: { answerId },
+    });
+    return response.data;
+  },
+
+  // [어드민] 문의사항 목록 조회
+  getAdminQuestions: async (params: {
+    pageNumber: number;
+    pageSize: number;
+    categoryIds?: number[];
+    isAnswered?: boolean;
+    lineId?: number;
+  }) => {
+    const response = await apiClient.get<PaginatedQuestions>('/questions/admins', {
+      params: {
+        pageNumber: params.pageNumber,
+        pageSize: params.pageSize,
+        ...(params.categoryIds && { categoryIds: params.categoryIds }),
+        ...(params.isAnswered !== undefined && { isAnswered: params.isAnswered }),
+        ...(params.lineId && { lineId: params.lineId }),
+      },
+    });
+    return response.data;
+  },
 };

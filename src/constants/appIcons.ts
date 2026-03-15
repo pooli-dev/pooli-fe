@@ -1,4 +1,4 @@
-// App Icons
+// App icon imports
 import logo from "../assets/img/logo.svg";
 import youtubeIcon from "../assets/img/app/youtube.png";
 import instaIcon from "../assets/img/app/instagram.svg";
@@ -50,7 +50,7 @@ import aliexpressIcon from "../assets/img/app/aliexpress.svg";
 import elevenStIcon from "../assets/img/app/11st.png";
 import oliveyoungIcon from "../assets/img/app/oliveyoung.png";
 
-// 영어 -> 한글 매핑 (백엔드에서 영어로 오는 것을 한글로 표시)
+// 백엔드 영어 이름 -> 한글 표시 이름
 const APP_NAME_KR_MAP: { [key: string]: string } = {
   "11st": "11번가",
   "Naver Store": "네이버 스토어",
@@ -61,7 +61,7 @@ const APP_NAME_KR_MAP: { [key: string]: string } = {
   Duolingo: "듀오링고",
 };
 
-// 영어 앱 이름 -> 한글 검색어 매핑 (검색용)
+// 검색 키워드 매핑 (영어/한글 검색 지원)
 const APP_SEARCH_KEYWORDS: { [key: string]: string[] } = {
   "11st": ["11번가", "11st", "십일번가"],
   "Naver Store": ["네이버스토어", "네이버 스토어", "naver store", "naverstore"],
@@ -116,7 +116,6 @@ const APP_SEARCH_KEYWORDS: { [key: string]: string[] } = {
 };
 
 export const APP_ICONS: { [key: string]: string } = {
-  // English app names
   Zoom: zoomIcon,
   YouTube: youtubeIcon,
   WhatsApp: whatsappIcon,
@@ -169,32 +168,27 @@ export const APP_ICONS: { [key: string]: string } = {
   Melon: melonIcon,
 };
 
-// 앱 아이콘 가져오기
 export const getAppIcon = (appName: string): string => {
   return APP_ICONS[appName] || logo;
 };
 
-// 앱 이름 표시용 (백엔드에서 영어로 오면 한글로 변환)
 export const getDisplayAppName = (appName: string): string => {
   return APP_NAME_KR_MAP[appName] || appName;
 };
 
-// 검색어가 앱과 매칭되는지 확인 (영어/한글 모두 지원)
+// 영어/한글 검색 지원
 export const matchesSearchQuery = (appName: string, searchQuery: string): boolean => {
   if (!searchQuery) return true;
   
   const normalizedSearch = searchQuery.toLowerCase().trim().replace(/\s+/g, '');
   
-  // 1. 영어 앱 이름으로 직접 매칭
   const normalizedAppName = appName.toLowerCase().replace(/\s+/g, '');
   if (normalizedAppName.includes(normalizedSearch)) return true;
   
-  // 2. 한글 표시 이름으로 매칭
   const displayName = getDisplayAppName(appName);
   const normalizedDisplayName = displayName.toLowerCase().replace(/\s+/g, '');
   if (normalizedDisplayName.includes(normalizedSearch)) return true;
   
-  // 3. 검색 키워드로 매칭
   const keywords = APP_SEARCH_KEYWORDS[appName] || [];
   return keywords.some(keyword => {
     const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '');
