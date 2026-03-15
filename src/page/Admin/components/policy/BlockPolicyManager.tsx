@@ -482,7 +482,7 @@ export default function BlockPolicyManager({ lineId, onPolicyChange }: Props) {
   const updatePolicyOptimistically = async (
     id: number,
     updater: (policies: BlockPolicy[]) => BlockPolicy[],
-    apiCall: () => Promise<unknown>,
+    apiCall: () => Promise<{ data: RepeatBlockPolicy }>,
     successMessage?: string
   ) => {
     const prevPolicies = [...policies];
