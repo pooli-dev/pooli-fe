@@ -14,7 +14,7 @@ export const isAdminDomain = (): boolean => {
     return window.location.pathname.startsWith('/admin');
   }
   // 프로덕션에서는 도메인으로 구분
-  return hostname === ADMIN_DOMAIN;
+  return hostname === ADMIN_DOMAIN || hostname.includes('office');
 };
 
 export const isUserDomain = (): boolean => {

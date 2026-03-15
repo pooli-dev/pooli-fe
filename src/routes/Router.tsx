@@ -18,9 +18,18 @@ import UserManagement from "../page/Admin/UserManagement";
 import InquiryManagement from "../page/Admin/InquiryManagement";
 import NotificationManagement from "../page/Admin/NotificationManagement";
 import Login from "@/page/Login/LoginPage";
+import AdminLogin from "@/page/Admin/AdminLoginPage";
 import Log from "@/page/Log/LogPage";
 import { getAppType } from "@/utils/domain";
 import ProtectedRoute from "./ProtectedRoute";
+
+// 어드민용 인증 체크 (토큰 기반)
+function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("accessToken");
+  const adminAuth = localStorage.getItem("adminAuthenticated");
+  if (!token && !adminAuth) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+}
 
 export default function Router() {
   const appType = getAppType();
@@ -31,12 +40,13 @@ export default function Router() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/admin" replace />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           
           <Route path="/admin" element={
-            <ProtectedRoute>
+            <AdminProtectedRoute>
               <AdminLayout />
-            </ProtectedRoute>
+            </AdminProtectedRoute>
           }>
             <Route index element={<PolicyManagement />} />
             <Route path="users" element={<UserManagement />} />
