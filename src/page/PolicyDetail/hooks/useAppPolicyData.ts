@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { blockService } from "@/api";
+import { blockService, getErrorMessage } from "@/api";
 import type { AppPolicy } from "../../../data/policyDetailDummyData";
 
 const MAX_DATA_LIMIT_MB = 5000;
@@ -45,7 +45,7 @@ export const useAppPolicyData = (
         setAppPolicyStates(apps);
       })
       .catch((error) => {
-        console.error("앱 목록 조회 실패:", error);
+        console.error("앱 목록 조회 실패:", getErrorMessage(error));
       });
   }, [selectedLineId, sortOrder]);
 
@@ -95,7 +95,7 @@ export const useAppPolicyData = (
       onPolicyChange?.();
       return newEnabled;
     } catch (error) {
-      console.error("앱 정책 토글 실패:", error);
+      console.error("앱 정책 토글 실패:", getErrorMessage(error));
       return null;
     }
   };
@@ -132,7 +132,7 @@ export const useAppPolicyData = (
       
       onPolicyChange?.();
     } catch (error) {
-      console.error("데이터 제한 업데이트 실패:", error);
+      console.error("데이터 제한 업데이트 실패:", getErrorMessage(error));
     }
   };
 
@@ -177,7 +177,7 @@ export const useAppPolicyData = (
       
       onPolicyChange?.();
     } catch (error) {
-      console.error("속도 제한 업데이트 실패:", error);
+      console.error("속도 제한 업데이트 실패:", getErrorMessage(error));
     }
   };
 
@@ -204,7 +204,7 @@ export const useAppPolicyData = (
       
       onPolicyChange?.();
     } catch (error) {
-      console.error("정책 예외 토글 실패:", error);
+      console.error("정책 예외 토글 실패:", getErrorMessage(error));
     }
   };
 
