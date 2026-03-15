@@ -31,13 +31,8 @@ export default function Router() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/admin" replace />} />
-          <Route path="/login" element={<Login />} />
           
-          <Route path="/admin" element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
+          <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<PolicyManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="inquiries" element={<InquiryManagement />} />
