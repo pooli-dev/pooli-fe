@@ -2,7 +2,16 @@ import axios from 'axios';
 
 // 백엔드 API URL
 // 개발 환경에서는 Vite 프록시를 통해 CORS 우회
-const API_BASE_URL = import.meta.env.DEV ? '/api' : 'https://www.pooliapp.com/api';
+// 프로덕션에서는 현재 도메인의 /api 사용 (office.pooliapp.com -> office.pooliapp.com/api)
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return '/api';
+  }
+  // 프로덕션: 현재 도메인 사용
+  return `${window.location.origin}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
