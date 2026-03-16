@@ -14,6 +14,7 @@ import PolicyManagement from "../page/Admin/PolicyManagement";
 import UserManagement from "../page/Admin/UserManagement";
 import InquiryManagement from "../page/Admin/InquiryManagement";
 import NotificationManagement from "../page/Admin/NotificationManagement";
+import FamilyDetail from "../page/Admin/FamilyDetail";
 import Login from "@/page/Login/LoginPage";
 import AdminLogin from "@/page/Admin/AdminLoginPage";
 import Log from "@/page/Log/LogPage";
@@ -52,6 +53,7 @@ export default function Router() {
             <Route path="users" element={<UserManagement />} />
             <Route path="inquiries" element={<InquiryManagement />} />
             <Route path="notifications" element={<NotificationManagement />} />
+            <Route path="family-detail" element={<FamilyDetail />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/admin" replace />} />
