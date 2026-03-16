@@ -1,6 +1,5 @@
 import type { AlarmCode, NotificationResponse } from "@/types/alarm";
-import apiClient from "../client";
-
+import { apiClient } from "../client";
 export type NotificationTargetType = "DIRECT" | "ALL" | "OWNER" | "MEMBER";
 
 export interface SendNotificationRequest {
@@ -10,12 +9,10 @@ export interface SendNotificationRequest {
 }
 
 export const notificationService = {
-  send: async (data: SendNotificationRequest) => {
-    // 대량 알림 전송은 시간이 오래 걸릴 수 있으므로 타임아웃 없음
-    const response = await apiClient.post("/notifications", data, {
-      timeout: 0, // 타임아웃 없음
+  send: async (data: SendNotificationRequest): Promise<void> => {
+    await apiClient.post("/notifications", data, {
+      timeout: 0,
     });
-    return response.data;
   },
   getNotifications: (params: {
     pageNumber: number;

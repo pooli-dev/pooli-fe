@@ -25,10 +25,15 @@ export default function Header({
 }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { data: unreadData } = useQuery({
+  const { data: unreadData } = useQuery<{
+    lineId: number;
+    unreadCount: number;
+    readCount: number;
+  }>({
     queryKey: ["unreadCount"],
     queryFn: () => notificationService.getUnreadCount().then((res) => res.data),
-    refetchInterval: 30000, // 30초마다 폴링
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
   });
 
   const unreadCount = unreadData?.unreadCount ?? 0;
