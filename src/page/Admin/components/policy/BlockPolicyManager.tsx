@@ -64,7 +64,7 @@ export default function BlockPolicyManager({
     mutationFn: (policy: BlockPolicy) =>
       blockService.updateRepeatBlockPolicy(policy.id, toApiPayload(policy)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["repeatBlocks"] });
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
       show("차단 정책이 변경되었습니다.");
       onPolicyChange?.();
     },

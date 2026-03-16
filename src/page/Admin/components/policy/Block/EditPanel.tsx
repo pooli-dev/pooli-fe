@@ -3,6 +3,7 @@ import TimePicker from "./TimePicker";
 import { clampEndTime } from "@/utils/dataFormat";
 import type { BlockPolicy, DayKey } from "@/types/block";
 import { DAYS } from "@/types/block";
+import { useToastStore } from "@/store/toastStore";
 
 export default function EditPanel({
   policy,
@@ -18,6 +19,7 @@ export default function EditPanel({
   onCancel: () => void;
 }) {
   const [draft, setDraft] = useState<BlockPolicy>({ ...policy });
+  const { show } = useToastStore();
 
   const setStartHour = (h: number) => {
     const clamped = clampEndTime(
@@ -120,7 +122,13 @@ export default function EditPanel({
         {mode === "add" ? (
           <>
             <button
-              onClick={() => onConfirm(draft)}
+              onClick={() => {
+                if (!draft.days || draft.days.length === 0) {
+                  show("선택된 날짜가 없습니다. 최소 하나의 요일을 선택해주세요.", "error");
+                  return;
+                }
+                onConfirm(draft);
+              }}
               className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#678BF7" }}
             >
@@ -136,7 +144,13 @@ export default function EditPanel({
         ) : (
           <>
             <button
-              onClick={() => onConfirm({ ...draft, enabled: true })}
+              onClick={() => {
+                if (!draft.days || draft.days.length === 0) {
+                  show("선택된 날짜가 없습니다. 최소 하나의 요일을 선택해주세요.", "error");
+                  return;
+                }
+                onConfirm({ ...draft, enabled: true });
+              }}
               className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#678BF7" }}
             >

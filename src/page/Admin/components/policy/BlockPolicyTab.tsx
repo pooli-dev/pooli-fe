@@ -1,20 +1,21 @@
 import BlockPolicyManager from "./BlockPolicyManager";
-import ImmediateBlockPolicy from "@/page/PolicyDetail/components/Immediateblockpolicy";
+import ImmediateBlockPolicy from "./ImmediateBlockPolicy";
 
-export default function BlockPolicyTab({
-  lineId,
-  onPolicyChange,
-}: {
-  lineId: number;
+type Props = {
+  onBlockApply?: (blockEndAt: string) => void;
+  lineId?: number;
   onPolicyChange?: () => void;
-}) {
+};
+
+const BlockPolicyTab = ({ onBlockApply, lineId, onPolicyChange }: Props) => {
+  if (!lineId) return null;
+  
   return (
-    <div className="flex flex-col gap-3 px-4 py-4">
+    <div className="flex flex-col gap-3 py-4 text-center text-gray-500">
       <BlockPolicyManager lineId={lineId} onPolicyChange={onPolicyChange} />
-      <ImmediateBlockPolicy
-        lineId={lineId}
-        onApply={() => onPolicyChange?.()}
-      />
+      <ImmediateBlockPolicy lineId={lineId} onApply={onBlockApply} onPolicyChange={onPolicyChange} />
     </div>
   );
-}
+};
+
+export default BlockPolicyTab;

@@ -217,7 +217,7 @@ const AppCard = memo(({
   );
 });
 
-export default function AppPolicyTab({ lineId }: { lineId: number }) {
+export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: number; onPolicyChange?: () => void }) {
   const [loading, setLoading] = useState(true);
   const [apps, setApps] = useState<AppPolicyResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -239,7 +239,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
       const res = await blockService.getLineApps({
         lineId,
         pageNumber: 0,
-        pageSize: 1000,
+        pageSize: 50, // 백엔드 제한에 맞춤
         sortType: sortOrder === "이름순" ? 'NAME' : 'ACTIVE',
       });
       setApps(res.data.content || []);
@@ -316,6 +316,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
           a.appId === appId ? { ...a, ...response.data } : a
         ));
       }
+      onPolicyChange?.();
     } catch (err) {
       alert(getErrorMessage(err));
       setApps(prev => prev.map(a => 
@@ -329,7 +330,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
         });
       }
     }
-  }, [lineId]);
+  }, [lineId, onPolicyChange]);
 
   const handleWhitelistToggle = useCallback(async (appPolicyId: number) => {
     setApps(prev => prev.map(a => 
@@ -338,13 +339,14 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
 
     try {
       await blockService.toggleWhitelist(appPolicyId);
+      onPolicyChange?.();
     } catch (err) {
       alert(getErrorMessage(err));
       setApps(prev => prev.map(a => 
         a.appPolicyId === appPolicyId ? { ...a, isWhiteList: !a.isWhiteList } : a
       ));
     }
-  }, []);
+  }, [onPolicyChange]);
 
   const handleSpeedUpdate = useCallback(async (appPolicyId: number, mbps: number) => {
     const kbps = Math.round(mbps * 1024);
@@ -354,10 +356,11 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
 
     try {
       await blockService.updateAppSpeed(appPolicyId, kbps);
+      onPolicyChange?.();
     } catch (err) {
       alert(getErrorMessage(err));
     }
-  }, []);
+  }, [onPolicyChange]);
 
   const handleDataUpdate = useCallback(async (appPolicyId: number, mb: number) => {
     const bytes = Math.round(mb * 1024 * 1024);
@@ -367,10 +370,11 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
 
     try {
       await blockService.updateAppLimit(appPolicyId, bytes);
+      onPolicyChange?.();
     } catch (err) {
       alert(getErrorMessage(err));
     }
-  }, []);
+  }, [onPolicyChange]);
 
   const toggleExpand = useCallback((appPolicyId: number) => {
     setExpandedApps(prev => {
@@ -401,7 +405,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
   }
 
   return (
-    <div className="relative py-4">
+    <div className="relative py-2">
       <GlassCard
         title=""
         gradientFrom="#FFFFFF"
@@ -413,7 +417,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
         borderRadius={20}
         className="w-full overflow-visible"
       >
-        <div className="pt-[11px] mb-4">
+        <div className="pt-2 mb-4">
           <AppFilterBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -436,7 +440,7 @@ export default function AppPolicyTab({ lineId }: { lineId: number }) {
           />
         </div>
 
-        <div className="space-y-4 px-1.5 sm:px-[13px] pb-4">
+        <div className="space-y-4 px-1.5 sm:px-[13px] pb-2">
           {filteredApps.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               일치하는 결과가 없습니다.
