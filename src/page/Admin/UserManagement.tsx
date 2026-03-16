@@ -96,7 +96,7 @@ export default function UserManagement() {
             </svg>
           </div>
         ) : (
-          <MemberPolicyManager members={familyMembers} />
+          <MemberPolicyManager members={familyMembers} initialLineId={selectedLine.lineId} />
         )}
       </div>
     );
@@ -105,7 +105,7 @@ export default function UserManagement() {
   // 검색 화면
   return (
     <div className="p-8">
-      <AdminHeader title="유저 검색 및 회선 관리" description="전화번호로 유저 회선을 검색합니다." />
+      <AdminHeader title="유저 검색 및 관리" description="전화번호로 유저 회선을 검색합니다." />
 
       {/* 검색 영역 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
