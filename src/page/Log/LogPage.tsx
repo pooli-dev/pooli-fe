@@ -1,27 +1,31 @@
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import GlassCard from "../../components/common/GlassCard";
-
-// ── 타입 ─────────────────────────────────────────────────────────────────────
-type LogEntry = {
-  id: number;
-  userName: string;
-  profileImage?: string;
-  amount: number; // MB, 양수 = 충전
-  date: string; // "03.15 14:22"
-  month: string; // "2024년 3월"
-};
+import { sharedPoolService } from "@/api";
+import type { HistoryEntry } from "@/types/SharedData";
+import { formatData } from "@/utils/dataFormat";
+import Avatar from "@/components/common/Avatar";
+import { useEffect, useRef } from "react";
 
 // ── 유틸 ─────────────────────────────────────────────────────────────────────
-function formatMBSimple(mb: number): string {
-  if (mb >= 1000) return `${(mb / 1000).toFixed(1)} GB`;
-  return `${mb} MB`;
+function getCurrentYearMonth(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  return `${y}${m}`;
 }
 
-function formatAmount(mb: number): string {
-  const abs =
-    mb >= 1000
-      ? `${(Math.abs(mb) / 1000).toFixed(1)} GB`
-      : `${Math.abs(mb)} MB`;
-  return mb >= 0 ? `+ ${abs}` : `- ${abs}`;
+function getPrevYearMonth(yearMonth: string): string {
+  const y = parseInt(yearMonth.slice(0, 4));
+  const m = parseInt(yearMonth.slice(4, 6));
+  const date = new Date(y, m - 2); // 이전 달
+  const ny = date.getFullYear();
+  const nm = String(date.getMonth() + 1).padStart(2, "0");
+  return `${ny}${nm}`;
+}
+
+function formatAmount(entry: HistoryEntry): string {
+  const gb = formatData(Math.abs(entry.amount));
+  return entry.eventType === "USAGE" ? `- ${gb}GB` : `+ ${gb}GB`;
 }
 
 function getRemainingPercent(remaining: number, total: number): number {
@@ -29,80 +33,11 @@ function getRemainingPercent(remaining: number, total: number): number {
   return Math.min(100, Math.round((remaining / total) * 100));
 }
 
-// ── 더미 데이터 ───────────────────────────────────────────────────────────────
-const DUMMY_LOGS: LogEntry[] = [
-  {
-    id: 1,
-    userName: "김영희",
-    amount: 5000,
-    date: "03.15 14:22",
-    month: "2024년 3월",
-  },
-  {
-    id: 2,
-    userName: "박아들",
-    amount: -1200,
-    date: "03.15 10:05",
-    month: "2024년 3월",
-  },
-  {
-    id: 3,
-    userName: "박딸",
-    amount: 2000,
-    date: "03.14 09:00",
-    month: "2024년 3월",
-  },
-  {
-    id: 4,
-    userName: "김아내",
-    amount: -800,
-    date: "03.13 18:30",
-    month: "2024년 3월",
-  },
-  {
-    id: 5,
-    userName: "김영희",
-    amount: 3000,
-    date: "02.28 11:00",
-    month: "2024년 2월",
-  },
-  {
-    id: 6,
-    userName: "박아들",
-    amount: -2000,
-    date: "02.25 09:30",
-    month: "2024년 2월",
-  },
-];
-
-// ── 아바타 ────────────────────────────────────────────────────────────────────
-function Avatar({
-  profileImage,
-  userName,
-}: {
-  profileImage?: string;
-  userName: string;
-}) {
-  return (
-    <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-[#E8EEFF] to-[#C4D0FF] flex items-center justify-center flex-shrink-0">
-      {profileImage ? (
-        <img
-          src={profileImage}
-          alt={userName}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <svg viewBox="0 0 24 24" fill="#9AA5C4" className="w-6 h-6">
-          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-        </svg>
-      )}
-    </div>
-  );
-}
-
 // ── 로그 아이템 ───────────────────────────────────────────────────────────────
-function LogItem({ entry }: { entry: LogEntry }) {
-  const isPositive = entry.amount >= 0;
+function LogItem({ entry }: { entry: HistoryEntry }) {
+  const isPositive = entry.eventType !== "USAGE";
+  const date = new Date(entry.occurredAt);
+  const dateStr = `${date.getMonth() + 1}.${date.getDate()}`;
   return (
     <GlassCard
       title=""
@@ -116,20 +51,18 @@ function LogItem({ entry }: { entry: LogEntry }) {
       className="w-full"
     >
       <div className="flex items-center gap-3">
-        <Avatar profileImage={entry.profileImage} userName={entry.userName} />
+        <Avatar userName={entry.userName} />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800">
-            {isPositive ? "데이터 보태기" : "데이터 사용"}
-          </p>
+          <p className="text-sm font-semibold text-gray-800">{entry.title}</p>
           <p className="text-xs text-gray-400 mt-0.5">
-            {entry.userName} • {entry.date}
+            {entry.userName} • {dateStr}
           </p>
         </div>
         <span
           className="text-sm font-bold flex-shrink-0"
           style={{ color: isPositive ? "#678BF7" : "#9CA3AF" }}
         >
-          {formatAmount(entry.amount)}
+          {formatAmount(entry)}
         </span>
       </div>
     </GlassCard>
@@ -138,17 +71,59 @@ function LogItem({ entry }: { entry: LogEntry }) {
 
 // ── SharedDataLog 페이지 ──────────────────────────────────────────────────────
 export default function LogPage() {
-  const remaining = 12500;
-  const total = 20000;
-  const totalContributed = 24500;
-  const logs = DUMMY_LOGS;
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  const { data: poolData } = useQuery({
+    queryKey: ["sharedPoolMain"],
+    queryFn: () => sharedPoolService.getMainRemainingAmount(),
+  });
+
+  const remaining = poolData?.sharedPoolRemainingData ?? 0;
+  const total = poolData?.sharedPoolTotalData ?? 0;
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["sharedPoolHistory"],
+      queryFn: async ({ pageParam }: { pageParam: string }) => {
+        const res = await sharedPoolService.getHistory(pageParam);
+        return { data: res.data, yearMonth: pageParam };
+      },
+      initialPageParam: getCurrentYearMonth(),
+      getNextPageParam: (lastPage) => {
+        // 데이터 없으면 더 이상 로드 안 함
+        if (!lastPage.data || lastPage.data.length === 0) return undefined;
+        return getPrevYearMonth(lastPage.yearMonth);
+      },
+    });
+
+  // 무한 스크롤 옵저버
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // 월별 그룹핑
-  const grouped = logs.reduce<Record<string, LogEntry[]>>((acc, entry) => {
-    if (!acc[entry.month]) acc[entry.month] = [];
-    acc[entry.month].push(entry);
-    return acc;
-  }, {});
+  const grouped = (data?.pages ?? []).reduce<Record<string, HistoryEntry[]>>(
+    (acc, page) => {
+      if (!page.data) return acc;
+      page.data.forEach((entry) => {
+        const date = new Date(entry.occurredAt);
+        const month = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+        if (!acc[month]) acc[month] = [];
+        acc[month].push(entry);
+      });
+      return acc;
+    },
+    {},
+  );
 
   return (
     <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
@@ -169,9 +144,9 @@ export default function LogPage() {
             <div>
               <p className="text-xs text-gray-400 mb-1">현재 공유 데이터</p>
               <p className="text-3xl font-bold text-gray-800">
-                {formatMBSimple(remaining)}
+                {remaining}GB
                 <span className="text-base font-normal text-gray-400 ml-1">
-                  / {formatMBSimple(total)}
+                  / {total}GB
                 </span>
               </p>
             </div>
@@ -187,7 +162,6 @@ export default function LogPage() {
             </div>
           </div>
 
-          {/* 잔여량 막대 (네온 효과) */}
           <div className="relative w-full my-2">
             <div
               className="absolute w-full h-3 rounded-full"
@@ -213,7 +187,6 @@ export default function LogPage() {
             </div>
           </div>
 
-          {/* 총 누적 기여 */}
           <div className="flex items-center justify-between mt-6">
             <div className="flex items-center gap-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -228,7 +201,7 @@ export default function LogPage() {
               className="text-sm font-semibold"
               style={{ color: "#678BF7" }}
             >
-              {formatMBSimple(totalContributed)}
+              {poolData?.sharedPoolAdditionalData ?? 0}GB
             </span>
           </div>
         </GlassCard>
@@ -237,11 +210,28 @@ export default function LogPage() {
         {Object.entries(grouped).map(([month, entries]) => (
           <div key={month} className="flex flex-col gap-3">
             <p className="text-xs text-gray-400 px-1">{month}</p>
-            {entries.map((entry) => (
-              <LogItem key={entry.id} entry={entry} />
+            {entries.map((entry, index) => (
+              <LogItem key={`${entry.occurredAt}-${index}`} entry={entry} />
             ))}
           </div>
         ))}
+
+        {/* 무한 스크롤 트리거 */}
+        <div
+          ref={observerRef}
+          className="py-4 text-center text-sm text-gray-400"
+        >
+          {isFetchingNextPage && "불러오는 중..."}
+          {!hasNextPage &&
+            Object.keys(grouped).length > 0 &&
+            "모든 기록을 불러왔습니다."}
+        </div>
+
+        {Object.keys(grouped).length === 0 && !isFetchingNextPage && (
+          <div className="text-center py-20 text-gray-400">
+            히스토리가 없습니다.
+          </div>
+        )}
       </div>
     </div>
   );
