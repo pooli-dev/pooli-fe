@@ -96,70 +96,67 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="flex flex-col items-center gap-5 px-6 pb-[60px] mt-4">
-        {/* 데이터 차단 활성화 배너 영역 */}
-        {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
-        {blockStatus?.blocked && (
-          <div className="w-full max-w-md">
-            <GlassCard
-              title=""
-              gradientFrom="#FFFFFF"
-              gradientTo="#999999"
-              bgGradientFrom="#FFFFFF"
-              bgGradientTo="#EEEEEE"
-              bgOpacity={0.2}
-              borderWidth={2}
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-[#E4E9FC]">
-                  <img src={BlockIcon} alt="" className="w-6 h-6" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  {/* 제목 */}
-                  <h3 className="text-base font-semibold text-gray-800 mb-0.5">
-                    데이터 차단 활성화
-                  </h3>
-
-                  {/* 내용 */}
-                  <p className="text-sm text-gray-500 font-light">
-                    차단 종료 시간 |{" "}
-                    {formatBlockEndTime(blockStatus.blockEndsAt)}
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-        )}
-
-        {/* 그래프 영역 */}
-        {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
-        <div className="flex flex-col items-center gap-4">
-          <PieChart sharedPoolData={sharedPoolData} />
-        </div>
-
-        {/* 공유 데이터 담기 페이지 이동 버튼 */}
-        <GradientButton onClick={() => navigate("/shared-data")}>
-          <img src={PlusIcon} className="w-5 h-5" />
-          가족 공유 데이터 담기
-        </GradientButton>
-
-        {/* 공유풀 사용량 */}
-        {/* /api/families/members 요청후 각 member에 대해 sharedPoolRemainingAmount로 각각 사용량 계산 후 넘기기(%) */}
+    <div className="flex flex-col items-center gap-5 px-6 pb-[60px] mt-4">
+      {/* 데이터 차단 활성화 배너 영역 */}
+      {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
+      {blockStatus?.blocked && (
         <div className="w-full max-w-md">
-          <SharedPoolUsage users={usageUsers} />
-        </div>
+          <GlassCard
+            title=""
+            gradientFrom="#FFFFFF"
+            gradientTo="#999999"
+            bgGradientFrom="#FFFFFF"
+            bgGradientTo="#EEEEEE"
+            bgOpacity={0.2}
+            borderWidth={2}
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-[#E4E9FC]">
+                <img src={BlockIcon} alt="" className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {/* 제목 */}
+                <h3 className="text-base font-semibold text-gray-800 mb-0.5">
+                  데이터 차단 활성화
+                </h3>
 
-        {/* 구성원별 데이터 정보 */}
-        {/* /api/families/members 요청후 members 넘기기 */}
-        {familyData && (
-          <FamilyMemberList
-            members={familyData.members}
-            isEnable={familyData.isEnable}
-            isUserOwner={isOwner}
-          />
-        )}
+                {/* 내용 */}
+                <p className="text-sm text-gray-500 font-light">
+                  차단 종료 시간 | {formatBlockEndTime(blockStatus.blockEndsAt)}
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* 그래프 영역 */}
+      {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
+      <div className="flex flex-col items-center gap-4">
+        <PieChart sharedPoolData={sharedPoolData} />
       </div>
+
+      {/* 공유 데이터 담기 페이지 이동 버튼 */}
+      <GradientButton onClick={() => navigate("/shared-data")}>
+        <img src={PlusIcon} className="w-5 h-5" />
+        가족 공유 데이터 담기
+      </GradientButton>
+
+      {/* 공유풀 사용량 */}
+      {/* /api/families/members 요청후 각 member에 대해 sharedPoolRemainingAmount로 각각 사용량 계산 후 넘기기(%) */}
+      <div className="w-full max-w-md">
+        <SharedPoolUsage users={usageUsers} />
+      </div>
+
+      {/* 구성원별 데이터 정보 */}
+      {/* /api/families/members 요청후 members 넘기기 */}
+      {familyData && (
+        <FamilyMemberList
+          members={familyData.members}
+          isEnable={familyData.isEnable}
+          isUserOwner={isOwner}
+        />
+      )}
     </div>
   );
 }

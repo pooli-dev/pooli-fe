@@ -25,19 +25,17 @@ export default function Setting() {
   };
 
   return (
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="py-5">
-        <ModeSettings />
-        <NotificationSettings />
+    <div className="py-5">
+      <ModeSettings />
+      <NotificationSettings />
 
-        <div className="flex justify-center mb-3">
-          <button
-            onClick={handleLogout}
-            className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors ${darkMode ? "invert" : ""}`}
-          >
-            로그아웃
-          </button>
-        </div>
+      <div className="flex justify-center mb-3">
+        <button
+          onClick={handleLogout}
+          className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors ${darkMode ? "invert" : ""}`}
+        >
+          로그아웃
+        </button>
       </div>
     </div>
   );

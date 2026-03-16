@@ -178,119 +178,115 @@ export default function Alarm() {
   };
 
   return (
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="px-5 py-5 pb-[60px]">
-        {/* 카테고리 탭 */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {categories.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setSelectedCategory(key)}
-              className={`px-4 sm:px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
-                selectedCategory === key
-                  ? "bg-[#678BF7] text-white font-semibold"
-                  : "bg-[#F0F0F0] text-[#999999] font-medium"
+    <div className="px-5 py-5 pb-[60px]">
+      {/* 카테고리 탭 */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {categories.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setSelectedCategory(key)}
+            className={`px-4 sm:px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
+              selectedCategory === key
+                ? "bg-[#678BF7] text-white font-semibold"
+                : "bg-[#F0F0F0] text-[#999999] font-medium"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* 전체 읽음 버튼 */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => markAllAsRead()}
+          className="text-[#678BF7] font-medium"
+          style={{ fontSize: "0.875em" }}
+        >
+          전체 읽음
+        </button>
+      </div>
+
+      {/* 알림 리스트 */}
+      <div className="space-y-3">
+        {filteredNotifications.map((alarm, index) => {
+          const category = getAlarmCategory(alarm.alarmCode);
+          const message = getAlarmMessage(alarm);
+
+          return (
+            <div
+              key={alarm.alarmHistoryId ?? `${alarm.createdAt}-${index}`}
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                alarm.alarmHistoryId &&
+                !alarm.isRead &&
+                markAsRead(alarm.alarmHistoryId)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (alarm.alarmHistoryId && !alarm.isRead)
+                    markAsRead(alarm.alarmHistoryId);
+                }
+              }}
+              className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
+                alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"
               }`}
             >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* 전체 읽음 버튼 */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => markAllAsRead()}
-            className="text-[#678BF7] font-medium"
-            style={{ fontSize: "0.875em" }}
-          >
-            전체 읽음
-          </button>
-        </div>
-
-        {/* 알림 리스트 */}
-        <div className="space-y-3">
-          {filteredNotifications.map((alarm, index) => {
-            const category = getAlarmCategory(alarm.alarmCode);
-            const message = getAlarmMessage(alarm);
-
-            return (
-              <div
-                key={alarm.alarmHistoryId ?? `${alarm.createdAt}-${index}`}
-                role="button"
-                tabIndex={0}
-                onClick={() =>
-                  alarm.alarmHistoryId &&
-                  !alarm.isRead &&
-                  markAsRead(alarm.alarmHistoryId)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    if (alarm.alarmHistoryId && !alarm.isRead)
-                      markAsRead(alarm.alarmHistoryId);
-                  }
-                }}
-                className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
-                  alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"
-                }`}
-              >
-                <CategoryIcon
-                  category={category === "all" ? "etc" : category}
-                  isRead={alarm.isRead}
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    {!alarm.isRead ? (
-                      <span
-                        className="font-bold text-[#FF6B6B]"
-                        style={{ fontSize: "0.75em" }}
-                      >
-                        NEW
-                      </span>
-                    ) : (
-                      <span
-                        className="font-medium text-[#CCCCCC]"
-                        style={{ fontSize: "0.75em" }}
-                      >
-                        READ
-                      </span>
-                    )}
+              <CategoryIcon
+                category={category === "all" ? "etc" : category}
+                isRead={alarm.isRead}
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  {!alarm.isRead ? (
                     <span
-                      className={
-                        alarm.isRead ? "text-[#CCCCCC]" : "text-[#999999]"
-                      }
+                      className="font-bold text-[#FF6B6B]"
                       style={{ fontSize: "0.75em" }}
                     >
-                      {formatDate(alarm.createdAt)}
+                      NEW
                     </span>
-                  </div>
-                  <p
-                    className={`leading-relaxed ${alarm.isRead ? "text-[#AAAAAA]" : "text-[#333333]"}`}
-                    style={{ fontSize: "0.875em" }}
+                  ) : (
+                    <span
+                      className="font-medium text-[#CCCCCC]"
+                      style={{ fontSize: "0.75em" }}
+                    >
+                      READ
+                    </span>
+                  )}
+                  <span
+                    className={
+                      alarm.isRead ? "text-[#CCCCCC]" : "text-[#999999]"
+                    }
+                    style={{ fontSize: "0.75em" }}
                   >
-                    {message}
-                  </p>
+                    {formatDate(alarm.createdAt)}
+                  </span>
                 </div>
+                <p
+                  className={`leading-relaxed ${alarm.isRead ? "text-[#AAAAAA]" : "text-[#333333]"}`}
+                  style={{ fontSize: "0.875em" }}
+                >
+                  {message}
+                </p>
               </div>
-            );
-          })}
-        </div>
-
-        {/* 무한스크롤 트리거 */}
-        <div
-          ref={observerRef}
-          className="py-4 text-center text-sm text-[#CCCCCC]"
-        >
-          {isFetchingNextPage && "불러오는 중..."}
-        </div>
-
-        {filteredNotifications.length === 0 && (
-          <div className="text-center py-20 text-[#999999]">
-            알림이 없습니다.
-          </div>
-        )}
+            </div>
+          );
+        })}
       </div>
+
+      {/* 무한스크롤 트리거 */}
+      <div
+        ref={observerRef}
+        className="py-4 text-center text-sm text-[#CCCCCC]"
+      >
+        {isFetchingNextPage && "불러오는 중..."}
+      </div>
+
+      {filteredNotifications.length === 0 && (
+        <div className="text-center py-20 text-[#999999]">알림이 없습니다.</div>
+      )}
     </div>
   );
 }

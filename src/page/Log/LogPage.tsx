@@ -126,113 +126,105 @@ export default function LogPage() {
   );
 
   return (
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="flex flex-col gap-4 px-6 pb-8 pt-2">
-        {/* ── 현재 공유 데이터 요약 카드 ── */}
-        <GlassCard
-          title=""
-          gradientFrom="#FFFFFF"
-          gradientTo="#CCCCCC"
-          bgGradientFrom="#FFFFFF"
-          bgGradientTo="#F0F0F0"
-          bgOpacity={0.7}
-          borderWidth={1}
-          borderRadius={20}
-          className="w-full"
-        >
-          <div className="flex items-start justify-between mb-4 py-4">
-            <div>
-              <p className="text-xs text-gray-400 mb-1">현재 공유 데이터</p>
-              <p className="text-3xl font-bold text-gray-800">
-                {remaining}GB
-                <span className="text-base font-normal text-gray-400 ml-1">
-                  / {total}GB
-                </span>
-              </p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-[#EEF2FF] flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 6h18M3 12h18M3 18h18"
-                  stroke="#678BF7"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+    <div className="flex flex-col gap-4 px-6 pb-8 pt-2">
+      {/* ── 현재 공유 데이터 요약 카드 ── */}
+      <GlassCard
+        title=""
+        gradientFrom="#FFFFFF"
+        gradientTo="#CCCCCC"
+        bgGradientFrom="#FFFFFF"
+        bgGradientTo="#F0F0F0"
+        bgOpacity={0.7}
+        borderWidth={1}
+        borderRadius={20}
+        className="w-full"
+      >
+        <div className="flex items-start justify-between mb-4 py-4">
+          <div>
+            <p className="text-xs text-gray-400 mb-1">현재 공유 데이터</p>
+            <p className="text-3xl font-bold text-gray-800">
+              {remaining}GB
+              <span className="text-base font-normal text-gray-400 ml-1">
+                / {total}GB
+              </span>
+            </p>
           </div>
-
-          <div className="relative w-full my-2">
-            <div
-              className="absolute w-full h-3 rounded-full"
-              style={{
-                backgroundColor: "#E8F0FF",
-                filter: "blur(3px)",
-                opacity: 0.7,
-                transform: "scaleY(0.5)",
-                boxShadow: "0 0 10px 3px #93C5FD",
-              }}
-            />
-            <div
-              className="relative w-full h-3 rounded-full overflow-hidden"
-              style={{ backgroundColor: "#F0F5FF" }}
-            >
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${getRemainingPercent(remaining, total)}%`,
-                  background: "linear-gradient(to right, #9A9CEA, #678BF7)",
-                }}
+          <div className="w-10 h-10 rounded-full bg-[#EEF2FF] flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 6h18M3 12h18M3 18h18"
+                stroke="#678BF7"
+                strokeWidth="2"
+                strokeLinecap="round"
               />
-            </div>
+            </svg>
           </div>
-
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"
-                  fill="#678BF7"
-                />
-              </svg>
-              <span className="text-xs text-gray-400">총 누적 기여</span>
-            </div>
-            <span
-              className="text-sm font-semibold"
-              style={{ color: "#678BF7" }}
-            >
-              {poolData?.sharedPoolAdditionalData ?? 0}GB
-            </span>
-          </div>
-        </GlassCard>
-
-        {/* ── 월별 로그 목록 ── */}
-        {Object.entries(grouped).map(([month, entries]) => (
-          <div key={month} className="flex flex-col gap-3">
-            <p className="text-xs text-gray-400 px-1">{month}</p>
-            {entries.map((entry, index) => (
-              <LogItem key={`${entry.occurredAt}-${index}`} entry={entry} />
-            ))}
-          </div>
-        ))}
-
-        {/* 무한 스크롤 트리거 */}
-        <div
-          ref={observerRef}
-          className="py-4 text-center text-sm text-gray-400"
-        >
-          {isFetchingNextPage && "불러오는 중..."}
-          {!hasNextPage &&
-            Object.keys(grouped).length > 0 &&
-            "모든 기록을 불러왔습니다."}
         </div>
 
-        {Object.keys(grouped).length === 0 && !isFetchingNextPage && (
-          <div className="text-center py-20 text-gray-400">
-            히스토리가 없습니다.
+        <div className="relative w-full my-2">
+          <div
+            className="absolute w-full h-3 rounded-full"
+            style={{
+              backgroundColor: "#E8F0FF",
+              filter: "blur(3px)",
+              opacity: 0.7,
+              transform: "scaleY(0.5)",
+              boxShadow: "0 0 10px 3px #93C5FD",
+            }}
+          />
+          <div
+            className="relative w-full h-3 rounded-full overflow-hidden"
+            style={{ backgroundColor: "#F0F5FF" }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${getRemainingPercent(remaining, total)}%`,
+                background: "linear-gradient(to right, #9A9CEA, #678BF7)",
+              }}
+            />
           </div>
-        )}
+        </div>
+
+        <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"
+                fill="#678BF7"
+              />
+            </svg>
+            <span className="text-xs text-gray-400">총 누적 기여</span>
+          </div>
+          <span className="text-sm font-semibold" style={{ color: "#678BF7" }}>
+            {poolData?.sharedPoolAdditionalData ?? 0}GB
+          </span>
+        </div>
+      </GlassCard>
+
+      {/* ── 월별 로그 목록 ── */}
+      {Object.entries(grouped).map(([month, entries]) => (
+        <div key={month} className="flex flex-col gap-3">
+          <p className="text-xs text-gray-400 px-1">{month}</p>
+          {entries.map((entry, index) => (
+            <LogItem key={`${entry.occurredAt}-${index}`} entry={entry} />
+          ))}
+        </div>
+      ))}
+
+      {/* 무한 스크롤 트리거 */}
+      <div ref={observerRef} className="py-4 text-center text-sm text-gray-400">
+        {isFetchingNextPage && "불러오는 중..."}
+        {!hasNextPage &&
+          Object.keys(grouped).length > 0 &&
+          "모든 기록을 불러왔습니다."}
       </div>
+
+      {Object.keys(grouped).length === 0 && !isFetchingNextPage && (
+        <div className="text-center py-20 text-gray-400">
+          히스토리가 없습니다.
+        </div>
+      )}
     </div>
   );
 }

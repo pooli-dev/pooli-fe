@@ -220,137 +220,135 @@ const PolicyDetail = () => {
 
   return (
     <>
-      <div className="relative overflow-y-auto mb-[60px]">
-        <div className="px-[24px] py-5 pb-[60px]">
-          {/* 사용자 선택 */}
-          <div className="mb-6">
-            <h3
-              className="font-semibold text-[#333333] mb-4"
-              style={{ fontSize: "1.125em" }}
-            >
-              사용자 선택
-            </h3>
-            {familyMembers.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                구성원 정보를 불러오는 중...
-              </div>
-            ) : (
-              <div
-                ref={userScrollRef}
-                className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide cursor-grab active:cursor-grabbing"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-                style={{ userSelect: "none" }}
-              >
-                {familyMembers.map((member, index) => (
-                  <button
-                    key={member.lineId}
-                    onClick={() => setSelectedLineId(member.lineId)}
-                    className="flex flex-col items-center gap-2 flex-shrink-0"
-                  >
-                    <Avatar
-                      userName={member.userName}
-                      colorIndex={index}
-                      size="lg"
-                      isSelected={selectedMember?.lineId === member.lineId}
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        selectedMember?.lineId === member.lineId
-                          ? "text-black"
-                          : "text-[#818181]"
-                      }`}
-                    >
-                      {member.userName}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {activeBlockEndTime && (
-            <ActiveBlockBanner
-              endTime={activeBlockEndTime}
-              onRelease={handleBlockRelease} // ← 수정
-            />
-          )}
-
-          {/* 현재 적용중인 정책 */}
-          {appliedPolicies.length > 0 && (
-            <div className="mb-6">
-              <PolicyScroll
-                policies={appliedPolicies.map((policy, index) => ({
-                  id: index + 1,
-                  type: policy.type,
-                  bgColor: policy.bgColor,
-                  title: policy.title,
-                }))}
-                title="현재 적용중인 정책"
-              />
+      <div className="px-[24px] py-5 pb-[60px]">
+        {/* 사용자 선택 */}
+        <div className="mb-6">
+          <h3
+            className="font-semibold text-[#333333] mb-4"
+            style={{ fontSize: "1.125em" }}
+          >
+            사용자 선택
+          </h3>
+          {familyMembers.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              구성원 정보를 불러오는 중...
             </div>
-          )}
-
-          {/* 탭 메뉴 */}
-          <div className="mb-4">
+          ) : (
             <div
-              className="flex relative"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                borderBottom: "1px solid rgba(129, 129, 129, 0.3)",
-              }}
+              ref={userScrollRef}
+              className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide cursor-grab active:cursor-grabbing"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              style={{ userSelect: "none" }}
             >
-              {(["차단", "제한", "애플리케이션"] as TabType[]).map((tab) => (
+              {familyMembers.map((member, index) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 text-sm font-medium relative ${
-                    activeTab === tab ? "text-black" : "text-[#818181]"
-                  }`}
+                  key={member.lineId}
+                  onClick={() => setSelectedLineId(member.lineId)}
+                  className="flex flex-col items-center gap-2 flex-shrink-0"
                 >
-                  {tab}
-                  {activeTab === tab && (
-                    <div
-                      className="absolute bottom-0 left-0 right-0 h-[2px]"
-                      style={{ backgroundColor: "#818181" }}
-                    />
-                  )}
+                  <Avatar
+                    userName={member.userName}
+                    colorIndex={index}
+                    size="lg"
+                    isSelected={selectedMember?.lineId === member.lineId}
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      selectedMember?.lineId === member.lineId
+                        ? "text-black"
+                        : "text-[#818181]"
+                    }`}
+                  >
+                    {member.userName}
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
+          )}
+        </div>
+        {activeBlockEndTime && (
+          <ActiveBlockBanner
+            endTime={activeBlockEndTime}
+            onRelease={handleBlockRelease} // ← 수정
+          />
+        )}
 
-          {/* 탭 내용 */}
-          <div>
-            {activeTab === "애플리케이션" && (
-              <ApplicationTab
-                expandedApps={expandedApps}
-                setExpandedApps={setExpandedApps}
-                isListening={isListening}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                handleVoiceSearch={handleVoiceSearch}
-                cancelVoiceSearch={cancelVoiceSearch}
-                selectedLineId={selectedMember?.lineId}
-                onPolicyChange={refetchAppliedPolicies}
-              />
-            )}
-
-            {activeTab === "차단" && (
-              <BlockTab
-                onBlockApply={handleBlockApply}
-                lineId={selectedMember?.lineId}
-                onPolicyChange={refetchAppliedPolicies} // ← 추가
-              />
-            )}
-            {activeTab === "제한" && (
-              <LimitTab
-                lineId={selectedMember?.lineId}
-                onPolicyChange={refetchAppliedPolicies} // ← 추가
-              />
-            )}
+        {/* 현재 적용중인 정책 */}
+        {appliedPolicies.length > 0 && (
+          <div className="mb-6">
+            <PolicyScroll
+              policies={appliedPolicies.map((policy, index) => ({
+                id: index + 1,
+                type: policy.type,
+                bgColor: policy.bgColor,
+                title: policy.title,
+              }))}
+              title="현재 적용중인 정책"
+            />
           </div>
+        )}
+
+        {/* 탭 메뉴 */}
+        <div className="mb-4">
+          <div
+            className="flex relative"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderBottom: "1px solid rgba(129, 129, 129, 0.3)",
+            }}
+          >
+            {(["차단", "제한", "애플리케이션"] as TabType[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2 text-sm font-medium relative ${
+                  activeTab === tab ? "text-black" : "text-[#818181]"
+                }`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-[2px]"
+                    style={{ backgroundColor: "#818181" }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 탭 내용 */}
+        <div>
+          {activeTab === "애플리케이션" && (
+            <ApplicationTab
+              expandedApps={expandedApps}
+              setExpandedApps={setExpandedApps}
+              isListening={isListening}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              handleVoiceSearch={handleVoiceSearch}
+              cancelVoiceSearch={cancelVoiceSearch}
+              selectedLineId={selectedMember?.lineId}
+              onPolicyChange={refetchAppliedPolicies}
+            />
+          )}
+
+          {activeTab === "차단" && (
+            <BlockTab
+              onBlockApply={handleBlockApply}
+              lineId={selectedMember?.lineId}
+              onPolicyChange={refetchAppliedPolicies} // ← 추가
+            />
+          )}
+          {activeTab === "제한" && (
+            <LimitTab
+              lineId={selectedMember?.lineId}
+              onPolicyChange={refetchAppliedPolicies} // ← 추가
+            />
+          )}
         </div>
       </div>
     </>
