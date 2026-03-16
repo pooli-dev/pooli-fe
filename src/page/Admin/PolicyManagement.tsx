@@ -28,12 +28,12 @@ export default function PolicyManagement() {
     setError('');
     try {
       const data = await adminPolicyService.getAllPolicies();
-      console.log('정책 목록 응답:', data);
       if (typeof data === 'string' && (data as unknown as string).includes('<!doctype')) {
         setError('세션이 만료되었습니다. 다시 로그인해주세요.');
         return;
       }
-      setPolicies(Array.isArray(data) ? data : []);
+      const policyArray = Array.isArray(data) ? data : [];
+      setPolicies(policyArray);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -70,17 +70,69 @@ export default function PolicyManagement() {
   };
 
   // 활성화/비활성화 토글
-  const handleToggle = (policy: AdminPolicy) => {
+  const handleToggle = async (policy: AdminPolicy) => {
     const action = policy.isActive ? '비활성화' : '활성화';
+    const newIsActive = !policy.isActive;
+    
     setConfirmModal({
       open: true,
       message: `"${policy.policyName}" 정책을 ${action}하시겠습니까?`,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, open: false }));
+        
+        // 낙관적 업데이트: UI 먼저 변경
+        const prevPolicies = [...policies];
+        setPolicies(policies.map(p => 
+          p.policyId === policy.policyId 
+            ? { ...p, isActive: newIsActive } 
+            : p
+        ));
+        
+        const startTime = Date.now();
         try {
-          await adminPolicyService.toggleActivation(policy.policyId, !policy.isActive);
+          console.log(`🔄 토글 API 호출: policyId=${policy.policyId}, isActive=${newIsActive}`);
+          
+          const response = await adminPolicyService.toggleActivation(policy.policyId, newIsActive);
+          const responseTime = Date.now() - startTime;
+          
+          console.log(`✅ 토글 성공 (${responseTime}ms):`, response);
+          
+          // 백엔드 버그 체크: 응답값이 요청값과 다른 경우
+          if (response.isActive !== newIsActive) {
+            console.error(`❌ 백엔드 버그: 요청=${newIsActive}, 응답=${response.isActive}`);
+            alert(`경고: 백엔드에서 isActive 값을 올바르게 처리하지 못했습니다.\n요청: ${newIsActive}\n응답: ${response.isActive}`);
+          }
+          
+          // 최신 데이터로 갱신
           await fetchPolicies();
-        } catch (err) { alert(getErrorMessage(err)); }
+        } catch (error) {
+          const err = error as { code?: string; message?: string; response?: { status?: number; data?: { code?: string; message?: string } } };
+          const responseTime = Date.now() - startTime;
+          
+          console.error(`❌ 토글 실패 (${responseTime}ms)`);
+          console.error('에러 코드:', err?.code);
+          console.error('HTTP 상태:', err?.response?.status);
+          console.error('백엔드 에러 코드:', err?.response?.data?.code);
+          console.error('백엔드 에러 메시지:', err?.response?.data?.message);
+          console.error('에러 메시지:', err?.message);
+          console.error('전체 응답:', err?.response?.data);
+          
+          // Timeout 에러
+          if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) {
+            console.error('⚠️ 타임아웃 감지: 백엔드 서버가 30초 이상 응답하지 않음');
+            alert(`타임아웃 오류: 백엔드 서버가 응답하지 않습니다.\n3초 후 상태를 다시 확인합니다.`);
+            
+            // 3초 후 재조회
+            setTimeout(() => fetchPolicies(), 3000);
+            return;
+          }
+          
+          // 기타 에러: 상태 복구
+          setPolicies(prevPolicies);
+          const errorMsg = err?.response?.data?.message || err?.message || '알 수 없는 오류';
+          const errorCode = err?.response?.data?.code || err?.code || '';
+          alert(`정책 ${action} 실패${errorCode ? ` (${errorCode})` : ''}: ${errorMsg}`);
+        }
       },
     });
   };
@@ -311,13 +363,33 @@ function PolicyFormModal({ mode, policy, categories, onClose, onSaved }: {
     setError('');
     try {
       if (mode === 'create') {
-        await adminPolicyService.createPolicy({ policyName: name.trim(), policyCategoryId: categoryId, isActive });
+        const requestData = { policyName: name.trim(), policyCategoryId: categoryId, isActive };
+        console.log('📤 정책 추가 요청:', requestData);
+        const response = await adminPolicyService.createPolicy(requestData);
+        console.log('📥 정책 추가 응답:', response);
+        
+        // 백엔드 버그 체크
+        if (response.isActive !== isActive) {
+          console.error(`❌ 백엔드 버그 (정책 추가): 요청 isActive=${isActive}, 응답 isActive=${response.isActive}`);
+          alert(`경고: 정책이 추가되었으나 활성화 상태가 올바르지 않습니다.\n요청: ${isActive}\n응답: ${response.isActive}`);
+        }
       } else if (policy) {
-        await adminPolicyService.updatePolicy(policy.policyId, { policyName: name.trim(), policyCategoryId: categoryId, isActive });
+        const requestData = { policyName: name.trim(), policyCategoryId: categoryId, isActive };
+        console.log('📤 정책 수정 요청:', { policyId: policy.policyId, ...requestData });
+        const response = await adminPolicyService.updatePolicy(policy.policyId, requestData);
+        console.log('📥 정책 수정 응답:', response);
+        
+        // 백엔드 버그 체크
+        if (response.isActive !== isActive) {
+          console.error(`❌ 백엔드 버그 (정책 수정): 요청 isActive=${isActive}, 응답 isActive=${response.isActive}`);
+          alert(`경고: 정책이 수정되었으나 활성화 상태가 올바르지 않습니다.\n요청: ${isActive}\n응답: ${response.isActive}`);
+        }
       }
       onSaved();
-    } catch (err) {
-      setError(getErrorMessage(err));
+    } catch (error) {
+      const err = error as { response?: { data?: unknown } };
+      console.error('정책 저장 실패:', err?.response?.data || err);
+      setError(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
