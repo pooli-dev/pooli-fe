@@ -25,7 +25,7 @@ export default function Setting() {
   };
 
   return (
-    <div className="relative h-[calc(100dvh-106px-100px)] overflow-y-auto mt-[106px] mb-[100px]">
+    <div className="relative overflow-y-auto mb-[60px]">
       <div className="py-5">
         <ModeSettings />
         <NotificationSettings />

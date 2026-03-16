@@ -9,8 +9,6 @@ import Detail from "../page/Detail/DetailPage";
 import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
 import NotFound from "../page/NotFound";
 import SharedData from "../page/SharedData/SharedData";
-import StatusBar from "../components/StatusBar";
-import Header from "../components/Header";
 import BottomBar from "../components/BottomBar";
 import AdminLayout from "../page/Admin/AdminLayout";
 import PolicyManagement from "../page/Admin/PolicyManagement";
@@ -35,19 +33,22 @@ export default function Router() {
   const appType = getAppType();
 
   // Admin 도메인 라우팅
-  if (appType === 'admin') {
+  if (appType === "admin") {
     return (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          
-          <Route path="/admin" element={
-            <AdminProtectedRoute>
-              <AdminLayout />
-            </AdminProtectedRoute>
-          }>
+
+          <Route
+            path="/admin"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout />
+              </AdminProtectedRoute>
+            }
+          >
             <Route index element={<PolicyManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="inquiries" element={<InquiryManagement />} />
@@ -72,8 +73,6 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <Layout>
-                <StatusBar />
-                <Header />
                 <Routes>
                   <Route path="/main" element={<Main />} />
                   <Route path="/support" element={<Support />} />

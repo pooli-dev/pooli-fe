@@ -178,7 +178,7 @@ export default function Alarm() {
   };
 
   return (
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative overflow-y-auto mb-[60px]">
       <div className="px-5 py-5 pb-[60px]">
         {/* 카테고리 탭 */}
         <div className="flex flex-wrap gap-2 mb-4">

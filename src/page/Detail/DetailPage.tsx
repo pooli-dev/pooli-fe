@@ -36,15 +36,22 @@ const formatYearMonth = (date: Date) =>
 
 /** 기본 앱 사용량 (데이터 없음 상태) */
 const emptyAppUsage = (isPublic: boolean): AppUsage => ({
-  isPublic, totalUsedAmount: 0, apps: [],
+  isPublic,
+  totalUsedAmount: 0,
+  apps: [],
 });
 
 /** DEV 환경에서 에러 로깅 */
 const logApiError = (label: string, error: unknown) => {
   if (!import.meta.env.DEV) return;
-  const apiErr = error && typeof error === 'object' && 'apiError' in error
-    ? (error as { apiError: { status: number; code?: string; message: string } }).apiError
-    : null;
+  const apiErr =
+    error && typeof error === "object" && "apiError" in error
+      ? (
+          error as {
+            apiError: { status: number; code?: string; message: string };
+          }
+        ).apiError
+      : null;
   console.error(`❌ ${label}:`, apiErr || getErrorMessage(error));
 };
 
@@ -53,8 +60,8 @@ function parseAppUsageResponse(
   appRes: { headers?: Record<string, unknown>; data: unknown },
   fallbackIsPublic: boolean,
 ): { data: AppUsage; updatedIsPublic?: boolean } | null {
-  const contentType = String(appRes.headers?.['content-type'] || '');
-  const isJson = contentType.includes('application/json');
+  const contentType = String(appRes.headers?.["content-type"] || "");
+  const isJson = contentType.includes("application/json");
 
   // HTML 응답 = 백엔드에 해당 데이터 없음 (Vite SPA fallback)
   if (!isJson) {
@@ -65,7 +72,7 @@ function parseAppUsageResponse(
   }
 
   const d = appRes.data as Record<string, unknown> | null;
-  if (d && typeof d === 'object' && !Array.isArray(d) && 'isPublic' in d) {
+  if (d && typeof d === "object" && !Array.isArray(d) && "isPublic" in d) {
     if (import.meta.env.DEV) {
       console.log("📱 앱 사용량 원본 응답:", d);
     }
@@ -73,7 +80,7 @@ function parseAppUsageResponse(
       data: {
         isPublic: (d.isPublic as boolean) ?? true,
         totalUsedAmount: (d.totalUsedAmount as number) ?? 0,
-        apps: (d.apps as AppUsage['apps']) ?? [],
+        apps: (d.apps as AppUsage["apps"]) ?? [],
       },
       updatedIsPublic: (d.isPublic as boolean) ?? true,
     };
@@ -112,8 +119,8 @@ export default function Detail() {
         const { data } = await familyService.getMyPermissions();
         setHasPrivacyPermission(
           data.memberPermissions.some(
-            (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한"
-          )
+            (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한",
+          ),
         );
       } catch {
         setHasPrivacyPermission(false);
@@ -218,7 +225,11 @@ export default function Detail() {
   const handleMonthChange = async (direction: "prev" | "next") => {
     const offset = direction === "prev" ? -1 : 1;
     const msg = direction === "prev" ? "이전 달" : "다음 달";
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
+    const newDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + offset,
+      1,
+    );
 
     if (direction === "prev" && newDate.getFullYear() < 2024) {
       showToast(`${msg} 데이터가 없습니다.`, "info");
@@ -280,7 +291,7 @@ export default function Detail() {
   }
 
   return (
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative overflow-y-auto mb-[60px]">
       <div className="flex flex-col gap-3 px-[24px] py-5 pb-[60px]">
         {appliedPolicies.length > 0 && (
           <PolicyScroll

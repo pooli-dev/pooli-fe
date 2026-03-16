@@ -78,7 +78,10 @@ export default function Support() {
               responseAttachments: detail.answer?.attachments,
             };
           } catch (error) {
-            console.error(`문의 ${item.questionId} 상세 조회 실패:`, getErrorMessage(error));
+            console.error(
+              `문의 ${item.questionId} 상세 조회 실패:`,
+              getErrorMessage(error),
+            );
             const category = categories.find(
               (c) => c.questionCategoryId === item.questionCategoryId,
             );
@@ -127,7 +130,7 @@ export default function Support() {
   };
 
   return (
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
+    <div className="relative overflow-y-auto mb-[60px]">
       <div className="py-5 pb-[60px]">
         {/* 탭 */}
         <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">

@@ -96,7 +96,7 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[calc(106px+env(safe-area-inset-top))] mb-[60px]">
+    <div className="relative overflow-y-auto mb-[60px]">
       <div className="flex flex-col items-center gap-5 px-6 pb-[60px] mt-4">
         {/* 데이터 차단 활성화 배너 영역 */}
         {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
