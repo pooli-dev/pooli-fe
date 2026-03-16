@@ -64,18 +64,18 @@ export default function ImmediateBlockPolicy({ lineId, onApply }: Props) {
 
   // 차단 적용/해제
   const { mutate: patchBlock } = useMutation({
-    mutationFn: (blockEndAt: string) =>
+    mutationFn: (blockEndAt: string | null) =>
       blockService.patchImmediateBlock(lineId!, blockEndAt),
     onMutate: (blockEndAt) => {
-      setOptimisticEnabled(new Date(blockEndAt) > new Date());
+      setOptimisticEnabled(
+        blockEndAt !== null && new Date(blockEndAt) > new Date(),
+      );
     },
     onSuccess: (_, blockEndAt) => {
       setOptimisticEnabled(null);
       queryClient.invalidateQueries({ queryKey: ["immediateBlock", lineId] });
-      onApply?.(blockEndAt);
-
-      const isActive = new Date(blockEndAt) > new Date();
-      if (isActive) {
+      onApply?.(blockEndAt ?? "");
+      if (blockEndAt && new Date(blockEndAt) > new Date()) {
         show("차단 정책이 적용되었습니다.");
       } else {
         show("차단이 해제되었습니다.");
@@ -93,7 +93,7 @@ export default function ImmediateBlockPolicy({ lineId, onApply }: Props) {
       patchBlock(calcBlockEndAt(selectedMinutes));
     } else {
       // 끄기 → 현재 시간으로 즉시 해제
-      patchBlock(new Date().toISOString().slice(0, 19));
+      patchBlock(null);
     }
   };
 

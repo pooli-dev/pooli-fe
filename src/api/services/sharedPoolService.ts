@@ -1,4 +1,4 @@
-import type { UsageData } from "@/types/SharedData";
+import type { HistoryEntry, UsageData } from "@/types/SharedData";
 import apiClient from "../client";
 
 // 공유풀 메인 데이터 타입
@@ -63,4 +63,9 @@ export const sharedPoolService = {
 
   getUsageData: () =>
     apiClient.get<UsageData>("/shared-pools/usage/monthly-total"),
+
+  getHistory: (yearMonth: string) =>
+    apiClient.get<HistoryEntry[]>("/shared-pools/history", {
+      params: { yearMonth },
+    }),
 };

@@ -15,3 +15,12 @@ export type UsageData = {
   sharedPoolTotalData: number;
   membersUsageList: MemberUsage[];
 };
+
+export type HistoryEntry = {
+  eventType: string;
+  title: string;
+  userName: string;
+  occurredAt: string;
+  amount: number; // bytes
+  precision: string;
+};

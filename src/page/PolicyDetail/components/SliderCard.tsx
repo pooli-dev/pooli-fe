@@ -15,6 +15,7 @@ type SliderCardProps = {
   initialValue?: number | null;
   initialEnabled: boolean;
   max: number;
+  onPolicyChange?: () => void;
 };
 
 export default function SliderCard({
@@ -25,6 +26,7 @@ export default function SliderCard({
   initialValue,
   initialEnabled,
   max,
+  onPolicyChange,
 }: SliderCardProps) {
   const { show } = useToastStore();
   const queryClient = useQueryClient();
@@ -60,6 +62,7 @@ export default function SliderCard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["limits", lineId] });
       show(`${title}이 변경되었습니다.`);
+      onPolicyChange?.();
     },
     onError: () => show("변경에 실패했습니다.", "error"),
   });
@@ -70,7 +73,10 @@ export default function SliderCard({
       type === "shared"
         ? limitService.patchSharedLimit(limitPolicyId!, policyValue)
         : limitService.patchDailyLimit(limitPolicyId!, policyValue),
-    onSuccess: () => show(`${title}이 저장되었습니다.`),
+    onSuccess: () => {
+      show(`${title}이 저장되었습니다.`);
+      onPolicyChange?.();
+    },
     onError: () => show("저장에 실패했습니다.", "error"),
   });
 

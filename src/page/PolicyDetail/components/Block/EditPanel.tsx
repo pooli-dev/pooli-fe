@@ -121,6 +121,7 @@ export default function EditPanel({
           <>
             <button
               onClick={() => onConfirm(draft)}
+              disabled={draft.days.length === 0}
               className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ backgroundColor: "#678BF7" }}
             >

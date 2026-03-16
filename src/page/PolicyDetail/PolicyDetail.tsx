@@ -6,25 +6,15 @@ import LimitTab from "./components/LimitTab";
 import ActiveBlockBanner from "./components/ActiveBlockBanner";
 import Avatar from "@/components/common/Avatar";
 import { blockService } from "@/api";
-import { useUserStore } from "@/store/userStore";
 import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToastStore } from "@/store/toastStore";
 
-type FamilyMember = {
-  lineId: number;
-  userId: number;
-  userName: string;
-  phone: string;
-};
-
 type TabType = "차단" | "제한" | "애플리케이션";
 
 const PolicyDetail = () => {
-  const lineId = useUserStore((state) => state.userInfo?.lineId);
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
-    null,
-  );
+  const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
+
   const [activeTab, setActiveTab] = useState<TabType>("차단");
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -71,6 +61,37 @@ const PolicyDetail = () => {
     null,
   );
 
+  // handleBlockApply 수정
+  const handleBlockApply = (blockEndAt: string) => {
+    setActiveBlockEndTime(new Date(blockEndAt));
+  };
+
+  const [expandedApps, setExpandedApps] = useState<Set<number>>(new Set());
+
+  // 구성원 목록 조회 (페이지 로드 시 한 번만)
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["familyMembersSimple"],
+    queryFn: () =>
+      blockService.getFamilyMembersSimple().then((res) => res.data),
+  });
+
+  // selectedMember 초기화
+  const selectedMember =
+    familyMembers.find(
+      (m) => m.lineId === (selectedLineId ?? familyMembers[0]?.lineId),
+    ) ?? null;
+
+  // 배너에서 차단 해제를 클릭했을 경우
+  const handleBlockRelease = async () => {
+    if (!selectedMember?.lineId) return;
+    await blockService.patchImmediateBlock(selectedMember.lineId, null);
+    setActiveBlockEndTime(null);
+    queryClient.invalidateQueries({
+      queryKey: ["immediateBlock", selectedMember.lineId],
+    });
+    show("차단이 해제되었습니다.");
+  };
+
   const { appliedPolicies, refetch: refetchAppliedPolicies } =
     useAppliedPolicies(selectedMember?.lineId);
 
@@ -97,43 +118,6 @@ const PolicyDetail = () => {
     } else {
       setActiveBlockEndTime(null);
     }
-  }
-
-  // handleBlockApply 수정
-  const handleBlockApply = (blockEndAt: string) => {
-    setActiveBlockEndTime(new Date(blockEndAt));
-  };
-
-  // 배너에서 차단 해제를 클릭했을 경우
-  const handleBlockRelease = async () => {
-    if (!selectedMember?.lineId) return;
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
-    await blockService.patchImmediateBlock(selectedMember.lineId, nowStr);
-    setActiveBlockEndTime(null); // 배너 숨김
-    queryClient.invalidateQueries({
-      queryKey: ["immediateBlock", selectedMember.lineId],
-    });
-    show("차단이 해제되었습니다."); // 토글 업데이트
-  };
-
-  const [expandedApps, setExpandedApps] = useState<Set<number>>(new Set());
-
-  // 구성원 목록 조회 (페이지 로드 시 한 번만)
-  const { data: familyMembers = [] } = useQuery({
-    queryKey: ["familyMembersSimple"],
-    queryFn: () =>
-      blockService.getFamilyMembersSimple().then((res) => res.data),
-  });
-
-  // selectedMember 초기화
-  const [prevFamilyMembers, setPrevFamilyMembers] = useState(familyMembers);
-  if (familyMembers !== prevFamilyMembers && familyMembers.length > 0) {
-    setPrevFamilyMembers(familyMembers);
-    const currentUser = familyMembers.find((m) => m.lineId === lineId);
-    setSelectedMember(currentUser || familyMembers[0]);
   }
 
   // 음성 인식 초기화
@@ -263,7 +247,7 @@ const PolicyDetail = () => {
                 {familyMembers.map((member, index) => (
                   <button
                     key={member.lineId}
-                    onClick={() => setSelectedMember(member)}
+                    onClick={() => setSelectedLineId(member.lineId)}
                     className="flex flex-col items-center gap-2 flex-shrink-0"
                   >
                     <Avatar
@@ -357,10 +341,14 @@ const PolicyDetail = () => {
               <BlockTab
                 onBlockApply={handleBlockApply}
                 lineId={selectedMember?.lineId}
+                onPolicyChange={refetchAppliedPolicies} // ← 추가
               />
             )}
             {activeTab === "제한" && (
-              <LimitTab lineId={selectedMember?.lineId} />
+              <LimitTab
+                lineId={selectedMember?.lineId}
+                onPolicyChange={refetchAppliedPolicies} // ← 추가
+              />
             )}
           </div>
         </div>
