@@ -55,7 +55,9 @@ export default function FamilyMemberCard({
             {canViewDetail && (
               <button
                 onClick={() =>
-                  navigate("/detail", { state: { lineId: member.lineId, userName: member.userName } })
+                  navigate("/detail", {
+                    state: { lineId: member.lineId, userName: member.userName },
+                  })
                 }
                 className="flex items-center justify-center gap-0.2 text-xs text-[#0F4E7A] hover:text-[#4A7FB5] transition-colors"
               >
@@ -91,7 +93,7 @@ export default function FamilyMemberCard({
       {/* 데이터 막대 그래프 */}
       <div className="flex flex-col gap-3">
         <DataBar
-          label="기본 데이터"
+          label="기본 데이터 잔여량"
           remaining={member.remainingData}
           total={member.basicDataAmount}
           color="#ADE6FF"
@@ -99,7 +101,7 @@ export default function FamilyMemberCard({
         {(member.sharedPoolTotalAmount === -1 ||
           member.sharedPoolTotalAmount > 0) && (
           <DataBar
-            label="제공받은 공유데이터"
+            label="제공받은 공유데이터 잔여량"
             remaining={member.sharedPoolRemainingAmount}
             total={member.sharedPoolTotalAmount}
             color="#9A9CEA"

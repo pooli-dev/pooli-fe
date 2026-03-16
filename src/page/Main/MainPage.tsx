@@ -22,7 +22,7 @@ export default function Main() {
   // 현재 로그인한 사용자가 대표자인가
   const isOwner = userData?.role === "OWNER";
 
-  const { data: familyData, isLoading: isFamilyLoading } =
+  const { data: familyData, isPending: isFamilyLoading } =
     useQuery<FamilyApiResponse>({
       queryKey: ["familyMembers"],
       queryFn: () => familyService.getMembers().then((res) => res.data),
@@ -53,7 +53,7 @@ export default function Main() {
     color: COLORS[index % COLORS.length],
   }));
 
-  const { data: sharedPoolData, isLoading: isPoolLoading } =
+  const { data: sharedPoolData, isPending: isPoolLoading } =
     useQuery<SharedData>({
       queryKey: ["sharedPool"],
       queryFn: () => sharedPoolService.getMainRemainingAmount(),
