@@ -4,6 +4,7 @@ import backgroundImg from "../assets/img/background.png";
 import Toast from "@/components/common/Toast";
 import StatusBar from "@/components/StatusBar";
 import Header from "@/components/Header";
+import BottomBar from "@/components/BottomBar";
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,29 +21,35 @@ export default function Layout({ children }: LayoutProps) {
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
 
   return (
+    // 1. 전체 화면을 고정하고 스크롤을 막습니다.
     <div
-      className={`flex justify-center min-h-screen bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
+      className={`flex justify-center h-[100dvh] overflow-hidden bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
     >
       <div
-        className={`relative w-[480px] max-w-full min-w-[330px] min-h-[100dvh] pb-[env(safe-area-inset-bottom)] flex flex-col bg-cover bg-center bg-no-repeat transition-all duration-300 ${darkMode ? "invert" : ""} ${largeTextMode ? "large-text-content" : ""}`}
+        className={`relative w-[480px] max-w-full min-w-[330px] h-full flex flex-col bg-no-repeat bg-top transition-all duration-300 ${darkMode ? "invert" : ""} ${largeTextMode ? "large-text-content" : ""}`}
         style={{
           backgroundImage: `url(${backgroundImg})`,
-          backgroundSize: "480px auto", // 너비를 고정하여 계산 오차 방지
-          backgroundAttachment: "fixed",
+          backgroundSize: "100% auto",
         }}
       >
-        <div
-          className="sticky top-0 z-[100] w-full bg-cover bg-top bg-no-repeat"
-          style={{
-            backgroundImage: `url(${backgroundImg})`,
-          }}
-        >
+        {/* 2. 상단 고정 (StatusBar + Header) */}
+        <div className="flex-none z-[100] w-full">
           <StatusBar />
           <Header />
         </div>
 
         <Toast />
-        <main className="flex-1 mt-3">{children}</main>
+
+        {/* 3. 메인 스크롤 영역: min-h-0이 중요합니다. flex 자식의 최소 높이를 0으로 풀어야 내부 스크롤이 잡힙니다. */}
+        <main className="flex-1 overflow-y-auto relative px-2 custom-scrollbar min-h-0">
+          {/* pt-10 정도로 늘려서 차트가 헤더를 침범하지 못하게 물리적 공간을 확보하세요. */}
+          <div className="pt-10 pb-10">{children}</div>
+        </main>
+
+        {/* 4. 하단 고정 바: 이 영역이 main 밖으로 완벽히 분리되어야 스크롤바가 침범하지 않습니다. */}
+        <nav className="flex-none z-[100] w-full bg-white">
+          <BottomBar />
+        </nav>
       </div>
     </div>
   );

@@ -9,7 +9,6 @@ import Detail from "../page/Detail/DetailPage";
 import PolicyDetail from "../page/PolicyDetail/PolicyDetail";
 import NotFound from "../page/NotFound";
 import SharedData from "../page/SharedData/SharedData";
-import BottomBar from "../components/BottomBar";
 import AdminLayout from "../page/Admin/AdminLayout";
 import PolicyManagement from "../page/Admin/PolicyManagement";
 import UserManagement from "../page/Admin/UserManagement";
@@ -86,7 +85,6 @@ export default function Router() {
                   <Route path="/log" element={<Log />} />
                   <Route path="*" element={<Navigate to="/404" replace />} />
                 </Routes>
-                <BottomBar />
               </Layout>
             </ProtectedRoute>
           }

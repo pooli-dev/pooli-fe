@@ -291,45 +291,43 @@ export default function Detail() {
   }
 
   return (
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="flex flex-col gap-3 px-[24px] py-5 pb-[60px]">
-        {appliedPolicies.length > 0 && (
-          <PolicyScroll
-            policies={appliedPolicies.map((policy, index) => ({
-              id: index + 1,
-              type: policy.type,
-              bgColor: policy.bgColor,
-              title: policy.title,
-            }))}
-            title="현재 적용중인 정책"
-          />
-        )}
-
-        <DateSelector
-          currentDate={currentDate}
-          onPrevMonth={() => handleMonthChange("prev")}
-          onNextMonth={() => handleMonthChange("next")}
+    <div className="flex flex-col gap-3 px-[24px] py-5 pb-[60px]">
+      {appliedPolicies.length > 0 && (
+        <PolicyScroll
+          policies={appliedPolicies.map((policy, index) => ({
+            id: index + 1,
+            type: policy.type,
+            bgColor: policy.bgColor,
+            title: policy.title,
+          }))}
+          title="현재 적용중인 정책"
         />
+      )}
 
-        <DataBalance
-          personalUsed={dataUsage.personalUsedAmount}
-          personalTotal={dataUsage.personalTotalAmount}
-          sharedUsed={dataUsage.sharedPoolUsedAmount}
-          sharedTotal={dataUsage.sharedPoolTotalAmount}
-        />
+      <DateSelector
+        currentDate={currentDate}
+        onPrevMonth={() => handleMonthChange("prev")}
+        onNextMonth={() => handleMonthChange("next")}
+      />
 
-        <UsageTrend
-          usages={monthlyUsage.usages}
-          averageAmount={monthlyUsage.averageAmount}
-        />
+      <DataBalance
+        personalUsed={dataUsage.personalUsedAmount}
+        personalTotal={dataUsage.personalTotalAmount}
+        sharedUsed={dataUsage.sharedPoolUsedAmount}
+        sharedTotal={dataUsage.sharedPoolTotalAmount}
+      />
 
-        <AppUsageChart
-          apps={appUsage.apps}
-          totalUsedAmount={appUsage.totalUsedAmount}
-          isPublic={appUsage.isPublic}
-          onPublicToggle={handleVisibilityToggle}
-        />
-      </div>
+      <UsageTrend
+        usages={monthlyUsage.usages}
+        averageAmount={monthlyUsage.averageAmount}
+      />
+
+      <AppUsageChart
+        apps={appUsage.apps}
+        totalUsedAmount={appUsage.totalUsedAmount}
+        isPublic={appUsage.isPublic}
+        onPublicToggle={handleVisibilityToggle}
+      />
     </div>
   );
 }

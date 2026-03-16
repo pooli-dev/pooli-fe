@@ -130,48 +130,46 @@ export default function Support() {
   };
 
   return (
-    <div className="relative overflow-y-auto mb-[60px]">
-      <div className="py-5 pb-[60px]">
-        {/* 탭 */}
-        <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">
-          <button
-            onClick={() => setActiveTab("inquiry")}
-            className={`flex-1 max-w-[200px] py-2 rounded-2xl font-medium transition-colors text-sm ${
-              activeTab === "inquiry"
-                ? "bg-white text-[#219BE4]"
-                : "bg-transparent text-[#999999]"
-            }`}
-            aria-label="문의하기 탭"
-          >
-            문의하기
-          </button>
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`flex-1 max-w-[200px] py-2 rounded-2xl font-medium transition-colors text-sm ${
-              activeTab === "history"
-                ? "bg-white text-[#219BE4]"
-                : "bg-transparent text-[#999999]"
-            }`}
-            aria-label="문의내역 탭"
-          >
-            문의내역
-          </button>
-        </div>
-
-        {activeTab === "inquiry" ? (
-          <InquiryForm
-            categories={categories}
-            onSubmitSuccess={handleSubmitSuccess}
-          />
-        ) : (
-          <InquiryHistory
-            inquiries={inquiries}
-            sortOrder={sortOrder}
-            onSortChange={setSortOrder}
-            onDeleteInquiry={handleDeleteInquiry}
-          />
-        )}
+    <div className="py-5 pb-[60px]">
+      {/* 탭 */}
+      <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">
+        <button
+          onClick={() => setActiveTab("inquiry")}
+          className={`flex-1 max-w-[200px] py-2 rounded-2xl font-medium transition-colors text-sm ${
+            activeTab === "inquiry"
+              ? "bg-white text-[#219BE4]"
+              : "bg-transparent text-[#999999]"
+          }`}
+          aria-label="문의하기 탭"
+        >
+          문의하기
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`flex-1 max-w-[200px] py-2 rounded-2xl font-medium transition-colors text-sm ${
+            activeTab === "history"
+              ? "bg-white text-[#219BE4]"
+              : "bg-transparent text-[#999999]"
+          }`}
+          aria-label="문의내역 탭"
+        >
+          문의내역
+        </button>
       </div>
+
+      {activeTab === "inquiry" ? (
+        <InquiryForm
+          categories={categories}
+          onSubmitSuccess={handleSubmitSuccess}
+        />
+      ) : (
+        <InquiryHistory
+          inquiries={inquiries}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+          onDeleteInquiry={handleDeleteInquiry}
+        />
+      )}
     </div>
   );
 }
