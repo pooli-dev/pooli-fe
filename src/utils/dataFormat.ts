@@ -44,6 +44,7 @@ export function formatTime(h: number, m: number) {
 }
 
 export function formatDays(days: DayKey[]) {
+  if (days.length === 0) return "요일 미설정";
   return days.join(", ") + " 적용됨";
 }
 
@@ -70,11 +71,15 @@ export function clampEndTime(
 export function toBlockPolicy(res: RepeatBlockResponse): BlockPolicy {
   // days 배열에서 첫 번째 기준으로 시간 파싱 (모든 요일이 같은 시간 가정)
   const firstDay = res.days[0];
-  const [startHour, startMin] = firstDay.startAt.split(":").map(Number);
-  const [endHour, endMin] = firstDay.endAt.split(":").map(Number);
+  const [startHour, startMin] = firstDay
+    ? firstDay.startAt.split(":").map(Number)
+    : [0, 0];
+  const [endHour, endMin] = firstDay
+    ? firstDay.endAt.split(":").map(Number)
+    : [0, 0];
 
   return {
-    id: res.repeatBlockId,
+    id: res.repeatBlockId ?? 0,
     lineId: res.lineId,
     startHour,
     startMin,

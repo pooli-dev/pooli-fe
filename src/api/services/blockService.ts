@@ -169,7 +169,7 @@ export const blockService = {
     }),
 
   // 즉시 차단 적용
-  patchImmediateBlock: (lineId: number, blockEndAt: string) =>
+  patchImmediateBlock: (lineId: number, blockEndAt: string | null) =>
     apiClient.patch<{ lineId: number; blockEndAt: string }>(
       "/policies/lines/immediate-block",
       { blockEndAt },

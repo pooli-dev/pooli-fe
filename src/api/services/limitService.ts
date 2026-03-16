@@ -1,5 +1,5 @@
 import type { LineLimitResponse } from "@/types/limit";
-import apiClient from "../client";
+import { apiClient } from "../client";
 
 export const limitService = {
   // blockService or policyService에 추가

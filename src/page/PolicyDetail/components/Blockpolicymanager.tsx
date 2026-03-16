@@ -8,7 +8,13 @@ import { toBlockPolicy, toApiPayload } from "@/utils/dataFormat";
 import type { BlockPolicy } from "@/types/block";
 import { useToastStore } from "@/store/toastStore";
 
-export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
+export default function BlockPolicyManager({
+  lineId,
+  onPolicyChange,
+}: {
+  lineId?: number;
+  onPolicyChange?: () => void;
+}) {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const queryClient = useQueryClient();
   const { show } = useToastStore();
@@ -28,6 +34,7 @@ export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
       show("차단 정책이 추가되었습니다.");
+      onPolicyChange?.();
     },
     onError: () => show("차단 정책 추가에 실패했습니다.", "error"),
   });
@@ -38,6 +45,7 @@ export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
       show("차단 정책이 수정되었습니다.");
+      onPolicyChange?.();
     },
     onError: () => show("차단 정책 수정에 실패했습니다.", "error"),
   });
@@ -47,6 +55,7 @@ export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
       show("차단 정책이 삭제되었습니다.");
+      onPolicyChange?.();
     },
     onError: () => show("차단 정책 삭제에 실패했습니다.", "error"),
   });
@@ -57,6 +66,7 @@ export default function BlockPolicyManager({ lineId }: { lineId?: number }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["repeatBlocks"] });
       show("차단 정책이 변경되었습니다.");
+      onPolicyChange?.();
     },
     onError: () => show("차단 정책 변경에 실패했습니다.", "error"),
   });
