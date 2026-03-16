@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { blockService } from "@/api";
+import { formatData } from "@/utils/dataFormat";
 
 export type PolicyItem = {
   type: "한도" | "시간" | "앱";
@@ -35,10 +36,15 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
 
       // 한도 정책
       if (data.limitPolicy) {
-        const { dailyDataLimit, isDailyDataLimitActive, sharedDataLimit, isSharedDataLimitActive } = data.limitPolicy;
+        const {
+          dailyDataLimit,
+          isDailyDataLimitActive,
+          sharedDataLimit,
+          isSharedDataLimitActive,
+        } = data.limitPolicy;
 
         if (isDailyDataLimitActive && dailyDataLimit > 0) {
-          const limitGB = (dailyDataLimit / (1024 * 1024 * 1024)).toFixed(1);
+          const limitGB = formatData(dailyDataLimit);
           policies.push({
             type: "한도",
             bgColor: "#FFE5E5",
@@ -47,7 +53,7 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
         }
 
         if (isSharedDataLimitActive && sharedDataLimit > 0) {
-          const limitGB = (sharedDataLimit / (1024 * 1024 * 1024)).toFixed(1);
+          const limitGB = formatData(sharedDataLimit);
           policies.push({
             type: "한도",
             bgColor: "#FFE5E5",
@@ -92,11 +98,15 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
           isActive?: boolean;
           appName: string;
         }
-        
-        const enabledApps = data.appPolicyList.filter((app: AppPolicy) => app.enabled === true || app.isActive === true);
+
+        const enabledApps = data.appPolicyList.filter(
+          (app: AppPolicy) => app.enabled === true || app.isActive === true,
+        );
 
         if (enabledApps.length > 0) {
-          const sortedApps = [...enabledApps].sort((a: AppPolicy, b: AppPolicy) => a.appName.localeCompare(b.appName));
+          const sortedApps = [...enabledApps].sort(
+            (a: AppPolicy, b: AppPolicy) => a.appName.localeCompare(b.appName),
+          );
 
           if (sortedApps.length === 1) {
             policies.push({
