@@ -9,6 +9,12 @@ import { blockService } from "@/api";
 import { useAppliedPolicies } from "./hooks/useAppliedPolicies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToastStore } from "@/store/toastStore";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 type TabType = "차단" | "제한" | "애플리케이션";
 
@@ -220,9 +226,18 @@ const PolicyDetail = () => {
 
   return (
     <>
-      <div className="px-4 pb-[20px]">
-        {/* 사용자 선택 */}
-        <div className="mb-6">
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        transition={pageTransition}
+        className="px-4 pb-[20px]"
+      >
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.1 }}
+          className="mb-6"
+        >
           <h3
             className="font-semibold text-[#333333] mb-4"
             style={{ fontSize: "1.125em" }}
@@ -256,11 +271,7 @@ const PolicyDetail = () => {
                     isSelected={selectedMember?.lineId === member.lineId}
                   />
                   <span
-                    className={`text-sm font-medium ${
-                      selectedMember?.lineId === member.lineId
-                        ? "text-black"
-                        : "text-[#818181]"
-                    }`}
+                    className={`text-sm font-medium ${selectedMember?.lineId === member.lineId ? "text-black" : "text-[#818181]"}`}
                   >
                     {member.userName}
                   </span>
@@ -268,17 +279,27 @@ const PolicyDetail = () => {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
+
         {activeBlockEndTime && (
-          <ActiveBlockBanner
-            endTime={activeBlockEndTime}
-            onRelease={handleBlockRelease} // ← 수정
-          />
+          <motion.div
+            variants={itemVariants}
+            transition={{ ...pageTransition, delay: 0.15 }}
+          >
+            <ActiveBlockBanner
+              endTime={activeBlockEndTime}
+              onRelease={handleBlockRelease}
+            />
+          </motion.div>
         )}
 
         {/* 현재 적용중인 정책 */}
         {appliedPolicies.length > 0 && (
-          <div className="mb-6">
+          <motion.div
+            variants={itemVariants}
+            transition={{ ...pageTransition, delay: 0.2 }}
+            className="mb-6"
+          >
             <PolicyScroll
               policies={appliedPolicies.map((policy, index) => ({
                 id: index + 1,
@@ -288,11 +309,15 @@ const PolicyDetail = () => {
               }))}
               title="현재 적용중인 정책"
             />
-          </div>
+          </motion.div>
         )}
 
         {/* 탭 메뉴 */}
-        <div className="mb-4">
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.25 }}
+          className="mb-4"
+        >
           <div
             className="flex relative"
             style={{
@@ -304,9 +329,7 @@ const PolicyDetail = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 text-sm font-medium relative ${
-                  activeTab === tab ? "text-black" : "text-[#818181]"
-                }`}
+                className={`flex-1 py-2 text-sm font-medium relative ${activeTab === tab ? "text-black" : "text-[#818181]"}`}
               >
                 {tab}
                 {activeTab === tab && (
@@ -318,10 +341,13 @@ const PolicyDetail = () => {
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* 탭 내용 */}
-        <div>
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.3 }}
+        >
           {activeTab === "애플리케이션" && (
             <ApplicationTab
               expandedApps={expandedApps}
@@ -349,8 +375,8 @@ const PolicyDetail = () => {
               onPolicyChange={refetchAppliedPolicies} // ← 추가
             />
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </>
   );
 };

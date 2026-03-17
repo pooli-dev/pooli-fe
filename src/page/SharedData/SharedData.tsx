@@ -7,6 +7,12 @@ import type {
   MySharedPoolData,
 } from "../../api/services/sharedPoolService";
 import { useToastStore } from "@/store/toastStore";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 const calculateDaysUntilNextMonth = (): number => {
   const today = new Date();
@@ -65,8 +71,17 @@ export default function SharedData() {
   const remainingDays = calculateDaysUntilNextMonth();
 
   return (
-    <div className="px-6 pb-[20px] mt-4">
-      <div>
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="px-6 pb-[20px] mt-4"
+    >
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.1 }}
+      >
         <SharedPoolCard
           totalData={mainData.sharedPoolTotalData}
           remainingData={mainData.sharedPoolRemainingData}
@@ -75,9 +90,12 @@ export default function SharedData() {
           usageAmount={usedData}
           remainingDays={remainingDays}
         />
-      </div>
+      </motion.div>
 
-      <div>
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.2 }}
+      >
         <h3 className="text-lg font-medium text-gray-800 mb-4">
           공유 데이터 담기
         </h3>
@@ -86,7 +104,7 @@ export default function SharedData() {
           contributedData={myData.contributionAmount}
           onTransfer={handleTransfer}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

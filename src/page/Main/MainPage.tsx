@@ -12,6 +12,12 @@ import { useUserStore } from "@/store/userStore";
 import { familyService } from "@/api";
 import type { SharedData, UsageData } from "@/types/SharedData";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 export default function Main() {
   const navigate = useNavigate();
@@ -96,11 +102,22 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="flex flex-col items-center gap-5 px-4 pb-[20px] mt-7">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="flex flex-col items-center gap-5 px-4 pb-[20px] mt-7"
+    >
+      {" "}
       {/* 데이터 차단 활성화 배너 영역 */}
       {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
       {blockStatus?.blocked && (
-        <div className="w-full max-w-md">
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.1 }}
+          className="w-full max-w-md"
+        >
           <GlassCard
             title=""
             gradientFrom="#FFFFFF"
@@ -127,36 +144,51 @@ export default function Main() {
               </div>
             </div>
           </GlassCard>
-        </div>
+        </motion.div>
       )}
-
       {/* 그래프 영역 */}
       {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
-      <div className="flex flex-col items-center gap-4 pt-5">
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.1 }}
+        className="flex flex-col items-center gap-4 pt-5"
+      >
         <PieChart sharedPoolData={sharedPoolData} />
-      </div>
-
+      </motion.div>
       {/* 공유 데이터 담기 페이지 이동 버튼 */}
-      <GradientButton onClick={() => navigate("/shared-data")}>
-        <img src={PlusIcon} className="w-5 h-5" />
-        가족 공유 데이터 담기
-      </GradientButton>
-
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.2 }}
+      >
+        <GradientButton onClick={() => navigate("/shared-data")}>
+          <img src={PlusIcon} className="w-5 h-5" />
+          가족 공유 데이터 담기
+        </GradientButton>
+      </motion.div>
       {/* 공유풀 사용량 */}
       {/* /api/families/members 요청후 각 member에 대해 sharedPoolRemainingAmount로 각각 사용량 계산 후 넘기기(%) */}
-      <div className="w-full max-w-md">
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.3 }}
+        className="w-full max-w-md"
+      >
         <SharedPoolUsage users={usageUsers} />
-      </div>
-
+      </motion.div>
       {/* 구성원별 데이터 정보 */}
       {/* /api/families/members 요청후 members 넘기기 */}
       {familyData && (
-        <FamilyMemberList
-          members={familyData.members}
-          isEnable={familyData.isEnable}
-          isUserOwner={isOwner}
-        />
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.4 }}
+          className="w-full"
+        >
+          <FamilyMemberList
+            members={familyData.members}
+            isEnable={familyData.isEnable}
+            isUserOwner={isOwner}
+          />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

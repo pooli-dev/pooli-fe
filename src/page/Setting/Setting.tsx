@@ -3,6 +3,12 @@ import { useSettingStore } from "../../store/settingStore";
 import { authService, getErrorMessage } from "../../api";
 import ModeSettings from "./components/ModeSettings";
 import NotificationSettings from "./components/NotificationSettings";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 export default function Setting() {
   const navigate = useNavigate();
@@ -25,18 +31,39 @@ export default function Setting() {
   };
 
   return (
-    <div className="px-4 pb-[20px]">
-      <ModeSettings />
-      <NotificationSettings />
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="px-4 pb-[20px]"
+    >
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.1 }}
+      >
+        <ModeSettings />
+      </motion.div>
 
-      <div className="flex justify-center mb-3">
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.2 }}
+      >
+        <NotificationSettings />
+      </motion.div>
+
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.3 }}
+        className="flex justify-center mb-3"
+      >
         <button
           onClick={handleLogout}
           className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors ${darkMode ? "invert" : ""}`}
         >
           로그아웃
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

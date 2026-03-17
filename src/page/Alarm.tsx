@@ -7,6 +7,12 @@ import {
 } from "@tanstack/react-query";
 import { notificationService } from "@/api";
 import { getAlarmMessage, getAlarmCategory } from "@/utils/alarmUtils";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 const CategoryIcon = ({
   category,
@@ -178,26 +184,37 @@ export default function Alarm() {
   };
 
   return (
-    <div className="px-4 pb-[20px]">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="px-4 pb-[20px]"
+    >
       {/* 카테고리 탭 */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setSelectedCategory(key)}
-            className={`px-4 sm:px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${
-              selectedCategory === key
-                ? "bg-[#678BF7] text-white font-semibold"
-                : "bg-[#F0F0F0] text-[#999999] font-medium"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.1 }}
+      >
+        <div className="flex flex-wrap gap-2 mb-4">
+          {categories.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setSelectedCategory(key)}
+              className={`px-4 sm:px-5 py-2 rounded-full whitespace-nowrap transition-all text-sm ${selectedCategory === key ? "bg-[#678BF7] text-white font-semibold" : "bg-[#F0F0F0] text-[#999999] font-medium"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
 
       {/* 전체 읽음 버튼 */}
-      <div className="flex justify-end mb-4">
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.15 }}
+        className="flex justify-end mb-4"
+      >
         <button
           onClick={() => markAllAsRead()}
           className="text-[#678BF7] font-medium"
@@ -205,14 +222,17 @@ export default function Alarm() {
         >
           전체 읽음
         </button>
-      </div>
+      </motion.div>
 
       {/* 알림 리스트 */}
-      <div className="space-y-3">
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.2 }}
+        className="space-y-3"
+      >
         {filteredNotifications.map((alarm, index) => {
           const category = getAlarmCategory(alarm.alarmCode);
           const message = getAlarmMessage(alarm);
-
           return (
             <div
               key={alarm.alarmHistoryId ?? `${alarm.createdAt}-${index}`}
@@ -230,9 +250,7 @@ export default function Alarm() {
                     markAsRead(alarm.alarmHistoryId);
                 }
               }}
-              className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${
-                alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"
-              }`}
+              className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all ${alarm.isRead ? "bg-[#FAFAFA]" : "bg-white shadow-sm"}`}
             >
               <CategoryIcon
                 category={category === "all" ? "etc" : category}
@@ -274,7 +292,7 @@ export default function Alarm() {
             </div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* 무한스크롤 트리거 */}
       <div
@@ -283,10 +301,9 @@ export default function Alarm() {
       >
         {isFetchingNextPage && "불러오는 중..."}
       </div>
-
       {filteredNotifications.length === 0 && (
         <div className="text-center py-20 text-[#999999]">알림이 없습니다.</div>
       )}
-    </div>
+    </motion.div>
   );
 }
