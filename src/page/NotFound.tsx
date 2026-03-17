@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import logo from '../assets/img/logo.svg';
+import { useNavigate } from "react-router-dom";
+import logo from "../assets/img/logo.svg";
 
 /**
  * 404 Not Found 페이지 컴포넌트
@@ -10,7 +10,7 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-6">
+    <div className=" flex flex-col items-center justify-center px-6">
       {/* 로고 */}
       <div className="mb-8">
         <img src={logo} alt="Pooli" className="h-32" />
@@ -18,12 +18,15 @@ export default function NotFound() {
 
       {/* 404 텍스트 */}
       <div className="text-center mb-8">
-        <h1 className="text-6xl font-bold mb-4" style={{
-          background: 'linear-gradient(90deg, #678BF7 0%, #9A9CEA 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
+        <h1
+          className="text-6xl font-bold mb-4"
+          style={{
+            background: "linear-gradient(90deg, #678BF7 0%, #9A9CEA 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
           404
         </h1>
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">
@@ -37,22 +40,22 @@ export default function NotFound() {
       {/* 버튼 그룹 */}
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="w-full py-3 px-6 rounded-full text-white font-medium transition-all duration-200 hover:shadow-lg"
           style={{
-            background: 'linear-gradient(90deg, #678BF7 0%, #9A9CEA 100%)'
+            background: "linear-gradient(90deg, #678BF7 0%, #9A9CEA 100%)",
           }}
         >
           홈으로 돌아가기
         </button>
-        
+
         <button
           onClick={() => navigate(-1)}
           className="w-full py-3 px-6 rounded-full font-medium transition-all duration-200 hover:bg-gray-100"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            border: '1px solid #E5E7EB',
-            color: '#6B7280'
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            border: "1px solid #E5E7EB",
+            color: "#6B7280",
           }}
         >
           이전 페이지로

@@ -25,7 +25,7 @@ export default function Setting() {
   };
 
   return (
-    <div className="py-5">
+    <div className="px-6 pb-[20px]">
       <ModeSettings />
       <NotificationSettings />
 
