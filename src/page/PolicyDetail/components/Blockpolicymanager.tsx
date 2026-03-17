@@ -61,8 +61,13 @@ export default function BlockPolicyManager({
   });
 
   const { mutate: toggleBlock } = useMutation({
-    mutationFn: (policy: BlockPolicy) =>
-      blockService.updateRepeatBlockPolicy(policy.id, toApiPayload(policy)),
+    mutationFn: ({
+      policy,
+      isActive,
+    }: {
+      policy: BlockPolicy;
+      isActive: boolean;
+    }) => blockService.patchRepeatBlockToggle(policy.id, isActive),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["repeatBlocks"] });
       show("차단 정책이 변경되었습니다.");
@@ -104,7 +109,7 @@ export default function BlockPolicyManager({
               policy={policy}
               onUpdate={(p) => updateBlock(p)}
               onDelete={() => deleteBlock(policy.id)}
-              onToggle={(enabled) => toggleBlock({ ...policy, enabled })}
+              onToggle={(enabled) => toggleBlock({ policy, isActive: enabled })}
             />
           </div>
         ))}
