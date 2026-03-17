@@ -65,7 +65,7 @@ export default function SharedData() {
   const remainingDays = calculateDaysUntilNextMonth();
 
   return (
-    <div className="px-6 pb-[60px] mt-4">
+    <div className="px-6 pb-[20px] mt-4">
       <div>
         <SharedPoolCard
           totalData={mainData.sharedPoolTotalData}

@@ -81,7 +81,7 @@ export default function Policy() {
   };
 
   return (
-    <div className="min-h-full flex flex-col gap-5 px-6 pb-[60px]">
+    <div className="min-h-full flex flex-col gap-5 px-6 pb-[20px]">
       {/* 사용자 정보 영역 */}
       {/* /api/data/usages/balances 로 사용자 정보 받아오기 */}
       {userData && <UserInfoCard userData={userData} />}

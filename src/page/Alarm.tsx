@@ -178,7 +178,7 @@ export default function Alarm() {
   };
 
   return (
-    <div className="px-5 pb-[60px]">
+    <div className="px-5 pb-[20px]">
       {/* 카테고리 탭 */}
       <div className="flex flex-wrap gap-2 mb-4">
         {categories.map(({ key, label }) => (
