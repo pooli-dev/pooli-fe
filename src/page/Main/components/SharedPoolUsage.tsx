@@ -1,4 +1,5 @@
 import GlassCard from "../../../components/common/GlassCard";
+import { motion } from "framer-motion";
 
 type UserData = {
   name: string;
@@ -41,15 +42,23 @@ export default function SharedPoolUsage({ users = [], className = "" }: Props) {
                 100,
               );
               return (
-                <div
+                <motion.div
                   key={user.name}
-                  className="absolute top-0 h-full transition-all duration-500 ease-out"
+                  className="absolute top-0 h-full"
                   style={{
                     left: `${leftOffset}%`,
-                    width: `${Math.min(user.percentage, 100 - leftOffset)}%`,
                     backgroundColor: user.color,
                     boxShadow:
                       "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
+                  }}
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${Math.min(user.percentage, 100 - leftOffset)}%`,
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    ease: "easeOut",
+                    delay: index * 0.1,
                   }}
                 />
               );

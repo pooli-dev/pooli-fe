@@ -14,6 +14,12 @@ import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
 import { useAppliedPolicies } from "../PolicyDetail/hooks/useAppliedPolicies";
 import { familyService, thresholdService, userService } from "@/api";
 import PermissionManager from "./components/Permisssion";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 export default function Policy() {
   const navigate = useNavigate();
@@ -81,22 +87,38 @@ export default function Policy() {
   };
 
   return (
-    <div className="min-h-full flex flex-col gap-5 px-6 pb-[20px]">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="min-h-full flex flex-col gap-5 px-4 pb-[20px]"
+    >
       {/* 사용자 정보 영역 */}
       {/* /api/data/usages/balances 로 사용자 정보 받아오기 */}
-      {userData && <UserInfoCard userData={userData} />}
+      {userData && (
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.1 }}
+        >
+          <UserInfoCard userData={userData} />
+        </motion.div>
+      )}
 
       {/* 현재 적용중인 정책 영역 */}
       {appliedPolicies.length > 0 && (
-        <PolicyScroll
-          policies={appliedPolicies.map((policy, index) => ({
-            id: index + 1,
-            type: policy.type,
-            bgColor: policy.bgColor,
-            title: policy.title,
-          }))}
-          title="현재 적용중인 정책"
-        />
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.2 }}
+        >
+          <PolicyScroll
+            policies={appliedPolicies.map((policy, index) => ({
+              id: index + 1,
+              ...policy,
+            }))}
+            title="현재 적용중인 정책"
+          />
+        </motion.div>
       )}
 
       {/* 데이터 임계치 설정 영역(가족 공유 데이터 임계치, 개인 데이터 임계치) */}
@@ -105,60 +127,76 @@ export default function Policy() {
         개인 데이터 임계치 설정: 각자 자신의 것
         /api/lines/thresholds로 데이터 넘기기 */}
       {sharedPoolThreshold && lineThreshold && (
-        <DataThresholdSlider
-          isOwner={isOwner}
-          sharedPoolThreshold={sharedPoolThreshold}
-          lineThreshold={lineThreshold}
-        />
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.3 }}
+        >
+          <DataThresholdSlider
+            isOwner={isOwner}
+            sharedPoolThreshold={sharedPoolThreshold}
+            lineThreshold={lineThreshold}
+          />
+        </motion.div>
       )}
 
       {/* 권한 관리 */}
-      {isOwner && <PermissionManager />}
+      {isOwner && (
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.4 }}
+        >
+          <PermissionManager />
+        </motion.div>
+      )}
 
       {/* 구성원별 정책 제어 버튼 */}
       {isOwner && (
-        <button
-          onClick={() => navigate("/policy-detail")}
-          className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.5 }}
         >
-          {/* 아이콘 영역 */}
-          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <img src={SettingIcon} />
-          </div>
-
-          {/* 텍스트 */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold text-gray-800">
-              구성원별 정책 제어
-            </span>
-            <span className="text-xs text-gray-400">
-              데이터 한도, 속도 등을 설정하세요.
-            </span>
-          </div>
-        </button>
+          <button
+            onClick={() => navigate("/policy-detail")}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+          >
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <img src={SettingIcon} />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-gray-800">
+                구성원별 정책 제어
+              </span>
+              <span className="text-xs text-gray-400">
+                데이터 한도, 속도 등을 설정하세요.
+              </span>
+            </div>
+          </button>
+        </motion.div>
       )}
 
       {/* 권한 양도 버튼 */}
       {isOwner && (
-        <button
-          onClick={() => setIsTransferModalOpen(true)}
-          className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.6 }}
         >
-          {/* 아이콘 영역 */}
-          <div className="w-12 h-12 rounded-xl bg-lime-100 flex items-center justify-center flex-shrink-0">
-            <img src={AssignIcon} />
-          </div>
-
-          {/* 텍스트 */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold text-gray-800">
-              대표자 권한 양도
-            </span>
-            <span className="text-xs text-gray-400">
-              대표자 권한을 양도할 구성원을 고르세요.
-            </span>
-          </div>
-        </button>
+          <button
+            onClick={() => setIsTransferModalOpen(true)}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+          >
+            <div className="w-12 h-12 rounded-xl bg-lime-100 flex items-center justify-center flex-shrink-0">
+              <img src={AssignIcon} />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-gray-800">
+                대표자 권한 양도
+              </span>
+              <span className="text-xs text-gray-400">
+                대표자 권한을 양도할 구성원을 고르세요.
+              </span>
+            </div>
+          </button>
+        </motion.div>
       )}
 
       {/* 권한 양도 모달 */}
@@ -247,6 +285,6 @@ export default function Policy() {
           </>,
           document.body,
         )}
-    </div>
+    </motion.div>
   );
 }

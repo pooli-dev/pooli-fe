@@ -54,7 +54,7 @@ export default function PieChart({
         </defs>
 
         {/* 잔여량 영역 */}
-        <circle
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -64,9 +64,10 @@ export default function PieChart({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={offset}
+          initial={{ strokeDashoffset: c }} // 처음엔 비어있음
+          animate={{ strokeDashoffset: offset }} // 실제 값으로 채워짐
+          transition={{ duration: 1.2, ease: "easeOut" }}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          className="transition-[stroke-dashoffset] duration-500 ease-out"
         />
       </svg>
 
@@ -191,7 +192,9 @@ export default function PieChart({
             bgColor="173, 230, 255"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700 whitespace-nowrap">기본 {base}GB</span>
+            <span className="text-xs text-gray-700 whitespace-nowrap">
+              기본 {base}GB
+            </span>
           </Chip>
           <Chip
             gradientFrom="#ffffff"
@@ -199,7 +202,9 @@ export default function PieChart({
             bgColor="246, 202, 221"
             bgOpacity={0.5}
           >
-            <span className="text-xs text-gray-700 whitespace-nowrap">추가 {additional}GB</span>
+            <span className="text-xs text-gray-700 whitespace-nowrap">
+              추가 {additional}GB
+            </span>
           </Chip>
         </div>
       </div>

@@ -11,6 +11,12 @@ import DataBalance from "./components/DataBalance";
 import UsageTrend from "./components/UsageTrend";
 import DateSelector from "./components/DateSelector";
 import AppUsageChart from "./components/AppUsageChart";
+import { motion } from "framer-motion";
+import {
+  itemVariants,
+  pageTransition,
+  pageVariants,
+} from "@/utils/pageAnimation";
 
 interface DataUsage {
   personalUsedAmount: number;
@@ -291,43 +297,74 @@ export default function Detail() {
   }
 
   return (
-    <div className="flex flex-col gap-3 px-6 pb-[20px]">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      className="flex flex-col gap-4 px-4 pb-[20px]"
+    >
       {appliedPolicies.length > 0 && (
-        <PolicyScroll
-          policies={appliedPolicies.map((policy, index) => ({
-            id: index + 1,
-            type: policy.type,
-            bgColor: policy.bgColor,
-            title: policy.title,
-          }))}
-          title="현재 적용중인 정책"
-        />
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.1 }}
+        >
+          <PolicyScroll
+            policies={appliedPolicies.map((policy, index) => ({
+              id: index + 1,
+              type: policy.type,
+              bgColor: policy.bgColor,
+              title: policy.title,
+            }))}
+            title="현재 적용중인 정책"
+          />
+        </motion.div>
       )}
 
-      <DateSelector
-        currentDate={currentDate}
-        onPrevMonth={() => handleMonthChange("prev")}
-        onNextMonth={() => handleMonthChange("next")}
-      />
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.15 }}
+      >
+        <DateSelector
+          currentDate={currentDate}
+          onPrevMonth={() => handleMonthChange("prev")}
+          onNextMonth={() => handleMonthChange("next")}
+        />
+      </motion.div>
 
-      <DataBalance
-        personalUsed={dataUsage.personalUsedAmount}
-        personalTotal={dataUsage.personalTotalAmount}
-        sharedUsed={dataUsage.sharedPoolUsedAmount}
-        sharedTotal={dataUsage.sharedPoolTotalAmount}
-      />
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.2 }}
+      >
+        <DataBalance
+          personalUsed={dataUsage.personalUsedAmount}
+          personalTotal={dataUsage.personalTotalAmount}
+          sharedUsed={dataUsage.sharedPoolUsedAmount}
+          sharedTotal={dataUsage.sharedPoolTotalAmount}
+        />
+      </motion.div>
 
-      <UsageTrend
-        usages={monthlyUsage.usages}
-        averageAmount={monthlyUsage.averageAmount}
-      />
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.3 }}
+      >
+        <UsageTrend
+          usages={monthlyUsage.usages}
+          averageAmount={monthlyUsage.averageAmount}
+        />
+      </motion.div>
 
-      <AppUsageChart
-        apps={appUsage.apps}
-        totalUsedAmount={appUsage.totalUsedAmount}
-        isPublic={appUsage.isPublic}
-        onPublicToggle={handleVisibilityToggle}
-      />
-    </div>
+      <motion.div
+        variants={itemVariants}
+        transition={{ ...pageTransition, delay: 0.4 }}
+      >
+        <AppUsageChart
+          apps={appUsage.apps}
+          totalUsedAmount={appUsage.totalUsedAmount}
+          isPublic={appUsage.isPublic}
+          onPublicToggle={handleVisibilityToggle}
+        />
+      </motion.div>
+    </motion.div>
   );
 }

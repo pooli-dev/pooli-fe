@@ -137,6 +137,16 @@ export const blockService = {
       params: { repeatBlockId },
     }),
 
+  // 반복 차단 정책 토글 수정
+  patchRepeatBlockToggle: (repeatBlockId: number, isActive: boolean) =>
+    apiClient.patch(
+      "/policies/lines/repeat-block/enable-toggles",
+      { isActive },
+      {
+        params: { repeatBlockId },
+      },
+    ),
+
   // 반복 차단 정책 삭제
   deleteRepeatBlockPolicy: (repeatBlockId: number) =>
     apiClient.delete("/policies/lines/repeat-block", {
