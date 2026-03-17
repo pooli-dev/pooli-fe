@@ -96,7 +96,7 @@ export default function Main() {
 
   return (
     // 전체 영역
-    <div className="flex flex-col items-center gap-5 px-6 pb-[20px] mt-10">
+    <div className="flex flex-col items-center gap-5 px-4 pb-[20px] mt-7">
       {/* 데이터 차단 활성화 배너 영역 */}
       {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
       {blockStatus?.blocked && (
@@ -132,7 +132,7 @@ export default function Main() {
 
       {/* 그래프 영역 */}
       {/* /api/shared-pools/main/remaining-amount 엔드 포인트로 요청 */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 pt-5">
         <PieChart sharedPoolData={sharedPoolData} />
       </div>
 

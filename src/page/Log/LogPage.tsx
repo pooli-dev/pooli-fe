@@ -126,7 +126,7 @@ export default function LogPage() {
   );
 
   return (
-    <div className="flex flex-col gap-4 px-6 pb-[20px]">
+    <div className="flex flex-col gap-4 px-4 pb-[20px]">
       {/* ── 현재 공유 데이터 요약 카드 ── */}
       <GlassCard
         title=""

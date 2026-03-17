@@ -25,7 +25,7 @@ export default function Setting() {
   };
 
   return (
-    <div className="px-6 pb-[20px]">
+    <div className="px-4 pb-[20px]">
       <ModeSettings />
       <NotificationSettings />
 
