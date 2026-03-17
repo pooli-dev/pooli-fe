@@ -291,7 +291,7 @@ export default function Detail() {
   }
 
   return (
-    <div className="flex flex-col gap-3 px-[24px] py-5 pb-[60px]">
+    <div className="flex flex-col gap-3 px-6 pb-[60px]">
       {appliedPolicies.length > 0 && (
         <PolicyScroll
           policies={appliedPolicies.map((policy, index) => ({

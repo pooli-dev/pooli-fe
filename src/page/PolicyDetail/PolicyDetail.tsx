@@ -220,7 +220,7 @@ const PolicyDetail = () => {
 
   return (
     <>
-      <div className="px-[24px] py-5 pb-[60px]">
+      <div className="px-6 pb-[60px]">
         {/* 사용자 선택 */}
         <div className="mb-6">
           <h3

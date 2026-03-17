@@ -31,7 +31,10 @@ export default function SharedData() {
       setMainData(mainResponse);
       setMyData(myResponse);
     } catch (error) {
-      console.error("Failed to fetch shared pool data:", getErrorMessage(error));
+      console.error(
+        "Failed to fetch shared pool data:",
+        getErrorMessage(error),
+      );
     } finally {
       setLoading(false);
     }
@@ -62,29 +65,27 @@ export default function SharedData() {
   const remainingDays = calculateDaysUntilNextMonth();
 
   return (
-    <div className="relative h-[calc(100dvh-106px-60px)] overflow-y-auto mt-[106px] mb-[60px]">
-      <div className="py-5 pb-[40px]">
-        <div className="px-6">
-          <SharedPoolCard
-            totalData={mainData.sharedPoolTotalData}
-            remainingData={mainData.sharedPoolRemainingData}
-            baseData={mainData.sharedPoolBaseData}
-            contributionData={mainData.sharedPoolAdditionalData}
-            usageAmount={usedData}
-            remainingDays={remainingDays}
-          />
-        </div>
+    <div className="px-6 pb-[60px] mt-4">
+      <div>
+        <SharedPoolCard
+          totalData={mainData.sharedPoolTotalData}
+          remainingData={mainData.sharedPoolRemainingData}
+          baseData={mainData.sharedPoolBaseData}
+          contributionData={mainData.sharedPoolAdditionalData}
+          usageAmount={usedData}
+          remainingDays={remainingDays}
+        />
+      </div>
 
-        <div className="px-6">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">
-            공유 데이터 담기
-          </h3>
-          <DataTransferCard
-            personalDataRemaining={myData.remainingData}
-            contributedData={myData.contributionAmount}
-            onTransfer={handleTransfer}
-          />
-        </div>
+      <div>
+        <h3 className="text-lg font-medium text-gray-800 mb-4">
+          공유 데이터 담기
+        </h3>
+        <DataTransferCard
+          personalDataRemaining={myData.remainingData}
+          contributedData={myData.contributionAmount}
+          onTransfer={handleTransfer}
+        />
       </div>
     </div>
   );
