@@ -2,6 +2,16 @@ import type { AlarmCategory } from "@/types/alarm";
 
 // constants/alarmMessages.ts
 export const ALARM_MESSAGE_MAP: Record<string, string> = {
+  // Family
+  SHARED_POOL_THRESHOLD_REACHED_50:
+    "공유 데이터 풀의 잔여량이 50%에 도달했습니다.",
+  SHARED_POOL_THRESHOLD_REACHED_30:
+    "공유 데이터 풀의 잔여량이 30%에 도달했습니다.",
+  SHARED_POOL_THRESHOLD_REACHED_10:
+    "공유 데이터 풀의 잔여량이 10%에 도달했습니다.",
+  SHARED_POOL_THRESHOLD_REACHED_CUS:
+    "공유 데이터 풀의 잔여량이 설정한 기준에 도달했습니다.",
+
   // Question
   ANSWER: "요청하신 문의 답변이 게시되었습니다.",
 
