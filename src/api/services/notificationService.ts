@@ -22,7 +22,9 @@ export const notificationService = {
   }) => apiClient.get<NotificationResponse>("/notifications", { params }),
 
   markAsRead: (alarmHistoryId: number) =>
-    apiClient.patch<Notification>("/notifications", { alarmHistoryId }),
+    apiClient.patch<Notification>("/notifications", null, {
+      params: { alarmHistoryId },
+    }),
 
   markAllAsRead: () =>
     apiClient.patch<{ lineId: number; unreadCount: number; readCount: number }>(
