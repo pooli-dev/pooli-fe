@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { blockService } from "@/api";
+import { blockService, limitService } from "@/api";
 import { formatData } from "@/utils/dataFormat";
 
 export type PolicyItem = {
@@ -30,18 +30,18 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
 
     setLoading(true);
     try {
-      const res = await blockService.getAppliedPolicies(lineId);
+      const [appliedRes, limitsRes] = await Promise.all([
+        blockService.getAppliedPolicies(lineId).catch(() => null),
+        limitService.getLimits(lineId).catch(() => null),
+      ]);
+      
       const policies: PolicyItem[] = [];
-      const data = res.data;
+      const data = appliedRes?.data;
+      const limitsData = limitsRes?.data;
 
-      // 한도 정책
-      if (data.limitPolicy) {
-        const {
-          dailyDataLimit,
-          isDailyDataLimitActive,
-          sharedDataLimit,
-          isSharedDataLimitActive,
-        } = data.limitPolicy;
+      // 한도 정책 - getLimits API의 값 사용
+      if (limitsData) {
+        const { dailyDataLimit, isDailyDataLimitActive, sharedDataLimit, isSharedDataLimitActive } = limitsData;
 
         if (isDailyDataLimitActive && dailyDataLimit > 0) {
           const limitGB = formatData(dailyDataLimit);
@@ -62,32 +62,55 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
         }
       }
 
-      // 시간 정책 (일시 차단)
-      if (data.immediateBlock && data.immediateBlock.blockEndAt) {
-        const endTime = new Date(data.immediateBlock.blockEndAt);
-        const formattedTime = `${endTime.getMonth() + 1}/${endTime.getDate()} ${String(endTime.getHours()).padStart(2, "0")}:${String(endTime.getMinutes()).padStart(2, "0")}`;
-        policies.push({
-          type: "시간",
-          bgColor: "#E5E5FF",
-          title: `${formattedTime}까지 일시차단`,
-        });
+      if (!data) {
+        setAppliedPolicies(policies);
+        return;
       }
 
-      // 시간 정책 (반복 차단)
+      // 시간 정책 (일시 차단) - 현재 시간보다 미래인 경우만 표시
+      if (data.immediateBlock && data.immediateBlock.blockEndAt) {
+        const endTime = new Date(data.immediateBlock.blockEndAt);
+        const now = new Date();
+        if (endTime > now) {
+          const formattedTime = `${endTime.getMonth() + 1}/${endTime.getDate()} ${String(endTime.getHours()).padStart(2, "0")}:${String(endTime.getMinutes()).padStart(2, "0")}`;
+          policies.push({
+            type: "시간",
+            bgColor: "#E5E5FF",
+            title: `${formattedTime}까지 일시차단`,
+          });
+        }
+      }
+
+      // 시간 정책 (반복 차단) - 같은 시간대끼리 묶기
       if (data.repeatBlockPolicyList && data.repeatBlockPolicyList.length > 0) {
+        const timeGroups = new Map<string, Set<string>>();
+        
         data.repeatBlockPolicyList.forEach((policy) => {
           if (policy.isActive && policy.days && policy.days.length > 0) {
             policy.days.forEach((day) => {
-              const dayName = DAY_MAP[day.dayOfWeek];
+              if (!day || !day.startAt || !day.endAt || !day.dayOfWeek) {
+                return;
+              }
+              
               const startTime = day.startAt.substring(0, 5);
               const endTime = day.endAt.substring(0, 5);
-              policies.push({
-                type: "시간",
-                bgColor: "#E5E5FF",
-                title: `${dayName} ${startTime}~${endTime}`,
-              });
+              const timeKey = `${startTime}~${endTime}`;
+              
+              if (!timeGroups.has(timeKey)) {
+                timeGroups.set(timeKey, new Set<string>());
+              }
+              timeGroups.get(timeKey)!.add(DAY_MAP[day.dayOfWeek]);
             });
           }
+        });
+
+        timeGroups.forEach((daysSet, timeRange) => {
+          const daysStr = Array.from(daysSet).join(', ');
+          policies.push({
+            type: "시간",
+            bgColor: "#E5E5FF",
+            title: `${daysStr} ${timeRange} 차단`,
+          });
         });
       }
 
@@ -109,30 +132,17 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
           );
 
           if (sortedApps.length === 1) {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName} 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName} 사용 제한` });
           } else if (sortedApps.length === 2) {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName}, ${sortedApps[1].appName} 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName}, ${sortedApps[1].appName} 사용 제한` });
           } else {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1}개 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1}개 사용 제한` });
           }
         }
       }
 
       setAppliedPolicies(policies);
-    } catch (error) {
-      console.error("적용 중인 정책 조회 실패:", error);
+    } catch {
       setAppliedPolicies([]);
     } finally {
       setLoading(false);

@@ -15,7 +15,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 60000, // 60초로 증가 (정책 활성화 등 시간이 걸리는 작업 대응)
   headers: {
     'Content-Type': 'application/json',
   },

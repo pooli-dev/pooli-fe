@@ -2,30 +2,29 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import logoSvg from '@/assets/img/logo.svg';
 import { authService } from '@/api';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [adminEmail] = useState(() => localStorage.getItem('adminEmail') || '');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = async () => {
-    if (confirm('로그아웃 하시겠습니까?')) {
-      try {
-        await authService.logout();
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('adminAuthenticated');
-        localStorage.removeItem('adminEmail');
-        navigate('/admin/login');
-      } catch (error) {
-        console.error('로그아웃 실패:', error);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('adminAuthenticated');
-        localStorage.removeItem('adminEmail');
-        navigate('/admin/login');
-      }
+    try {
+      await authService.logout();
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('adminAuthenticated');
+      localStorage.removeItem('adminEmail');
+      navigate('/admin/login');
+    } catch {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('adminAuthenticated');
+      localStorage.removeItem('adminEmail');
+      navigate('/admin/login');
     }
   };
 
@@ -66,7 +65,7 @@ export default function AdminLayout() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span>유저 검색 및 역할</span>
+            <span>유저 검색 및 관리</span>
           </NavLink>
 
           <NavLink
@@ -110,7 +109,7 @@ export default function AdminLayout() {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,6 +124,16 @@ export default function AdminLayout() {
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          handleLogout();
+        }}
+        message="로그아웃 하시겠습니까?"
+      />
     </div>
   );
 }

@@ -118,7 +118,7 @@ const ApplicationTab = ({
         borderRadius={20}
         className="w-full overflow-visible"
       >
-        <div className="pt-[11px] mb-4">
+        <div className="pt-2 mb-4">
           <AppFilterBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -141,7 +141,7 @@ const ApplicationTab = ({
           />
         </div>
 
-        <div className="space-y-4 px-1.5 sm:px-[13px] pb-4">
+        <div className="space-y-4 px-1.5 sm:px-[13px] pb-2">
           {sortedApps.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               일치하는 결과가 없습니다.

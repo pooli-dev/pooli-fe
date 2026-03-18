@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import GlassCard from "@/components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 import { blockService } from "@/api";
-import { getErrorMessage } from "@/api/client";
+import { useToastStore } from "@/store/toastStore";
 
 type Props = {
   lineId: number;
   onPolicyChange?: () => void;
+  onApply?: (blockEndAt: string) => void;
 };
 
 const PRESETS = [
@@ -16,108 +18,95 @@ const PRESETS = [
   { label: "8시간", minutes: 480 },
 ];
 
-function calcEndTime(minutes: number): string {
+function calcBlockEndAt(minutes: number): string {
   const now = new Date();
   now.setMinutes(now.getMinutes() + minutes);
-  const h = String(now.getHours()).padStart(2, "0");
-  const m = String(now.getMinutes()).padStart(2, "0");
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
+function calcEndTimeDisplay(blockEndAt: string | undefined): string {
+  if (!blockEndAt) return "--:--";
+  const date = new Date(blockEndAt);
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
   return `${h}:${m}`;
 }
 
-export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) {
-  const [enabled, setEnabled] = useState(false);
+function isBlockActive(blockEndAt: string | undefined): boolean {
+  if (!blockEndAt) return false;
+  return new Date(blockEndAt) > new Date();
+}
+
+export default function ImmediateBlockPolicy({ lineId, onPolicyChange, onApply }: Props) {
+  const queryClient = useQueryClient();
   const [selectedMinutes, setSelectedMinutes] = useState<number>(60);
   const [isDirect, setIsDirect] = useState(false);
   const [directHour, setDirectHour] = useState("");
   const [directMin, setDirectMin] = useState("");
   const [directError, setDirectError] = useState("");
   const [isApplied, setIsApplied] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [optimisticEnabled, setOptimisticEnabled] = useState<boolean | null>(null);
+  const previewEndTime = calcBlockEndAt(selectedMinutes);
+  const { show } = useToastStore();
 
-  useEffect(() => {
-    loadImmediateBlock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineId]);
+  // 현재 차단 상태 조회
+  const { data } = useQuery({
+    queryKey: ["immediateBlock", lineId],
+    queryFn: () => blockService.getImmediateBlock(lineId).then((res) => res.data),
+    enabled: !!lineId,
+  });
 
-  const loadImmediateBlock = async () => {
-    setLoading(true);
-    try {
-      const res = await blockService.getImmediateBlock(lineId);
-      console.log('즉시 차단 조회 성공:', res.data);
-      if (res.data && res.data.blockEndAt) {
-        const endTime = new Date(res.data.blockEndAt);
-        const now = new Date();
-        if (endTime > now) {
-          setEnabled(true);
-          const diffMinutes = Math.floor((endTime.getTime() - now.getTime()) / 60000);
-          setSelectedMinutes(diffMinutes);
-        } else {
-          setEnabled(false);
-        }
-      } else {
-        setEnabled(false);
-      }
-    } catch (err) {
-      console.error('즉시 차단 조회 실패:', err);
-      setEnabled(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const enabled = optimisticEnabled ?? isBlockActive(data?.blockEndAt);
 
-  const handleToggle = async (v: boolean) => {
-    // 낙관적 업데이트: UI 먼저 변경
-    const prevEnabled = enabled;
-    setEnabled(v);
-    
-    try {
-      if (v) {
-        // 차단 활성화
-        const endAt = new Date(Date.now() + selectedMinutes * 60 * 1000).toISOString();
-        console.log('즉시 차단 활성화 요청:', { lineId, blockEndAt: endAt });
-        await blockService.updateImmediateBlock(lineId, endAt);
-        console.log('즉시 차단 활성화 성공');
-      } else {
-        // 차단 해제
-        const pastTime = new Date(Date.now() - 1000).toISOString();
-        console.log('즉시 차단 해제 요청:', { lineId, blockEndAt: pastTime });
-        await blockService.updateImmediateBlock(lineId, pastTime);
-        console.log('즉시 차단 해제 성공');
-      }
+  // 차단 적용/해제
+  const { mutate: patchBlock } = useMutation({
+    mutationFn: (blockEndAt: string) =>
+      blockService.patchImmediateBlock(lineId, blockEndAt),
+    onMutate: (blockEndAt) => {
+      setOptimisticEnabled(new Date(blockEndAt) > new Date());
+    },
+    onSuccess: (_, blockEndAt) => {
+      setOptimisticEnabled(null);
+      queryClient.invalidateQueries({ queryKey: ["immediateBlock", lineId] });
+      
+      const isActive = new Date(blockEndAt) > new Date();
+      
+      // 차단 상태를 부모 컴포넌트에 전달
+      onApply?.(blockEndAt);
+      
+      // 적용중인 정책 목록 새로고침
       onPolicyChange?.();
-    } catch (err) {
-      // 실패 시 원래 상태로 복구
-      console.error('즉시 차단 토글 실패:', err);
-      setEnabled(prevEnabled);
-      alert(getErrorMessage(err));
+
+      if (isActive) {
+        show("차단 정책이 적용되었습니다.");
+      } else {
+        show("차단이 해제되었습니다.");
+      }
+    },
+    onError: () => {
+      setOptimisticEnabled(null);
+      show("차단 정책 추가에 실패했습니다.", "error");
+    },
+  });
+
+  const handleToggle = (v: boolean) => {
+    if (v) {
+      // 켜기 → 선택된 시간만큼 차단
+      patchBlock(calcBlockEndAt(selectedMinutes));
+    } else {
+      // 끄기 → 현재 시간으로 즉시 해제
+      patchBlock(new Date().toISOString().slice(0, 19));
     }
   };
 
-  const handlePreset = async (minutes: number) => {
-    console.log('프리셋 선택:', { minutes, enabled });
-    // UI 먼저 업데이트
-    const prevMinutes = selectedMinutes;
+  const handlePreset = (minutes: number) => {
     setIsDirect(false);
     setDirectHour("");
     setDirectMin("");
     setDirectError("");
     setIsApplied(false);
     setSelectedMinutes(minutes);
-    
-    if (enabled) {
-      try {
-        const endAt = new Date(Date.now() + minutes * 60 * 1000).toISOString();
-        console.log('프리셋 적용 API 호출:', { lineId, blockEndAt: endAt });
-        await blockService.updateImmediateBlock(lineId, endAt);
-        console.log('프리셋 적용 성공');
-        onPolicyChange?.();
-      } catch (err) {
-        // 실패 시 원래 값으로 복구
-        console.error('프리셋 적용 실패:', err);
-        setSelectedMinutes(prevMinutes);
-        alert(getErrorMessage(err));
-      }
-    }
   };
 
   const handleDirectClick = () => {
@@ -128,7 +117,7 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) 
     setIsApplied(false);
   };
 
-  const applyDirectInput = async () => {
+  const applyDirectInput = () => {
     const h = parseInt(directHour || "0", 10);
     const m = parseInt(directMin || "0", 10);
 
@@ -146,52 +135,11 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) 
     }
 
     const total = h * 60 + m;
-    const prevMinutes = selectedMinutes;
-    
-    console.log('직접 입력 적용:', { hour: h, min: m, total, enabled });
-    
-    // UI 먼저 업데이트
     setDirectError("");
     setSelectedMinutes(total);
     setIsApplied(true);
     setTimeout(() => setIsApplied(false), 2000);
-
-    if (enabled) {
-      try {
-        const endAt = new Date(Date.now() + total * 60 * 1000).toISOString();
-        console.log('직접 입력 API 호출:', { lineId, blockEndAt: endAt });
-        await blockService.updateImmediateBlock(lineId, endAt);
-        console.log('직접 입력 적용 성공');
-        onPolicyChange?.();
-      } catch (err) {
-        // 실패 시 원래 값으로 복구
-        console.error('직접 입력 적용 실패:', err);
-        setSelectedMinutes(prevMinutes);
-        setIsApplied(false);
-        alert(getErrorMessage(err));
-      }
-    }
   };
-
-  if (loading) {
-    return (
-      <GlassCard
-        title=""
-        gradientFrom="#FFFFFF"
-        gradientTo="#CCCCCC"
-        bgGradientFrom="#FFFFFF"
-        bgGradientTo="#F8F8F8"
-        bgOpacity={0.8}
-        borderWidth={1}
-        borderRadius={20}
-        className="w-full"
-      >
-        <div className="text-center py-4 text-gray-400">불러오는 중...</div>
-      </GlassCard>
-    );
-  }
-
-  const endTime = calcEndTime(selectedMinutes);
 
   return (
     <GlassCard
@@ -218,6 +166,7 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) 
           <button
             key={preset.minutes}
             onClick={() => handlePreset(preset.minutes)}
+            disabled={enabled}
             className="flex-1 py-2.5 text-sm font-semibold transition-all rounded-xl"
             style={{
               color: !isDirect && selectedMinutes === preset.minutes ? "#678BF7" : "#9CA3AF",
@@ -233,6 +182,7 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) 
 
         <button
           onClick={handleDirectClick}
+          disabled={enabled}
           className="flex-1 py-2.5 text-sm font-semibold transition-all rounded-xl"
           style={{
             color: isDirect ? "#678BF7" : "#9CA3AF",
@@ -318,7 +268,7 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange }: Props) 
       )}
 
       <p className="text-xs text-gray-400 mt-3">
-        {enabled ? `종료 시간: ${endTime}` : '차단이 비활성화되어 있습니다'}
+        {enabled ? `종료 시간: ${calcEndTimeDisplay(previewEndTime)}` : '차단이 비활성화되어 있습니다'}
       </p>
     </GlassCard>
   );
