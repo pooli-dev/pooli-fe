@@ -88,7 +88,6 @@ export default function PolicyManagement() {
         setConfirmModal(prev => ({ ...prev, open: false }));
         
         toggleActivation({ policyId: policy.policyId, isActive: newState });
-        alert(`✅ "${policy.policyName}" 정책이 ${action}되었습니다.\n\n백그라운드에서 처리 중입니다.`);
       },
     });
   };
