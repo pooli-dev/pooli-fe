@@ -55,4 +55,10 @@ export const familyService = {
     apiClient.patch("/roles/representative", null, {
       params: { changeLineId },
     }),
+
+  // [어드민] currentLineId와 changeLineId를 포함한 대표자 양도
+  transferOwnerAdmin: (currentLineId: number, changeLineId: number) =>
+    apiClient.patch("/roles/representative", null, {
+      params: { currentLineId, changeLineId },
+    }),
 };
