@@ -1,5 +1,4 @@
 import { calculateDaysUntilNextMonth } from '../utils/formatters';
-import type { AxiosError } from 'axios';
 
 interface SharedPoolData {
   totalData: number;
@@ -11,7 +10,7 @@ interface SharedPoolData {
 
 interface SharedPoolCardProps {
   data?: SharedPoolData;
-  error?: AxiosError<{ code?: string; errorCode?: string; message?: string }>;
+  error?: Error | null;
 }
 
 export default function SharedPoolCard({ data, error }: SharedPoolCardProps) {
@@ -100,11 +99,7 @@ export default function SharedPoolCard({ data, error }: SharedPoolCardProps) {
           {error && (
             <div className="mt-3 p-3 bg-red-50 rounded-lg text-left max-w-md mx-auto">
               <p className="text-xs text-red-800 font-semibold mb-2">에러 상세:</p>
-              <div className="text-xs text-red-700 space-y-1">
-                <p>• Status: {error.response?.status || 'N/A'}</p>
-                <p>• Code: {error.response?.data?.code || error.response?.data?.errorCode || error.code || 'N/A'}</p>
-                <p>• Message: {error.response?.data?.message || error.message || 'N/A'}</p>
-              </div>
+              <p className="text-xs text-red-700">{error.message || '알 수 없는 오류'}</p>
             </div>
           )}
         </div>
