@@ -27,7 +27,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const setUserInfo = useUserStore((state) => state.setUserInfo);
   const appType = getAppType();
-  const homePath = appType === 'admin' ? '/admin' : '/main';
+  const homePath = appType === "admin" ? "/admin" : "/main";
 
   // 이미 로그인되어 있으면 홈으로 리다이렉트
   useEffect(() => {
@@ -74,7 +74,6 @@ export default function LoginPage() {
         // 내 정보 가져와서 store에 저장
         const { data } = await userService.getMyInfo();
         setUserInfo(data);
-        console.log("유저 데이터 가져오기 성공", data);
 
         navigate(homePath);
       } else {

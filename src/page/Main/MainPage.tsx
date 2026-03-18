@@ -109,7 +109,6 @@ export default function Main() {
       transition={pageTransition}
       className="flex flex-col items-center gap-5 px-4 pb-[20px] mt-7"
     >
-      {" "}
       {/* 데이터 차단 활성화 배너 영역 */}
       {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
       {blockStatus?.blocked && (

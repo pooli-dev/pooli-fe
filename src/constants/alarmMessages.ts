@@ -11,6 +11,8 @@ export const ALARM_MESSAGE_MAP: Record<string, string> = {
     "공유 데이터 풀의 잔여량이 10%에 도달했습니다.",
   SHARED_POOL_THRESHOLD_REACHED_CUS:
     "공유 데이터 풀의 잔여량이 설정한 기준에 도달했습니다.",
+  SHARED_POOL_CONTRIBUTION: "가족 공유풀에 데이터가 반영되었습니다.",
+  SHARED_POOL_THRESHOLD_CHANGE: "가족 공유 데이터 임계치가 변경되었습니다.",
 
   // Question
   ANSWER: "요청하신 문의 답변이 게시되었습니다.",
