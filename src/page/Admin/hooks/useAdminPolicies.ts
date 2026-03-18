@@ -32,9 +32,10 @@ export function useAdminPolicies() {
 
       try {
         await adminPolicyService.toggleActivation(policyId, isActive);
-      } catch (error: Error & { response?: { status?: number } }) {
+      } catch (error: unknown) {
         // 504 타임아웃은 무시 (백엔드에서 처리 중)
-        if (error?.response?.status !== 504) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError?.response?.status !== 504) {
           throw error;
         }
       } finally {

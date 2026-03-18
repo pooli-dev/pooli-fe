@@ -109,7 +109,7 @@ export default function FamilyDetail() {
         />
         <SharedPoolCard 
           data={sharedPoolData} 
-          error={sharedPoolError} 
+          error={sharedPoolError ?? undefined} 
         />
       </div>
 
