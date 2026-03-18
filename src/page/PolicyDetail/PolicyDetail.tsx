@@ -81,6 +81,21 @@ const PolicyDetail = () => {
       blockService.getFamilyMembersSimple().then((res) => res.data),
   });
 
+  // userId별 lineId 오름차순 정렬 후 lineIndex 매핑
+  const lineIndexMap = new Map<number, number>();
+  const userLineMap = new Map<number, number[]>();
+  familyMembers.forEach((m) => {
+    if (!userLineMap.has(m.userId)) userLineMap.set(m.userId, []);
+    userLineMap.get(m.userId)!.push(m.lineId);
+  });
+  userLineMap.forEach((lineIds) => {
+    lineIds
+      .sort((a, b) => a - b)
+      .forEach((lineId, index) => {
+        lineIndexMap.set(lineId, index);
+      });
+  });
+
   // selectedMember 초기화
   const selectedMember =
     familyMembers.find(
@@ -258,15 +273,16 @@ const PolicyDetail = () => {
               onMouseLeave={handleMouseLeave}
               style={{ userSelect: "none" }}
             >
-              {familyMembers.map((member, index) => (
+              {familyMembers.map((member) => (
                 <button
                   key={member.lineId}
                   onClick={() => setSelectedLineId(member.lineId)}
-                  className="flex flex-col items-center gap-2 flex-shrink-0"
+                  className="flex flex-col items-center gap-1 flex-shrink-0"
                 >
                   <Avatar
                     userName={member.userName}
-                    colorIndex={index}
+                    userId={member.userId}
+                    lineIndex={lineIndexMap.get(member.lineId) ?? 0}
                     size="lg"
                     isSelected={selectedMember?.lineId === member.lineId}
                   />
@@ -275,6 +291,12 @@ const PolicyDetail = () => {
                   >
                     {member.userName}
                   </span>
+                  {(userLineMap.get(member.userId)?.length ?? 0) > 1 &&
+                    member.phone && (
+                      <span className="text-xs text-gray-400">
+                        ({member.phone.slice(-4)})
+                      </span>
+                    )}
                 </button>
               ))}
             </div>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 
 type UserData = {
   name: string;
+  phone: string;
   percentage: number;
   color: string;
 };
@@ -27,49 +28,42 @@ export default function SharedPoolUsage({ users = [], className = "" }: Props) {
       <div className="space-y-4">
         {/* 막대 그래프 */}
         <div className="relative w-full my-3">
-          {/* 실제 흰색 막대 */}
           <div
-            className="relative w-full h-4 rounded-full overflow-hidden"
+            className="relative w-full h-4 rounded-full overflow-hidden flex"
             style={{
               backgroundColor: "#F0F5FF",
               boxShadow:
                 "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
             }}
           >
-            {users.map((user, index) => {
-              const leftOffset = Math.min(
-                users.slice(0, index).reduce((sum, u) => sum + u.percentage, 0),
-                100,
-              );
-              return (
-                <motion.div
-                  key={user.name}
-                  className="absolute top-0 h-full"
-                  style={{
-                    left: `${leftOffset}%`,
-                    backgroundColor: user.color,
-                    boxShadow:
-                      "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
-                  }}
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${Math.min(user.percentage, 100 - leftOffset)}%`,
-                  }}
-                  transition={{
-                    duration: 0.8,
-                    ease: "easeOut",
-                    delay: index * 0.1,
-                  }}
-                />
-              );
-            })}
+            {users.map((user, index) => (
+              <motion.div
+                key={`${user.name}-${index}`}
+                className="h-full flex-shrink-0"
+                style={{
+                  backgroundColor: user.color,
+                  boxShadow:
+                    "inset 0 2px 4px rgba(0,0,0,0.08), inset 0 1px 2px rgba(0,0,0,0.05)",
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: `${user.percentage}%` }}
+                transition={{
+                  duration: 0.8,
+                  ease: "easeOut",
+                  delay: index * 0.1,
+                }}
+              />
+            ))}
           </div>
         </div>
 
         {/* 사용자 정보 */}
         <div className="grid grid-cols-2 gap-3">
-          {users.map((user) => (
-            <div key={user.name} className="flex items-center gap-2">
+          {users.map((user, index) => (
+            <div
+              key={`${user.name}-${index}`}
+              className="flex items-center gap-2"
+            >
               <div
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{
@@ -78,7 +72,11 @@ export default function SharedPoolUsage({ users = [], className = "" }: Props) {
                 }}
               />
               <span className="text-xs text-gray-700 font-light">
-                {user.name} {user.percentage}%
+                {user.name}
+                <span className="text-gray-400">
+                  ({user.phone.slice(-4)})
+                </span>{" "}
+                {Math.round(user.percentage)}%
               </span>
             </div>
           ))}
