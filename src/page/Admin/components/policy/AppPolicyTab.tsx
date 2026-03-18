@@ -244,7 +244,6 @@ export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: numbe
       });
       setApps(res.data.content || []);
     } catch (err) {
-      console.error('앱 정책 조회 실패:', err);
       alert(getErrorMessage(err));
     } finally {
       setLoading(false);

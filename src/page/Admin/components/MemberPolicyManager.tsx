@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FamilyMember } from '@/api/services/familyService';
 import BlockPolicyTab from '@/page/Admin/components/policy/BlockPolicyTab';
@@ -77,47 +77,53 @@ export default function MemberPolicyManager({
   
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(initialMember || null);
   const [activeTab, setActiveTab] = useState<TabType>('차단');
-  const [activeBlockEndTime, setActiveBlockEndTime] = useState<Date | null>(null);
   const queryClient = useQueryClient();
   const { show } = useToastStore();
   const navigate = useNavigate();
 
   const { appliedPolicies, refetch: refetchAppliedPolicies } = useAppliedPolicies(selectedMember?.lineId);
 
-  // 즉시 차단 상태 조회
+  // 즉시 차단 상태 조회 및 동기화
   const { data: immediateBlockData } = useQuery({
     queryKey: ['immediateBlock', selectedMember?.lineId],
     queryFn: () => blockService.getImmediateBlock(selectedMember!.lineId).then(res => res.data),
     enabled: !!selectedMember?.lineId,
   });
 
-  // immediateBlockData 변경 시 activeBlockEndTime 동기화
-  const [prevImmediateBlockData, setPrevImmediateBlockData] = useState(immediateBlockData);
-  if (immediateBlockData !== prevImmediateBlockData) {
-    setPrevImmediateBlockData(immediateBlockData);
-    if (immediateBlockData?.blockEndAt && new Date(immediateBlockData.blockEndAt) > new Date()) {
-      setActiveBlockEndTime(new Date(immediateBlockData.blockEndAt));
-    } else {
-      setActiveBlockEndTime(null);
+  // immediateBlockData 변경 시 activeBlockEndTime 계산
+  const activeBlockEndTime = useMemo(() => {
+    if (immediateBlockData?.blockEndAt) {
+      const endTime = new Date(immediateBlockData.blockEndAt);
+      return endTime > new Date() ? endTime : null;
     }
-  }
+    return null;
+  }, [immediateBlockData]);
 
   // 차단 해제 핸들러
   const handleBlockRelease = async () => {
     if (!selectedMember?.lineId) return;
+    
     const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const nowStr = now.toISOString().slice(0, 19);
 
     await blockService.patchImmediateBlock(selectedMember.lineId, nowStr);
-    setActiveBlockEndTime(null);
     queryClient.invalidateQueries({ queryKey: ['immediateBlock', selectedMember.lineId] });
+    
+    // 적용중인 정책 목록 새로고침
+    refetchAppliedPolicies();
+    
     show('차단이 해제되었습니다.');
   };
 
   // 차단 적용 핸들러
-  const handleBlockApply = (blockEndAt: string) => {
-    setActiveBlockEndTime(new Date(blockEndAt));
+  const handleBlockApply = () => {
+    // immediateBlock 쿼리를 무효화하면 useMemo가 자동 업데이트
+    if (selectedMember?.lineId) {
+      queryClient.invalidateQueries({ queryKey: ['immediateBlock', selectedMember.lineId] });
+    }
+    
+    // 적용중인 정책 목록 새로고침
+    refetchAppliedPolicies();
   };
 
   if (members.length === 0) {
@@ -134,7 +140,7 @@ export default function MemberPolicyManager({
       <div className="flex justify-end">
         <button
           onClick={() => navigate(`/admin/family-detail?lineId=${selectedMember?.lineId || members[0]?.lineId}`)}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+          className="flex items-center gap-2 px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -145,22 +151,22 @@ export default function MemberPolicyManager({
 
       {/* 구성원 선택 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
-        <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4">구성원 선택</h3>
-        <div className="flex flex-wrap gap-2 md:gap-3">
+        <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-5">구성원 선택</h3>
+        <div className="flex flex-wrap gap-3 md:gap-4">
           {members.map(member => {
             const roleLabel = member.role === 'OWNER' ? '대표자' : member.role === 'MEMBER' ? '구성원' : member.role;
             return (
               <button
                 key={member.lineId}
                 onClick={() => setSelectedMember(member)}
-                className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg border-2 transition-all ${
+                className={`flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-xl border-2 transition-all ${
                   selectedMember?.lineId === member.lineId
                     ? 'border-blue-500 bg-blue-50 shadow-md'
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
               >
                 <div
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm ${
+                  className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold text-base md:text-lg ${
                     selectedMember?.lineId === member.lineId
                       ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
                       : 'bg-gradient-to-br from-gray-400 to-gray-500'
@@ -171,14 +177,14 @@ export default function MemberPolicyManager({
                 <div className="text-left">
                   <div className="flex items-center gap-2">
                     <p
-                      className={`text-sm md:text-base font-medium ${
+                      className={`text-base md:text-lg font-semibold ${
                         selectedMember?.lineId === member.lineId ? 'text-gray-900' : 'text-gray-600'
                       }`}
                     >
                       {member.userName}
                     </p>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         member.role === 'OWNER'
                           ? 'bg-purple-100 text-purple-700'
                           : 'bg-gray-100 text-gray-600'
@@ -187,7 +193,7 @@ export default function MemberPolicyManager({
                       {roleLabel}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">{member.phone}</p>
+                  <p className="text-sm text-gray-500">{member.phone}</p>
                 </div>
               </button>
             );

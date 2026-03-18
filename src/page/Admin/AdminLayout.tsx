@@ -18,8 +18,7 @@ export default function AdminLayout() {
       localStorage.removeItem('adminAuthenticated');
       localStorage.removeItem('adminEmail');
       navigate('/admin/login');
-    } catch (error) {
-      console.error('로그아웃 실패:', error);
+    } catch {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');

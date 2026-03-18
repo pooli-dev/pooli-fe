@@ -1,23 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminHeader from './components/AdminHeader';
-import { lineService, familyService } from '@/api';
+import { lineService } from '@/api';
 import type { LineByPhoneResult } from '@/api/services/lineService';
-import type { FamilyMember } from '@/api/services/familyService';
 import { getErrorMessage } from '@/api/client';
-import MemberPolicyManager from '@/page/Admin/components/MemberPolicyManager';
 
 export default function UserManagement() {
+  const navigate = useNavigate();
   const [searchPhone, setSearchPhone] = useState('');
   const [nameFilter, setNameFilter] = useState('');
   const [searchResults, setSearchResults] = useState<LineByPhoneResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
-
-  // 선택된 회선 및 구성원
-  const [selectedLine, setSelectedLine] = useState<LineByPhoneResult | null>(null);
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
 
   const handleSearch = async () => {
     if (!searchPhone.trim()) {
@@ -27,11 +22,8 @@ export default function UserManagement() {
     setIsLoading(true);
     setError('');
     setSearched(true);
-    setSelectedLine(null);
-    setFamilyMembers([]);
     try {
       const response = await lineService.getLinesByPhone(searchPhone.trim());
-      console.log('회선 조회 응답:', response);
 
       if (typeof response.data === 'string' && (response.data as unknown as string).includes('<!doctype')) {
         setError('API 응답이 올바르지 않습니다.');
@@ -40,7 +32,6 @@ export default function UserManagement() {
 
       setSearchResults(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      console.error('회선 조회 실패:', err);
       setError(getErrorMessage(err));
       setSearchResults([]);
     } finally {
@@ -48,59 +39,14 @@ export default function UserManagement() {
     }
   };
 
-  const handleSelectLine = async (line: LineByPhoneResult) => {
-    setSelectedLine(line);
-    setLoadingMembers(true);
-    try {
-      const response = await familyService.getMembersByLine(line.lineId);
-      console.log('구성원 조회 응답:', response.data);
-      setFamilyMembers(response.data.members || []);
-    } catch (err) {
-      console.error('구성원 조회 실패:', err);
-      alert(getErrorMessage(err));
-      setFamilyMembers([]);
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-
-  const handleBackToSearch = () => {
-    setSelectedLine(null);
-    setFamilyMembers([]);
+  const handleSelectLine = (line: LineByPhoneResult) => {
+    // 별도 페이지로 이동
+    navigate(`/admin/user-management?lineId=${line.lineId}`);
   };
 
   const filteredResults = nameFilter.trim()
     ? searchResults.filter(r => r.userName.toLowerCase().includes(nameFilter.trim().toLowerCase()))
     : searchResults;
-
-  // 구성원 관리 화면
-  if (selectedLine) {
-    return (
-      <div className="p-8">
-        <AdminHeader title="유저 정책 관리" description={`${selectedLine.userName}님의 가족 구성원 정책을 관리합니다.`} />
-        
-        {/* 뒤로가기 */}
-        <button onClick={handleBackToSearch}
-          className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          검색으로 돌아가기
-        </button>
-
-        {loadingMembers ? (
-          <div className="flex justify-center items-center py-20">
-            <svg className="w-10 h-10 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-          </div>
-        ) : (
-          <MemberPolicyManager members={familyMembers} initialLineId={selectedLine.lineId} />
-        )}
-      </div>
-    );
-  }
 
   // 검색 화면
   return (

@@ -127,10 +127,8 @@ export default function NotificationManagement() {
         
         try {
           const payload = buildPayload(lineIds);
-          console.log('알림 전송 요청:', payload);
           
           await notificationService.send(payload);
-          console.log('알림 전송 성공');
           
           const successMessage = isLargeScale
             ? '알림 전송 요청이 접수되었습니다. 백그라운드에서 처리 중입니다.'
@@ -140,7 +138,6 @@ export default function NotificationManagement() {
           setLineIdInput('');
           setMessageInput('');
         } catch (err) {
-          console.error('알림 전송 실패:', err);
           setResult({ type: 'error', message: getErrorMessage(err) });
         } finally {
           setIsSending(false);
