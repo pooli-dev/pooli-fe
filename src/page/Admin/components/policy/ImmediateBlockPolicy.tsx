@@ -69,10 +69,15 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange, onApply }
     onSuccess: (_, blockEndAt) => {
       setOptimisticEnabled(null);
       queryClient.invalidateQueries({ queryKey: ["immediateBlock", lineId] });
+      
+      const isActive = new Date(blockEndAt) > new Date();
+      
+      // 차단 상태를 부모 컴포넌트에 전달
       onApply?.(blockEndAt);
+      
+      // 적용중인 정책 목록 새로고침
       onPolicyChange?.();
 
-      const isActive = new Date(blockEndAt) > new Date();
       if (isActive) {
         show("차단 정책이 적용되었습니다.");
       } else {

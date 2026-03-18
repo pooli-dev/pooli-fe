@@ -83,12 +83,15 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
 
       // 시간 정책 (반복 차단) - 같은 시간대끼리 묶기
       if (data.repeatBlockPolicyList && data.repeatBlockPolicyList.length > 0) {
-        // 시간대별로 그룹화 (Set을 사용하여 중복 제거)
         const timeGroups = new Map<string, Set<string>>();
         
         data.repeatBlockPolicyList.forEach((policy) => {
           if (policy.isActive && policy.days && policy.days.length > 0) {
             policy.days.forEach((day) => {
+              if (!day || !day.startAt || !day.endAt || !day.dayOfWeek) {
+                return;
+              }
+              
               const startTime = day.startAt.substring(0, 5);
               const endTime = day.endAt.substring(0, 5);
               const timeKey = `${startTime}~${endTime}`;
@@ -101,13 +104,12 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
           }
         });
 
-        // 그룹화된 시간대를 정책으로 추가
         timeGroups.forEach((daysSet, timeRange) => {
-          const daysStr = Array.from(daysSet).join(',');
+          const daysStr = Array.from(daysSet).join(', ');
           policies.push({
             type: "시간",
             bgColor: "#E5E5FF",
-            title: `${daysStr} ${timeRange}`,
+            title: `${daysStr} ${timeRange} 차단`,
           });
         });
       }
@@ -130,30 +132,17 @@ export const useAppliedPolicies = (lineId: number | undefined) => {
           );
 
           if (sortedApps.length === 1) {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName} 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName} 사용 제한` });
           } else if (sortedApps.length === 2) {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName}, ${sortedApps[1].appName} 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName}, ${sortedApps[1].appName} 사용 제한` });
           } else {
-            policies.push({
-              type: "앱",
-              bgColor: "#E5F5E5",
-              title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1}개 사용 제한`,
-            });
+            policies.push({ type: "앱", bgColor: "#E5F5E5", title: `${sortedApps[0].appName} 외 ${sortedApps.length - 1}개 사용 제한` });
           }
         }
       }
 
       setAppliedPolicies(policies);
-    } catch (error) {
-      console.error("적용 중인 정책 조회 실패:", error);
+    } catch {
       setAppliedPolicies([]);
     } finally {
       setLoading(false);

@@ -24,7 +24,7 @@ export default function BlockPolicyManager({
     queryFn: () =>
       blockService
         .getRepeatBlockPolicies(lineId!)
-        .then((res) => res.data.map(toBlockPolicy)),
+        .then((res) => res.data.map(toBlockPolicy).sort((a, b) => a.id - b.id)),
     enabled: !!lineId,
   });
 

@@ -24,7 +24,7 @@ export default function BlockPolicyManager({
     queryFn: () =>
       blockService
         .getRepeatBlockPolicies(lineId!)
-        .then((res) => res.data.map(toBlockPolicy)),
+        .then((res) => res.data.map(toBlockPolicy).sort((a, b) => a.id - b.id)),
     enabled: !!lineId,
   });
 
@@ -69,7 +69,7 @@ export default function BlockPolicyManager({
       isActive: boolean;
     }) => blockService.patchRepeatBlockToggle(policy.id, isActive),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["repeatBlocks"] });
+      queryClient.invalidateQueries({ queryKey: ["repeatBlocks", lineId] });
       show("차단 정책이 변경되었습니다.");
       onPolicyChange?.();
     },
