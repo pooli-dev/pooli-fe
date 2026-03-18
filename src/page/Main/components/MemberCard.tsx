@@ -10,10 +10,14 @@ export default function FamilyMemberCard({
   member,
   isEnable,
   isUserOwner,
+  isDualLine,
+  lineIndex,
 }: {
   member: FamilyMember;
   isEnable: boolean;
   isUserOwner: boolean;
+  isDualLine: boolean;
+  lineIndex: number;
 }) {
   const navigate = useNavigate();
   // 이 카드의 유저가 대표자 인가
@@ -40,7 +44,8 @@ export default function FamilyMemberCard({
         <Avatar
           userName={member.userName}
           isOwner={isOwner}
-          colorIndex={member.userId}
+          userId={member.userId}
+          lineIndex={lineIndex}
         />
 
         {/* 이름 + 대표자 뱃지 */}
@@ -66,6 +71,11 @@ export default function FamilyMemberCard({
               </button>
             )}
           </div>
+          {isDualLine && member.phone && (
+            <span className="text-xs text-gray-400 mt-0.5">
+              ({member.phone.slice(-4)})
+            </span>
+          )}
         </div>
 
         {/* 공유 사용중 / 사용전 뱃지 */}

@@ -42,22 +42,51 @@ export default function Main() {
     queryFn: () => sharedPoolService.getUsageData().then((res) => res.data),
   });
 
-  const COLORS = [
-    "#B6DF82",
-    "#57CAFB",
-    "#FAC0B5",
+  // Avatar와 동일한 색상 기준 (Avatar.tsx BASE_COLORS와 동일)
+  const BASE_COLORS = [
+    "#FBC7C3",
     "#CAA6DB",
+    "#B6DF82",
+    "#FFA780",
+    "#57CAFB",
     "#FFD580",
     "#A0C4FF",
+    "#F9A8D4",
   ];
+  const DARKEN: Record<number, string> = { 0: "FF", 1: "55" };
 
-  const usageUsers = usageData?.membersUsageList.map((member, index) => ({
-    name: member.userName,
-    percentage: Math.round(
-      (member.monthlySharedPoolUsage / usageData.sharedPoolTotalData) * 100,
-    ),
-    color: COLORS[index % COLORS.length],
-  }));
+  // familyData로 lineIndexMap 계산
+  const userLineMap = new Map<number, number[]>();
+  familyData?.members.forEach((m) => {
+    if (!userLineMap.has(m.userId)) userLineMap.set(m.userId, []);
+    userLineMap.get(m.userId)!.push(m.lineId);
+  });
+  const lineIndexMap = new Map<number, number>();
+  userLineMap.forEach((lineIds) => {
+    lineIds
+      .sort((a, b) => a - b)
+      .forEach((lineId, index) => {
+        lineIndexMap.set(lineId, index);
+      });
+  });
+
+  const usageUsers = usageData?.membersUsageList.map((member) => {
+    const familyMember = familyData?.members.find(
+      (m) => m.phone === member.phoneNumber,
+    );
+    const userId = familyMember?.userId ?? 0;
+    const lineId = familyMember?.lineId ?? 0;
+    const lineIndex = lineIndexMap.get(lineId) ?? 0;
+    const baseColor = BASE_COLORS[userId % BASE_COLORS.length];
+    const opacity = DARKEN[lineIndex] ?? "BB";
+    return {
+      name: member.userName,
+      phone: member.phoneNumber,
+      percentage:
+        (member.monthlySharedPoolUsage / usageData.sharedPoolTotalData) * 100,
+      color: `${baseColor}${opacity}`,
+    };
+  });
 
   const { data: sharedPoolData, isPending: isPoolLoading } =
     useQuery<SharedData>({
@@ -109,7 +138,6 @@ export default function Main() {
       transition={pageTransition}
       className="flex flex-col items-center gap-5 px-4 pb-[20px] mt-7"
     >
-      {" "}
       {/* 데이터 차단 활성화 배너 영역 */}
       {/* 아직 api 없음. 페이지 로드 시 api 호출 */}
       {blockStatus?.blocked && (

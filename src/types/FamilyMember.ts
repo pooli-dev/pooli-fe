@@ -12,6 +12,7 @@ export type FamilyMember = {
   userId: number;
   lineId: number;
   userName: string;
+  phone: string;
   role: "OWNER" | "MEMBER";
   remainingData: number;
   basicDataAmount: number;

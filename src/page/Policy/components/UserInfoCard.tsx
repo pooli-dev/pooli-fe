@@ -8,20 +8,23 @@ import DataRemainingCard from "./DataRemainingCard";
 import { useState } from "react";
 import type { UserInfo } from "@/types/user";
 import { useUserStore } from "@/store/userStore";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Line } from "@/types/line";
-import { lineService } from "@/api";
+import { lineService, userService } from "@/api";
 import { blockService } from "@/api";
 
 type Props = {
   // 프로필
   userData: UserInfo;
+  userId?: number;
 };
 
-export default function UserInfo({ userData }: Props) {
+export default function UserInfo({ userData, userId }: Props) {
   const navigate = useNavigate();
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const lineId = useUserStore((state) => state.userInfo?.lineId);
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
+  const queryClient = useQueryClient();
 
   const isOwner = userData.role === "OWNER";
   // 회선이 여러개 인지 조회
@@ -31,6 +34,14 @@ export default function UserInfo({ userData }: Props) {
   });
 
   const isDualPhone = (lines?.length ?? 0) > 1;
+  const currentPhone = lines?.find(
+    (line) => line.lineId === userData.lineId,
+  )?.phoneNumber;
+  // lines를 lineId 오름차순 정렬 후 index 매핑
+  const sortedLines = [...(lines ?? [])].sort((a, b) => a.lineId - b.lineId);
+  const currentLineIndex = sortedLines.findIndex(
+    (line) => line.lineId === userData.lineId,
+  );
 
   // 차단 상태인지 확인
   const { data: blockStatus } = useQuery<{
@@ -50,10 +61,11 @@ export default function UserInfo({ userData }: Props) {
 
   async function handleSelectLine(lineId: number) {
     await lineService.switchLine(lineId);
-
+    // store를 먼저 최신 userInfo로 업데이트한 뒤 전체 쿼리 무효화
+    const { data } = await userService.getMyInfo();
+    setUserInfo(data);
     setIsBottomSheetOpen(false);
-    // 전환 후 페이지 새로고침 or 상태 업데이트
-    window.location.reload();
+    await queryClient.invalidateQueries();
   }
 
   return (
@@ -71,8 +83,12 @@ export default function UserInfo({ userData }: Props) {
       >
         {/* ── 프로필 영역 ── */}
         <div className="flex items-start gap-3 mb-4">
-          <Avatar userName={userData.userName} isOwner={isOwner} />
-
+          <Avatar
+            userName={userData.userName}
+            isOwner={isOwner}
+            userId={userId}
+            lineIndex={currentLineIndex}
+          />
           <div className="flex-1 min-w-0">
             {/* 대표자 뱃지 */}
             {isOwner && (
@@ -85,6 +101,11 @@ export default function UserInfo({ userData }: Props) {
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-gray-800">
                 {userData.userName}
+                {isDualPhone && currentPhone && (
+                  <span className="text-sm font-normal text-gray-400 ml-1">
+                    ({currentPhone.slice(-4)})
+                  </span>
+                )}
               </span>
               {isDualPhone && (
                 <button
@@ -179,7 +200,7 @@ export default function UserInfo({ userData }: Props) {
               계정 전환
             </h3>
             <ul className="flex flex-col">
-              {(lines ?? []).map((line) => (
+              {sortedLines.map((line, index) => (
                 <li key={line.lineId}>
                   <button
                     onClick={() => handleSelectLine(line.lineId)}
@@ -187,7 +208,8 @@ export default function UserInfo({ userData }: Props) {
                   >
                     <Avatar
                       userName={userData.userName}
-                      colorIndex={line.lineId}
+                      userId={userId}
+                      lineIndex={index}
                       size="md"
                     />
                     <span className="text-sm text-gray-700">

@@ -71,17 +71,11 @@ function parseAppUsageResponse(
 
   // HTML 응답 = 백엔드에 해당 데이터 없음 (Vite SPA fallback)
   if (!isJson) {
-    if (import.meta.env.DEV) {
-      console.log("📱 앱 사용량: 데이터 없음 (HTML 응답)");
-    }
     return { data: emptyAppUsage(fallbackIsPublic) };
   }
 
   const d = appRes.data as Record<string, unknown> | null;
   if (d && typeof d === "object" && !Array.isArray(d) && "isPublic" in d) {
-    if (import.meta.env.DEV) {
-      console.log("📱 앱 사용량 원본 응답:", d);
-    }
     return {
       data: {
         isPublic: (d.isPublic as boolean) ?? true,
@@ -92,9 +86,6 @@ function parseAppUsageResponse(
     };
   }
 
-  if (import.meta.env.DEV) {
-    console.error("❌ 앱 사용량 API 응답 형식 오류:", d);
-  }
   return { data: emptyAppUsage(fallbackIsPublic) };
 }
 

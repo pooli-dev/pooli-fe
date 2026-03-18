@@ -63,7 +63,11 @@ export default function SharedData() {
   };
 
   if (loading || !mainData || !myData) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-106px-60px)] mt-[106px]">
+        <div className="w-10 h-10 border-4 border-[#678BF7] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   const usedData =

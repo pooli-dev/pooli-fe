@@ -6,6 +6,10 @@ import StatusBar from "@/components/StatusBar";
 import Header from "@/components/Header";
 import BottomBar from "@/components/BottomBar";
 import { useLocation } from "react-router-dom";
+import { useUserStore } from "@/store/userStore";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import OnboardingModal from "@/components/Onboarding/OnboardingModal";
+import { AnimatePresence } from "framer-motion";
 
 interface LayoutProps {
   children: ReactNode;
@@ -22,6 +26,9 @@ export default function Layout({ children }: LayoutProps) {
   const largeTextMode = useSettingStore((state) => state.largeTextMode);
   const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
+  const { show: showOnboarding, complete: completeOnboarding } =
+    useOnboarding();
+  const isOwner = useUserStore((s) => s.userInfo?.role === "OWNER");
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
@@ -39,6 +46,14 @@ export default function Layout({ children }: LayoutProps) {
           backgroundSize: "100% auto",
         }}
       >
+        <AnimatePresence>
+          {showOnboarding && (
+            <OnboardingModal
+              onComplete={completeOnboarding}
+              isRepresentative={isOwner}
+            />
+          )}
+        </AnimatePresence>
         {/* 2. 상단 고정 (StatusBar + Header) */}
         <div className="flex-none z-[100] w-full">
           <StatusBar />

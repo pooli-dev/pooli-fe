@@ -29,9 +29,6 @@ function PermissionManager() {
       permissionService.getMemberPermissions().then((res) => res.data),
   });
 
-  console.log("permissionsData:", permissionsData);
-  console.log("memberPermissions:", permissionsData?.memberPermissions);
-
   // Derive initial rows from API data using useMemo
   const initialRows = useMemo(() => {
     if (!permissionsData) return [];

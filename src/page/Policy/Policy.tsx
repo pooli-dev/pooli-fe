@@ -4,7 +4,7 @@ import DataThresholdSlider from "./components/DataThresholdSlider";
 import UserInfoCard from "./components/UserInfoCard";
 import SettingIcon from "@/assets/icon/setting.svg";
 import AssignIcon from "@/assets/icon/assignment.svg";
-import type { SimpleMember } from "@/types/FamilyMember";
+import type { FamilyApiResponse, SimpleMember } from "@/types/FamilyMember";
 import { useState } from "react";
 import Avatar from "@/components/common/Avatar";
 import { createPortal } from "react-dom";
@@ -61,6 +61,30 @@ export default function Policy() {
     enabled: isTransferModalOpen, // 모달 열릴 때만 요청
   });
 
+  // 현재 유저의 userId를 familyMembers 캐시에서 찾기
+  const { data: familyData } = useQuery<FamilyApiResponse>({
+    queryKey: ["familyMembers"],
+    queryFn: () => familyService.getMembers().then((res) => res.data),
+    staleTime: Infinity,
+  });
+  const currentUserId = familyData?.members.find(
+    (m) => m.lineId === userData?.lineId,
+  )?.userId;
+  // userId별 lineId 오름차순 정렬 후 lineIndex 매핑
+  const lineIndexMap = new Map<number, number>();
+  const userLineMap = new Map<number, number[]>();
+  familyMembers.forEach((m) => {
+    if (!userLineMap.has(m.userId)) userLineMap.set(m.userId, []);
+    userLineMap.get(m.userId)!.push(m.lineId);
+  });
+  userLineMap.forEach((lineIds) => {
+    lineIds
+      .sort((a, b) => a - b)
+      .forEach((lineId, index) => {
+        lineIndexMap.set(lineId, index);
+      });
+  });
+
   // 권한 양도 mutation
   const { mutate: transferOwner, isPending } = useMutation({
     mutationFn: (changeLineId: number) =>
@@ -101,7 +125,7 @@ export default function Policy() {
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.1 }}
         >
-          <UserInfoCard userData={userData} />
+          <UserInfoCard userData={userData} userId={currentUserId} />
         </motion.div>
       )}
 
@@ -220,21 +244,30 @@ export default function Policy() {
               <div className="flex flex-col gap-2 mb-5">
                 {familyMembers
                   .filter((member) => member.lineId !== userData?.lineId)
-                  .map((member, index) => (
+                  .map((member) => (
                     <button
-                      key={member.userId}
+                      key={member.lineId}
                       onClick={() => setSelectedTarget(member)}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${
-                        selectedTarget?.userId === member.userId
+                        selectedTarget?.lineId === member.lineId
                           ? "border-[#678BF7] bg-blue-50"
                           : "border-gray-100 bg-gray-50"
                       }`}
                     >
-                      <Avatar userName={member.userName} colorIndex={index} />
+                      <Avatar
+                        userName={member.userName}
+                        userId={member.userId}
+                        lineIndex={lineIndexMap.get(member.lineId) ?? 0}
+                      />{" "}
                       <span className="text-sm font-medium text-gray-800">
                         {member.userName}
+                        {lineIndexMap.size > 0 && (
+                          <span className="text-xs font-normal text-gray-400 ml-1">
+                            ({member.phone.slice(-4)})
+                          </span>
+                        )}
                       </span>
-                      {selectedTarget?.userId === member.userId && (
+                      {selectedTarget?.lineId === member.lineId && (
                         <span className="ml-auto text-[#678BF7]">✓</span>
                       )}
                     </button>
