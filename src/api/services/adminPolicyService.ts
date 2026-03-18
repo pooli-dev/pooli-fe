@@ -36,7 +36,7 @@ export const adminPolicyService = {
   // 전체 정책 목록 조회
   getAllPolicies: async () => {
     const response = await apiClient.get<AdminPolicy[]>('/admin/policies', {
-      timeout: 30000,
+      timeout: 120000, // 2분
     });
     return response.data;
   },
@@ -44,7 +44,7 @@ export const adminPolicyService = {
   // 정책 추가
   createPolicy: async (data: PolicyRequest) => {
     const response = await apiClient.post<AdminPolicy>('/admin/policies', data, {
-      timeout: 30000,
+      timeout: 120000, // 2분
     });
     return response.data;
   },
@@ -53,7 +53,7 @@ export const adminPolicyService = {
   deletePolicy: async (policyId: number) => {
     const response = await apiClient.delete<AdminPolicy>('/admin/policies', {
       params: { policyId },
-      timeout: 30000,
+      timeout: 120000, // 2분
     });
     return response.data;
   },
@@ -62,7 +62,7 @@ export const adminPolicyService = {
   updatePolicy: async (policyId: number, data: PolicyRequest) => {
     const response = await apiClient.patch<AdminPolicy>('/admin/policies', data, {
       params: { policyId },
-      timeout: 30000,
+      timeout: 120000, // 2분
     });
     return response.data;
   },
@@ -71,13 +71,10 @@ export const adminPolicyService = {
   toggleActivation: async (policyId: number, isActive: boolean) => {
     const response = await apiClient.patch<PolicyActivationResponse>(
       '/admin/policies/activation',
-      { 
-        policyId,
-        isActive 
-      },
+      { isActive },
       { 
         params: { policyId },
-        timeout: 30000,
+        timeout: 120000, // 2분 (백엔드 처리 시간이 오래 걸림)
       }
     );
     return response.data;

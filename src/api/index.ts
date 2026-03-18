@@ -16,3 +16,4 @@ export { thresholdService } from "./services/thresholdService";
 export { limitService } from "./services/limitService";
 export { adminPolicyService } from "./services/adminPolicyService";
 export { notificationService } from "./services/notificationService";
+export { permissionService } from "./services/permissionService";
