@@ -164,10 +164,10 @@ export default function NotificationManagement() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <AdminHeader title="알림 전송" description="유저에게 알림을 전송합니다." />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
         <div className="space-y-6">
           {/* 수신자 유형 선택 */}
           <div>
