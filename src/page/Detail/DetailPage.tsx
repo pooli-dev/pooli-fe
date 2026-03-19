@@ -45,19 +45,6 @@ const emptyAppUsage = (isPublic: boolean): AppUsage => ({
   apps: [],
 });
 
-const logApiError = (label: string, error: unknown) => {
-  if (!import.meta.env.DEV) return;
-  const apiErr =
-    error && typeof error === "object" && "apiError" in error
-      ? (
-          error as {
-            apiError: { status: number; code?: string; message: string };
-          }
-        ).apiError
-      : null;
-  console.error(`❌ ${label}:`, apiErr || getErrorMessage(error));
-};
-
 function parseAppUsageResponse(
   appRes: { headers?: Record<string, unknown>; data: unknown },
   fallbackIsPublic: boolean,
@@ -146,8 +133,7 @@ export default function Detail() {
       const appRes = await userService.getAppUsage(targetLineId, yearMonth);
       const result = parseAppUsageResponse(appRes, fallbackIsPublic);
       return result?.data ?? emptyAppUsage(fallbackIsPublic);
-    } catch (error) {
-      logApiError("앱 사용량 API 에러", error);
+    } catch {
       return emptyAppUsage(fallbackIsPublic);
     }
   };
@@ -167,7 +153,6 @@ export default function Detail() {
         ]);
 
         setDataUsage(dataRes.data);
-        console.log('[월별 사용량 API 응답]', monthlyRes.data);
         setMonthlyUsage(monthlyRes.data);
 
         const fallback = loading ? true : globalIsPublic;
@@ -193,8 +178,7 @@ export default function Detail() {
           setAppUsage(emptyAppUsage(fallback));
           if (loading) setGlobalIsPublic(true);
         }
-      } catch (error) {
-        logApiError("상세페이지 데이터 로드 실패", error);
+      } catch {
         setAppUsage(emptyAppUsage(globalIsPublic));
       } finally {
         setLoading(false);
@@ -284,7 +268,6 @@ export default function Detail() {
       const appData = await fetchAppUsage(lineId, yearMonth, newValue);
       setAppUsage({ ...appData, isPublic: newValue });
     } catch (error) {
-      logApiError("공개 설정 변경 실패", error);
       showToast(getErrorMessage(error), "error");
     }
   };
