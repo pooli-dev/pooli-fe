@@ -45,19 +45,6 @@ const emptyAppUsage = (isPublic: boolean): AppUsage => ({
   apps: [],
 });
 
-const logApiError = (label: string, error: unknown) => {
-  if (!import.meta.env.DEV) return;
-  const apiErr =
-    error && typeof error === "object" && "apiError" in error
-      ? (
-          error as {
-            apiError: { status: number; code?: string; message: string };
-          }
-        ).apiError
-      : null;
-  console.error(`❌ ${label}:`, apiErr || getErrorMessage(error));
-};
-
 function parseAppUsageResponse(
   appRes: { headers?: Record<string, unknown>; data: unknown },
   fallbackIsPublic: boolean,
@@ -146,8 +133,7 @@ export default function Detail() {
       const appRes = await userService.getAppUsage(targetLineId, yearMonth);
       const result = parseAppUsageResponse(appRes, fallbackIsPublic);
       return result?.data ?? emptyAppUsage(fallbackIsPublic);
-    } catch (error) {
-      logApiError("앱 사용량 API 에러", error);
+    } catch {
       return emptyAppUsage(fallbackIsPublic);
     }
   };
@@ -192,8 +178,7 @@ export default function Detail() {
           setAppUsage(emptyAppUsage(fallback));
           if (loading) setGlobalIsPublic(true);
         }
-      } catch (error) {
-        logApiError("상세페이지 데이터 로드 실패", error);
+      } catch {
         setAppUsage(emptyAppUsage(globalIsPublic));
       } finally {
         setLoading(false);
@@ -201,6 +186,28 @@ export default function Detail() {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lineId, currentDate]);
+
+  // 데이터 사용량 polling (현재 달일 때만 30초 간격)
+  useEffect(() => {
+    const isCurrentMonth =
+      currentDate.getFullYear() === today.getFullYear() &&
+      currentDate.getMonth() === today.getMonth();
+
+    if (!lineId || !isCurrentMonth) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const yearMonth = formatYearMonth(currentDate);
+        const dataRes = await userService.getDataUsage(lineId, yearMonth);
+        setDataUsage(dataRes.data);
+      } catch {
+        // polling 실패는 무시
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineId, currentDate]);
 
@@ -283,7 +290,6 @@ export default function Detail() {
       const appData = await fetchAppUsage(lineId, yearMonth, newValue);
       setAppUsage({ ...appData, isPublic: newValue });
     } catch (error) {
-      logApiError("공개 설정 변경 실패", error);
       showToast(getErrorMessage(error), "error");
     }
   };
@@ -359,6 +365,7 @@ export default function Detail() {
         <UsageTrend
           usages={monthlyUsage.usages}
           averageAmount={monthlyUsage.averageAmount}
+          currentYearMonth={formatYearMonth(currentDate)}
         />
       </motion.div>
 

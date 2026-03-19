@@ -7,56 +7,73 @@ interface UsageTrendProps {
     usedAmount: number;
   }>;
   averageAmount: number;
+  currentYearMonth?: string; // "202603" 형식
 }
 
-export default function UsageTrend({ usages, averageAmount }: UsageTrendProps) {
-  // usages가 배열이 아니면 빈 배열로 처리
+function parseYearMonth(ym: string): { year: number; month: number } {
+  if (ym.includes('-')) {
+    const [y, m] = ym.split('-');
+    return { year: parseInt(y, 10), month: parseInt(m, 10) };
+  }
+  return { year: parseInt(ym.slice(0, 4), 10), month: parseInt(ym.slice(4, 6), 10) };
+}
+
+function formatYM(year: number, month: number): string {
+  return `${year}${String(month).padStart(2, '0')}`;
+}
+
+export default function UsageTrend({ usages, averageAmount, currentYearMonth }: UsageTrendProps) {
   const safeUsages = Array.isArray(usages) ? usages : [];
+
+  // 현재 달 기준으로 최근 3개월 슬롯 생성
+  const now = currentYearMonth ? parseYearMonth(currentYearMonth) : { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
   
-  // 날짜순으로 정렬 (오래된 것부터)
-  const sortedUsages = [...safeUsages].sort((a, b) => {
-    return a.yearMonth.localeCompare(b.yearMonth);
+  const threeMonths: Array<{ yearMonth: string; year: number; month: number }> = [];
+  for (let i = 2; i >= 0; i--) {
+    let m = now.month - i;
+    let y = now.year;
+    if (m <= 0) { m += 12; y -= 1; }
+    threeMonths.push({ yearMonth: formatYM(y, m), year: y, month: m });
+  }
+
+  // API 응답을 맵으로 변환
+  const usageMap = new Map<string, number>();
+  safeUsages.forEach(u => {
+    // 키 정규화
+    const { year, month } = parseYearMonth(u.yearMonth);
+    usageMap.set(formatYM(year, month), u.usedAmount);
   });
-  
-  // 모든 사용량 중 최대값 찾기 (평균 포함)
-  const allAmounts = [...sortedUsages.map(u => u.usedAmount), averageAmount];
-  const maxAmount = Math.max(...allAmounts);
-  
-  // 그래프 범위를 최대값의 120%로 설정 (여유 공간 확보)
+
+  // 3개월 슬롯에 데이터 매핑
+  const filledUsages = threeMonths.map(slot => ({
+    month: slot.month,
+    usedAmount: usageMap.get(slot.yearMonth) ?? -1, // -1 = 데이터 없음
+  }));
+
+  // 유효한 사용량만으로 최대값 계산
+  const validAmounts = filledUsages.filter(u => u.usedAmount > 0).map(u => u.usedAmount);
+  const allAmounts = [...validAmounts, averageAmount].filter(v => v > 0);
+  const maxAmount = allAmounts.length > 0 ? Math.max(...allAmounts) : 1;
   const chartMaxAmount = maxAmount * 1.2;
 
-  const chartData = sortedUsages.map((usage, index) => {
-    // yearMonth 형식: "2026-03" 또는 "202603" 모두 처리
-    let month: number;
-    if (usage.yearMonth.includes('-')) {
-      // "2026-03" 형식
-      const parts = usage.yearMonth.split('-');
-      month = parseInt(parts[1], 10);
-    } else {
-      // "202603" 형식
-      month = parseInt(usage.yearMonth.slice(4, 6), 10);
-    }
-    
-    const gbValue = usage.usedAmount / (1024 * 1024 * 1024);
-    // 최대값 기준으로 퍼센트 계산
-    const percentage = chartMaxAmount > 0 ? (usage.usedAmount / chartMaxAmount) * 100 : 0;
+  const chartData = filledUsages.map((usage, index) => {
+    const hasData = usage.usedAmount > 0;
+    const percentage = hasData && chartMaxAmount > 0 ? (usage.usedAmount / chartMaxAmount) * 100 : 0;
 
     return {
-      label: `${month}월`,
+      label: `${usage.month}월`,
       value: percentage,
-      gb: parseFloat(gbValue.toFixed(2)),
-      isCurrent: index === sortedUsages.length - 1, // 마지막(최신)이 현재 달
+      gb: hasData ? usage.usedAmount : -1, // -1이면 데이터 없음
+      isCurrent: index === filledUsages.length - 1,
     };
   });
 
-  // 평균 추가 (맨 오른쪽)
-  const avgGb = averageAmount / (1024 * 1024 * 1024);
+  // 평균 추가
   const avgPercentage = chartMaxAmount > 0 ? (averageAmount / chartMaxAmount) * 100 : 0;
-  
   chartData.push({
     label: "평균",
     value: avgPercentage,
-    gb: parseFloat(avgGb.toFixed(2)),
+    gb: averageAmount,
     isCurrent: false,
   });
 

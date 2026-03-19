@@ -96,6 +96,8 @@ export default function Slider({
               const animY1 = isAnimated ? y1Percent : 100;
               const animY2 = isAnimated ? y2Percent : 100;
 
+              const isNoData = item.gb === -1 || nextItem.gb === -1;
+
               return (
                 <line
                   key={`line-${index}`}
@@ -103,13 +105,14 @@ export default function Slider({
                   y1={`${animY1}%`}
                   x2={`${x2Percent}%`}
                   y2={`${animY2}%`}
-                  stroke={color}
-                  strokeWidth="3"
+                  stroke={isNoData ? "#D1D5DB" : color}
+                  strokeWidth={isNoData ? 2 : 3}
                   strokeLinecap="round"
+                  strokeDasharray={isNoData ? "6 4" : "none"}
                   className="transition-all duration-1000 ease-out"
                   style={{
                     transitionDelay: `${index * 100}ms`,
-                    opacity: 0.9,
+                    opacity: isNoData ? 0.5 : 0.9,
                   }}
                 />
               );
@@ -120,6 +123,7 @@ export default function Slider({
               const xPercent = startPercent + (index / totalGaps) * range;
               const yPercent = 100 - item.value;
               const animY = isAnimated ? yPercent : 100;
+              const isNoData = item.gb === -1;
 
               return (
                 <circle
@@ -127,11 +131,13 @@ export default function Slider({
                   cx={`${xPercent}%`}
                   cy={`${animY}%`}
                   r={hoveredIndex === index ? 7 : 5}
-                  fill={color}
+                  fill={isNoData ? "white" : color}
+                  stroke={isNoData ? "#D1D5DB" : "none"}
+                  strokeWidth={isNoData ? 2 : 0}
                   className="transition-all duration-1000 ease-out"
                   style={{
                     transitionDelay: `${index * 100}ms`,
-                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
+                    filter: isNoData ? "none" : "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
                   }}
                 />
               );
@@ -167,7 +173,7 @@ export default function Slider({
                         transform: "translate(-50%, calc(-100% - 12px))",
                       }}
                     >
-                      {formatDataLabel(item.gb)}
+                      {item.gb === -1 ? "데이터 없음" : formatDataLabel(item.gb)}
                       <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]"></div>
                     </div>
                   )}
@@ -193,7 +199,7 @@ export default function Slider({
               }}
             >
               <span
-                className={`text-center whitespace-nowrap ${item.isCurrent ? "text-[#678BF7] font-semibold" : "text-[#666666]"}`}
+                className={`text-center whitespace-nowrap ${item.gb === -1 ? "text-[#BBBBBB]" : item.isCurrent ? "text-[#678BF7] font-semibold" : "text-[#666666]"}`}
                 style={{ fontSize: "0.875em" }}
               >
                 {item.label}
