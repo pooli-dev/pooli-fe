@@ -20,9 +20,13 @@ export default function CategoryManageModal({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
-  const [newId, setNewId] = useState('');
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
+
+  const getNextId = () => {
+    if (categories.length === 0) return 1;
+    return Math.max(...categories.map(c => c.policyCategoryId)) + 1;
+  };
 
   const handleEdit = (cat: PolicyCategory) => {
     setEditingId(cat.policyCategoryId);
@@ -49,14 +53,13 @@ export default function CategoryManageModal({
   };
 
   const handleAdd = async () => {
-    if (!newId.trim() || !newName.trim()) return;
+    if (!newName.trim()) return;
     setAdding(true);
     try {
       await onCreate({
-        policyCategoryId: Number(newId),
+        policyCategoryId: getNextId(),
         policyCategoryName: newName.trim(),
       });
-      setNewId('');
       setNewName('');
     } catch (err) {
       alert(getErrorMessage(err));
@@ -85,13 +88,6 @@ export default function CategoryManageModal({
           {/* 카테고리 추가 */}
           <div className="flex gap-2">
             <input
-              type="number"
-              value={newId}
-              onChange={e => setNewId(e.target.value)}
-              placeholder="ID"
-              className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-            <input
               type="text"
               value={newName}
               onChange={e => setNewName(e.target.value)}
@@ -101,7 +97,7 @@ export default function CategoryManageModal({
             />
             <button
               onClick={handleAdd}
-              disabled={adding || !newId.trim() || !newName.trim()}
+              disabled={adding || !newName.trim()}
               className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
             >
               추가

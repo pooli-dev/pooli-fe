@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useSettingStore } from "../../store/settingStore";
 import { authService, getErrorMessage } from "../../api";
 import ModeSettings from "./components/ModeSettings";
 import NotificationSettings from "./components/NotificationSettings";
@@ -12,7 +11,6 @@ import {
 
 export default function Setting() {
   const navigate = useNavigate();
-  const darkMode = useSettingStore((state) => state.darkMode);
 
   const handleLogout = async () => {
     try {
@@ -36,7 +34,7 @@ export default function Setting() {
       initial="initial"
       animate="animate"
       transition={pageTransition}
-      className="px-4 pb-[20px]"
+      className="px-4 pb-2"
     >
       <motion.div
         variants={itemVariants}
@@ -55,11 +53,11 @@ export default function Setting() {
       <motion.div
         variants={itemVariants}
         transition={{ ...pageTransition, delay: 0.3 }}
-        className="flex justify-center mb-3"
+        className="flex justify-center"
       >
         <button
           onClick={handleLogout}
-          className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors ${darkMode ? "invert" : ""}`}
+          className={`px-12 py-3 text-[#FF6B6B] font-medium rounded-2xl bg-white shadow-sm hover:bg-red-50 transition-colors`}
         >
           로그아웃
         </button>

@@ -268,7 +268,7 @@ export default function ImmediateBlockPolicy({ lineId, onPolicyChange, onApply }
       )}
 
       <p className="text-xs text-gray-400 mt-3">
-        {enabled ? `종료 시간: ${calcEndTimeDisplay(previewEndTime)}` : '차단이 비활성화되어 있습니다'}
+        {enabled ? `종료 시간: ${calcEndTimeDisplay(data?.blockEndAt || previewEndTime)}` : '차단이 비활성화되어 있습니다'}
       </p>
     </GlassCard>
   );

@@ -43,7 +43,7 @@ export default function InquiryManagement() {
     deleteAnswer,
     deleteQuestion,
     isSending,
-  } = useInquiries(statusFilter, page);
+  } = useInquiries(statusFilter, page, searchQuery);
 
   const handleFilterChange = (filter: StatusFilter) => {
     setStatusFilter(filter);
@@ -142,12 +142,8 @@ export default function InquiryManagement() {
     });
   };
 
-  const filteredInquiries = searchQuery
-    ? inquiries.filter((i) => i.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    : inquiries;
-
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <AdminHeader
         title="문의 사항 관리"
         description="유저의 문의사항을 확인하고 답변을 작성합니다."
@@ -176,9 +172,10 @@ export default function InquiryManagement() {
 
       {error && <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <InquiryList
-          inquiries={filteredInquiries}
+          inquiries={inquiries}
+          totalElements={totalElements}
           isLoading={isLoading}
           selectedId={selectedDetail?.questionId}
           onSelect={handleSelectInquiry}

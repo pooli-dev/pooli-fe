@@ -13,6 +13,8 @@ interface AppUsageChartProps {
   totalUsedAmount: number;
   isPublic: boolean;
   onPublicToggle: (value: boolean) => void;
+  disableToggle?: boolean;
+  showToggle?: boolean;
 }
 
 const appNameMap: Record<string, string> = {
@@ -20,6 +22,7 @@ const appNameMap: Record<string, string> = {
   Instagram: "인스타그램",
   KakaoTalk: "카카오톡",
   Naver: "네이버",
+  __OTHER__: "기타",
 };
 
 const defaultColors = [
@@ -40,6 +43,7 @@ const appColorMap: Record<string, string> = {
   Instagram: "#CAA6DB",
   KakaoTalk: "#FBC7C3",
   Naver: "#FFA780",
+  __OTHER__: "#E0E0E0",
 };
 
 const getAppColor = (appName: string, index: number) =>
@@ -50,6 +54,8 @@ export default function AppUsageChart({
   totalUsedAmount,
   isPublic,
   onPublicToggle,
+  disableToggle = false,
+  showToggle = true,
 }: AppUsageChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [animated, setAnimated] = useState(false);
@@ -57,6 +63,18 @@ export default function AppUsageChart({
 
   // apps가 null이거나 undefined일 경우 빈 배열로 처리
   const safeApps = apps || [];
+
+  // 10개 초과 시 상위 10개 + 나머지를 "기타"로 묶기
+  const MAX_DISPLAY = 7;
+  const displayApps: AppUsage[] = (() => {
+    if (safeApps.length <= MAX_DISPLAY) return safeApps;
+    const sorted = [...safeApps].sort((a, b) => b.usedAmount - a.usedAmount);
+    const top = sorted.slice(0, MAX_DISPLAY);
+    const otherTotal = sorted
+      .slice(MAX_DISPLAY)
+      .reduce((sum, a) => sum + a.usedAmount, 0);
+    return [...top, { appName: "__OTHER__", usedAmount: otherTotal }];
+  })();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -97,23 +115,26 @@ export default function AppUsageChart({
           >
             앱 서비스별 사용량
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-[#666666]" style={{ fontSize: "0.875em" }}>
-              가족 공개
-            </span>
-            <div className="scale-90">
-              <Toggle
-                checked={isPublic}
-                onChange={onPublicToggle}
-                aria-label="가족 공개"
-              />
+          {showToggle && (
+            <div className="flex items-center gap-2">
+              <span className="text-[#666666]" style={{ fontSize: "0.875em" }}>
+                가족 공개
+              </span>
+              <div className="scale-90">
+                <Toggle
+                  checked={isPublic}
+                  onChange={onPublicToggle}
+                  disabled={disableToggle}
+                  aria-label="가족 공개"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="relative">
-          {!isPublic && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+          {!isPublic ? (
+            <div className="flex flex-col items-center justify-center py-16">
               <svg
                 width="48"
                 height="48"
@@ -141,147 +162,141 @@ export default function AppUsageChart({
                 비공개 상태입니다
               </span>
             </div>
-          )}
-
-          <div className={!isPublic ? "filter blur-md" : ""}>
-            {/* 데이터가 없을 때 메시지 표시 */}
-            {safeApps.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="mb-4 opacity-30"
+          ) : safeApps.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="mb-4 opacity-30"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="#999999"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M12 8v4M12 16h.01"
+                  stroke="#999999"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-[#999999] text-center">
+                데이터를 사용한 앱이 없습니다
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center mb-8">
+                <div
+                  className="relative w-64 h-64"
+                  style={{
+                    filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1))",
+                  }}
                 >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="#999999"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M12 8v4M12 16h.01"
-                    stroke="#999999"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="text-[#999999] text-center">
-                  데이터를 사용한 앱이 없습니다
-                </span>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-center mb-8">
-                  <div
-                    className="relative w-64 h-64"
-                    style={{
-                      filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1))",
-                    }}
-                  >
-                    {hoveredIndex !== null && safeApps[hoveredIndex] && (
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#333333] text-white px-3 py-1.5 rounded text-sm font-medium z-30 whitespace-nowrap">
-                        {appNameMap[safeApps[hoveredIndex].appName] ||
-                          safeApps[hoveredIndex].appName}
-                        :{" "}
-                        {formatDataLabel(
-                          safeApps[hoveredIndex].usedAmount || 0,
-                        )}
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]"></div>
-                      </div>
-                    )}
-
-                    <svg
-                      className="w-full h-full -rotate-90"
-                      viewBox="0 0 256 256"
-                    >
-                      {totalUsedAmount > 0 &&
-                        safeApps.map((app, index) => {
-                          const percentage = app.usedAmount / totalUsedAmount;
-                          const dashArray = circumference * percentage;
-                          const dashOffset = -safeApps
-                            .slice(0, index)
-                            .reduce(
-                              (sum, a) =>
-                                sum +
-                                (a.usedAmount / totalUsedAmount) *
-                                  circumference,
-                              0,
-                            );
-                          const color = getAppColor(app.appName, index);
-
-                          return (
-                            <circle
-                              key={index}
-                              cx="128"
-                              cy="128"
-                              r={radius}
-                              fill="none"
-                              stroke={color}
-                              strokeWidth="32"
-                              strokeDasharray={`${dashArray} ${circumference}`}
-                              strokeDashoffset={
-                                animated ? dashOffset : -circumference
-                              }
-                              className="transition-all duration-1000 ease-out cursor-pointer hover:opacity-80"
-                              style={{
-                                transitionDelay: `${index * 200}ms`,
-                                pointerEvents: "stroke",
-                              }}
-                              onMouseEnter={() => setHoveredIndex(index)}
-                              onMouseLeave={() => setHoveredIndex(null)}
-                            />
-                          );
-                        })}
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span
-                        className="text-[#999999]"
-                        style={{ fontSize: "0.875em" }}
-                      >
-                        총합
-                      </span>
-                      <span className="text-[#333333] font-bold text-3xl">
-                        {formatDataLabel(totalUsedAmount || 0)}
-                      </span>
+                  {hoveredIndex !== null && displayApps[hoveredIndex] && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#333333] text-white px-3 py-1.5 rounded text-sm font-medium z-30 whitespace-nowrap">
+                      {appNameMap[displayApps[hoveredIndex].appName] ||
+                        displayApps[hoveredIndex].appName}
+                      :{" "}
+                      {formatDataLabel(
+                        displayApps[hoveredIndex].usedAmount || 0,
+                      )}
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]"></div>
                     </div>
+                  )}
+
+                  <svg
+                    className="w-full h-full -rotate-90"
+                    viewBox="0 0 256 256"
+                  >
+                    {totalUsedAmount > 0 &&
+                      displayApps.map((app, index) => {
+                        const percentage = app.usedAmount / totalUsedAmount;
+                        const dashArray = circumference * percentage;
+                        const dashOffset = -displayApps
+                          .slice(0, index)
+                          .reduce(
+                            (sum, a) =>
+                              sum +
+                              (a.usedAmount / totalUsedAmount) * circumference,
+                            0,
+                          );
+                        const color = getAppColor(app.appName, index);
+
+                        return (
+                          <circle
+                            key={index}
+                            cx="128"
+                            cy="128"
+                            r={radius}
+                            fill="none"
+                            stroke={color}
+                            strokeWidth="32"
+                            strokeDasharray={`${dashArray} ${circumference}`}
+                            strokeDashoffset={
+                              animated ? dashOffset : -circumference
+                            }
+                            className="transition-all duration-1000 ease-out cursor-pointer hover:opacity-80"
+                            style={{
+                              transitionDelay: `${index * 200}ms`,
+                              pointerEvents: "stroke",
+                            }}
+                            onMouseEnter={() => setHoveredIndex(index)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                          />
+                        );
+                      })}
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span
+                      className="text-[#999999]"
+                      style={{ fontSize: "0.875em" }}
+                    >
+                      총합
+                    </span>
+                    <span className="text-[#333333] font-bold text-3xl">
+                      {formatDataLabel(totalUsedAmount || 0)}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-3 px-6">
-                  {safeApps.map((app, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: getAppColor(app.appName, index),
-                          }}
-                        ></div>
-                        <span
-                          className="text-[#333333]"
-                          style={{ fontSize: "1em" }}
-                        >
-                          {appNameMap[app.appName] || app.appName}
-                        </span>
-                      </div>
+              <div className="space-y-3 px-6">
+                {displayApps.map((app, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: getAppColor(app.appName, index),
+                        }}
+                      ></div>
                       <span
-                        className="text-[#666666]"
+                        className="text-[#333333]"
                         style={{ fontSize: "1em" }}
                       >
-                        {formatDataLabel(app.usedAmount || 0)}
+                        {appNameMap[app.appName] || app.appName}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+                    <span
+                      className="text-[#666666]"
+                      style={{ fontSize: "1em" }}
+                    >
+                      {formatDataLabel(app.usedAmount || 0)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </GlassCard>
     </div>

@@ -83,7 +83,7 @@ export default function PolicyManagement() {
     
     setConfirmModal({
       open: true,
-      message: `"${policy.policyName}" 정책을 ${action}하시겠습니까?\n\n⚠️ 처리 시간이 오래 걸릴 수 있습니다 (최대 2분)`,
+      message: `"${policy.policyName}" 정책을 ${action}하시겠습니까?`,
       onConfirm: () => {
         setConfirmModal(prev => ({ ...prev, open: false }));
         
@@ -232,10 +232,12 @@ export default function PolicyManagement() {
                 <div key={policy.policyId} className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 text-sm truncate">
-                        {policy.policyName}
-                        {policy.isNew && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-600 text-xs rounded font-semibold">NEW</span>}
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="font-medium text-gray-900 text-sm truncate">
+                          {policy.policyName}
+                        </p>
+                        {policy.isNew && <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-xs rounded font-semibold flex-shrink-0">NEW</span>}
+                      </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getCategoryBadge(policy.policyCategoryId)}`}>{policy.policyCategoryName}</span>
                         <span className="text-xs text-gray-500">ID: {policy.policyId}</span>

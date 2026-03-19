@@ -36,18 +36,15 @@ interface AppUsage {
   apps: Array<{ appName: string; usedAmount: number }>;
 }
 
-/** yearMonth 포맷: "202506" */
 const formatYearMonth = (date: Date) =>
   `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
 
-/** 기본 앱 사용량 (데이터 없음 상태) */
 const emptyAppUsage = (isPublic: boolean): AppUsage => ({
   isPublic,
   totalUsedAmount: 0,
   apps: [],
 });
 
-/** DEV 환경에서 에러 로깅 */
 const logApiError = (label: string, error: unknown) => {
   if (!import.meta.env.DEV) return;
   const apiErr =
@@ -61,7 +58,6 @@ const logApiError = (label: string, error: unknown) => {
   console.error(`❌ ${label}:`, apiErr || getErrorMessage(error));
 };
 
-/** 앱 사용량 API 응답 파싱 */
 function parseAppUsageResponse(
   appRes: { headers?: Record<string, unknown>; data: unknown },
   fallbackIsPublic: boolean,
@@ -69,21 +65,31 @@ function parseAppUsageResponse(
   const contentType = String(appRes.headers?.["content-type"] || "");
   const isJson = contentType.includes("application/json");
 
-  // HTML 응답 = 백엔드에 해당 데이터 없음 (Vite SPA fallback)
   if (!isJson) {
     return { data: emptyAppUsage(fallbackIsPublic) };
   }
 
   const d = appRes.data as Record<string, unknown> | null;
-  if (d && typeof d === "object" && !Array.isArray(d) && "isPublic" in d) {
-    return {
-      data: {
-        isPublic: (d.isPublic as boolean) ?? true,
-        totalUsedAmount: (d.totalUsedAmount as number) ?? 0,
-        apps: (d.apps as AppUsage["apps"]) ?? [],
-      },
-      updatedIsPublic: (d.isPublic as boolean) ?? true,
-    };
+  if (d && typeof d === "object" && !Array.isArray(d)) {
+    if ("isPublic" in d) {
+      return {
+        data: {
+          isPublic: (d.isPublic as boolean) ?? true,
+          totalUsedAmount: (d.totalUsedAmount as number) ?? 0,
+          apps: (d.apps as AppUsage["apps"]) ?? [],
+        },
+        updatedIsPublic: (d.isPublic as boolean) ?? true,
+      };
+    }
+    if ("apps" in d) {
+      return {
+        data: {
+          isPublic: fallbackIsPublic,
+          totalUsedAmount: (d.totalUsedAmount as number) ?? 0,
+          apps: (d.apps as AppUsage["apps"]) ?? [],
+        },
+      };
+    }
   }
 
   return { data: emptyAppUsage(fallbackIsPublic) };
@@ -109,24 +115,28 @@ export default function Detail() {
   const [hasPrivacyPermission, setHasPrivacyPermission] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 권한 조회
+  // 본인 비공개 허용 권한 체크
   useEffect(() => {
+    if (!isOwnData) {
+      setHasPrivacyPermission(false);
+      return;
+    }
     const fetchPermissions = async () => {
       try {
         const { data } = await familyService.getMyPermissions();
-        setHasPrivacyPermission(
-          data.memberPermissions.some(
-            (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한",
-          ),
+        const hasPerm = data.memberPermissions.some(
+          (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한",
         );
+        setHasPrivacyPermission(hasPerm);
+        if (!hasPerm) setGlobalIsPublic(true);
       } catch {
         setHasPrivacyPermission(false);
+        setGlobalIsPublic(true);
       }
     };
     fetchPermissions();
-  }, []);
+  }, [isOwnData]);
 
-  /** 앱 사용량 fetch + 파싱 (공통) */
   const fetchAppUsage = async (
     targetLineId: number,
     yearMonth: string,
@@ -164,8 +174,16 @@ export default function Detail() {
         const parsed = parseAppUsageResponse(appRes, fallback);
 
         if (parsed) {
+          // 본인 + 권한 없으면 isPublic 강제 true
+          if (isOwnData && !hasPrivacyPermission) {
+            parsed.data.isPublic = true;
+          }
+          // 다른 사람 데이터: API의 isPublic 그대로 사용
+          // isPublic: false → 비공개 자물쇠 UI 표시
           setAppUsage(parsed.data);
-          if (parsed.updatedIsPublic != null) {
+          if (isOwnData && !hasPrivacyPermission) {
+            setGlobalIsPublic(true);
+          } else if (parsed.updatedIsPublic != null) {
             setGlobalIsPublic(parsed.updatedIsPublic);
           } else if (loading) {
             setGlobalIsPublic(true);
@@ -186,7 +204,6 @@ export default function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineId, currentDate]);
 
-  /** 월 이동 시 데이터 fetch */
   const fetchMonthData = async (newDate: Date) => {
     const yearMonth = formatYearMonth(newDate);
 
@@ -354,6 +371,8 @@ export default function Detail() {
           totalUsedAmount={appUsage.totalUsedAmount}
           isPublic={appUsage.isPublic}
           onPublicToggle={handleVisibilityToggle}
+          disableToggle={!hasPrivacyPermission}
+          showToggle={isOwnData}
         />
       </motion.div>
     </motion.div>

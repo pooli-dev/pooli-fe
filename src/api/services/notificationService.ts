@@ -4,7 +4,8 @@ export type NotificationTargetType = "DIRECT" | "ALL" | "OWNER" | "MEMBER";
 
 export interface SendNotificationRequest {
   targetType: NotificationTargetType;
-  lineId?: number[]; // DIRECT일 때만 필수
+  lineId?: number[];
+  alarmCode: string;
   value: Record<string, unknown>;
 }
 

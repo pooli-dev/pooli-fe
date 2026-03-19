@@ -80,9 +80,7 @@ export default function LoginPage() {
         setError(response.message || "로그인에 실패했습니다.");
       }
     } catch (err) {
-      const errorMsg = getErrorMessage(err);
-      console.error("로그인 실패:", errorMsg);
-      setError(errorMsg);
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

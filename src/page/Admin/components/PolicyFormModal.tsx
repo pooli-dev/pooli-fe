@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { AdminPolicy, PolicyCategory } from '@/api/services/adminPolicyService';
-import Toggle from '@/components/common/Toggle';
 import { getErrorMessage } from '@/api/client';
 
 interface PolicyFormModalProps {
@@ -22,7 +21,6 @@ export default function PolicyFormModal({
   const [categoryId, setCategoryId] = useState(
     policy?.policyCategoryId || (categories[0]?.policyCategoryId ?? 0)
   );
-  const [isActive, setIsActive] = useState(policy?.isActive ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,11 +38,11 @@ export default function PolicyFormModal({
     setError('');
 
     try {
-      // 추가 모드에서는 무조건 false
+      // 추가/수정 모두 무조건 false
       const submitData = {
         policyName: name.trim(),
         policyCategoryId: categoryId,
-        isActive: mode === 'create' ? false : isActive,
+        isActive: false,
       };
 
       await onSubmit(submitData);
@@ -110,9 +108,11 @@ export default function PolicyFormModal({
               </p>
             </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-gray-700">활성화</label>
-              <Toggle checked={isActive} onChange={() => setIsActive(!isActive)} />
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                ⚠️ 수정 후 정책이 <span className="font-semibold">비활성화 상태</span>로 전환됩니다.<br/>
+                수정 완료 후 목록에서 다시 활성화해 주세요.
+              </p>
             </div>
           )}
 

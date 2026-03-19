@@ -50,7 +50,7 @@ export default function UserManagement() {
 
   // 검색 화면
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <AdminHeader title="유저 검색 및 관리" description="전화번호로 유저 회선을 검색합니다." />
 
       {/* 검색 영역 */}
@@ -61,7 +61,7 @@ export default function UserManagement() {
           </svg>
           <h3 className="text-lg font-bold text-gray-900">회선 검색</h3>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-semibold text-gray-700 mb-2">전화번호 뒷자리</label>
             <input type="text" placeholder="예: 2222" value={searchPhone}

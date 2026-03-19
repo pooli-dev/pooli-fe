@@ -63,7 +63,7 @@ const AppCard = memo(({
       <div className="relative bg-white rounded-2xl p-4">
         <div
           className="flex items-start gap-3 cursor-pointer"
-          onClick={() => hasPolicy && app.isActive && onExpand()}
+          onClick={() => app.isActive && onExpand()}
         >
           <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
             <div className="w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white flex-shrink-0">
@@ -119,7 +119,7 @@ const AppCard = memo(({
           </div>
         </div>
 
-        {isExpanded && hasPolicy && app.isActive && (
+        {isExpanded && app.isActive && (
           <div className="mt-4 pt-4 border-t">
             <div className="mb-4">
               <div className="flex justify-between items-center text-sm mb-2">
@@ -275,38 +275,27 @@ export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: numbe
     });
   }, [apps, searchQuery, policyFilter, conditionFilters]);
 
-  const handleToggle = useCallback(async (appId: number, currentActive: boolean, appPolicyId: number) => {
+  const handleToggle = useCallback(async (appId: number, currentActive: boolean) => {
     const newActive = !currentActive;
     
-    if (newActive) {
-      setTimeout(() => {
-        setExpandedApps(prev => new Set(prev).add(appPolicyId));
-      }, 0);
-    } else {
-      setExpandedApps(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(appPolicyId);
-        return newSet;
-      });
-    }
-    
+    // 낙관적 UI 업데이트
     setApps(prev => prev.map(a => {
       if (a.appId === appId) {
-        if (newActive && !a.appPolicyId) {
-          const newAppPolicyId = Date.now();
-          return { 
-            ...a, 
-            isActive: true, 
-            appPolicyId: newAppPolicyId,
-            dailyLimitData: 0,
-            dailyLimitSpeed: 0,
-            isWhiteList: false
-          };
-        }
         return { ...a, isActive: newActive };
       }
       return a;
     }));
+
+    // 활성화 시 바로 펼치기, 비활성화 시 접기
+    if (newActive) {
+      setExpandedApps(prev => new Set(prev).add(appId));
+    } else {
+      setExpandedApps(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(appId);
+        return newSet;
+      });
+    }
 
     try {
       const response = await blockService.toggleAppPolicy(lineId, appId);
@@ -314,6 +303,15 @@ export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: numbe
         setApps(prev => prev.map(a => 
           a.appId === appId ? { ...a, ...response.data } : a
         ));
+        
+        // 활성화 시 0/0 값을 명시적으로 서버에 전송하여 정책 등록 확정
+        if (newActive && response.data.appPolicyId) {
+          const policyId = response.data.appPolicyId;
+          await Promise.all([
+            blockService.updateAppLimit(policyId, 0),
+            blockService.updateAppSpeed(policyId, 0),
+          ]);
+        }
       }
       onPolicyChange?.();
     } catch (err) {
@@ -321,10 +319,11 @@ export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: numbe
       setApps(prev => prev.map(a => 
         a.appId === appId ? { ...a, isActive: currentActive } : a
       ));
+      // 실패 시 펼침 상태도 원복
       if (newActive) {
         setExpandedApps(prev => {
           const newSet = new Set(prev);
-          newSet.delete(appPolicyId);
+          newSet.delete(appId);
           return newSet;
         });
       }
@@ -446,16 +445,15 @@ export default function AppPolicyTab({ lineId, onPolicyChange }: { lineId: numbe
             </div>
           ) : (
             filteredApps.map((app) => {
-              const appPolicyId = app.appPolicyId || app.appId;
-              const isExpanded = expandedApps.has(appPolicyId);
+              const isExpanded = expandedApps.has(app.appId);
 
               return (
                 <AppCard
-                  key={appPolicyId}
+                  key={`app-${app.appId}`}
                   app={app}
                   isExpanded={isExpanded}
-                  onToggle={() => handleToggle(app.appId, app.isActive || false, appPolicyId)}
-                  onExpand={() => toggleExpand(appPolicyId)}
+                  onToggle={() => handleToggle(app.appId, app.isActive || false)}
+                  onExpand={() => toggleExpand(app.appId)}
                   onWhitelistToggle={() => handleWhitelistToggle(app.appPolicyId!)}
                   onSpeedUpdate={(mbps) => handleSpeedUpdate(app.appPolicyId!, mbps)}
                   onDataUpdate={(mb) => handleDataUpdate(app.appPolicyId!, mb)}

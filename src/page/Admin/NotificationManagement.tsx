@@ -4,6 +4,7 @@ import ConfirmModal from '@/components/common/ConfirmModal';
 import { notificationService } from '@/api';
 import type { SendNotificationRequest, NotificationTargetType } from '@/api/services/notificationService';
 import { getErrorMessage } from '@/api/client';
+import { ALARM_MESSAGE_MAP, TYPE_TO_ALARM_CODE } from '@/constants/alarmMessages';
 
 const TARGET_OPTIONS: { 
   key: NotificationTargetType; 
@@ -57,6 +58,7 @@ const COLOR_MAP: Record<string, { border: string; bg: string; text: string }> = 
 export default function NotificationManagement() {
   const [targetType, setTargetType] = useState<NotificationTargetType>('ALL');
   const [lineIdInput, setLineIdInput] = useState('');
+  const [notificationType, setNotificationType] = useState('__CUSTOM__');
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -75,6 +77,8 @@ export default function NotificationManagement() {
       .filter(n => !isNaN(n) && n > 0);
   };
 
+  const isCustomType = notificationType === '__CUSTOM__';
+
   const validateInput = (): string | null => {
     const lineIds = parseLineIds();
     
@@ -85,6 +89,14 @@ export default function NotificationManagement() {
     if (!requiresLineId && lineIds.length > 0) {
       return `${selectedOption?.label} 타입은 Line ID를 입력하지 않아야 합니다.`;
     }
+
+    if (!notificationType) {
+      return '알림 타입을 선택해주세요.';
+    }
+
+    if (isCustomType && !messageInput.trim()) {
+      return '기타 타입은 메시지를 입력해야 합니다.';
+    }
     
     return null;
   };
@@ -92,7 +104,10 @@ export default function NotificationManagement() {
   const buildPayload = (lineIds: number[]): SendNotificationRequest => {
     const payload: SendNotificationRequest = {
       targetType,
-      value: { message: messageInput || '알림 메시지' },
+      alarmCode: isCustomType ? 'OTHERS' : (TYPE_TO_ALARM_CODE[notificationType] || 'OTHERS'),
+      value: isCustomType
+        ? { type: 'NOTIFICATION', message: messageInput }
+        : { type: notificationType },
     };
     
     if (requiresLineId) {
@@ -114,7 +129,7 @@ export default function NotificationManagement() {
     const targetDesc = requiresLineId ? `${lineIds.length}개 회선` : selectedOption?.label;
     
     const warningMessage = isLargeScale 
-      ? `${targetDesc}에 알림을 전송하시겠습니까?<br/><br/><span style="color: #F59E0B; font-size: 0.875rem;">⚠️ 대량 전송은 시간이 소요될 수 있습니다.<br/>전송 요청 후 백그라운드에서 처리됩니다.</span>`
+      ? `${targetDesc}에 알림을 전송하시겠습니까?<br/><br/><span style="color: #F59E0B; font-size: 0.875rem;">⚠️ 대량 전송은 시간이 소요됩니다.</span>`
       : `${targetDesc}에 알림을 전송하시겠습니까?`;
 
     setConfirmModal({
@@ -127,6 +142,7 @@ export default function NotificationManagement() {
         
         try {
           const payload = buildPayload(lineIds);
+          console.log('[알림 전송] payload:', JSON.stringify(payload, null, 2));
           
           await notificationService.send(payload);
           
@@ -136,6 +152,7 @@ export default function NotificationManagement() {
           
           setResult({ type: 'success', message: successMessage });
           setLineIdInput('');
+          setNotificationType('__CUSTOM__');
           setMessageInput('');
         } catch (err) {
           setResult({ type: 'error', message: getErrorMessage(err) });
@@ -147,10 +164,10 @@ export default function NotificationManagement() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <AdminHeader title="알림 전송" description="유저에게 알림을 전송합니다." />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
         <div className="space-y-6">
           {/* 수신자 유형 선택 */}
           <div>
@@ -187,7 +204,7 @@ export default function NotificationManagement() {
           {/* Line ID 입력 (DIRECT일 때만) */}
           {requiresLineId && (
             <div>
-              <label className="block text-sm font-bold mb-2">Line ID 목록 (필수)</label>
+              <label className="block text-sm font-bold mb-2">Line ID 목록 <span className="text-red-500">*</span></label>
               <textarea
                 value={lineIdInput}
                 onChange={e => setLineIdInput(e.target.value)}
@@ -202,17 +219,42 @@ export default function NotificationManagement() {
             </div>
           )}
 
-          {/* 알림 메시지 */}
+          {/* 알림 타입 선택 */}
           <div>
-            <label className="block text-sm font-bold mb-2">알림 메시지 (선택)</label>
-            <textarea
-              value={messageInput}
-              onChange={e => setMessageInput(e.target.value)}
-              placeholder="알림 내용을 입력하세요 (비워두면 기본 메시지 전송)"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium resize-none text-sm"
-              rows={3}
-            />
+            <label className="block text-sm font-bold mb-2">알림 타입 <span className="text-red-500">*</span></label>
+            <select
+              value={notificationType}
+              onChange={e => {
+                setNotificationType(e.target.value);
+                if (e.target.value !== '__CUSTOM__') setMessageInput('');
+              }}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm bg-white"
+            >
+              <option value="__CUSTOM__">직접 입력</option>
+              {Object.entries(ALARM_MESSAGE_MAP).map(([code, msg]) => (
+                <option key={code} value={code}>{msg}</option>
+              ))}
+            </select>
+            {notificationType && notificationType !== '__CUSTOM__' && (
+              <p className="text-xs text-blue-600 mt-1">
+                유저에게 표시: "{ALARM_MESSAGE_MAP[notificationType]}"
+              </p>
+            )}
           </div>
+
+          {/* 기타 메시지 입력 (직접 입력 선택 시에만) */}
+          {isCustomType && (
+            <div>
+              <label className="block text-sm font-bold mb-2">알림 메시지 <span className="text-red-500">*</span></label>
+              <textarea
+                value={messageInput}
+                onChange={e => setMessageInput(e.target.value)}
+                placeholder="유저에게 표시될 알림 내용을 입력하세요"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium resize-none text-sm"
+                rows={3}
+              />
+            </div>
+          )}
 
           {/* 결과 메시지 */}
           {result && (
