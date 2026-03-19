@@ -32,7 +32,7 @@ export default function Main() {
     useQuery<FamilyApiResponse>({
       queryKey: ["familyMembers"],
       queryFn: () => familyService.getMembers().then((res) => res.data),
-      refetchInterval: 51000000,
+      refetchInterval: 10000,
       refetchIntervalInBackground: true,
       placeholderData: keepPreviousData, // ← v5 방식
     });
