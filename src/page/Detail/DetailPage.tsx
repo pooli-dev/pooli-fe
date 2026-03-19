@@ -189,6 +189,28 @@ export default function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineId, currentDate]);
 
+  // 데이터 사용량 polling (현재 달일 때만 30초 간격)
+  useEffect(() => {
+    const isCurrentMonth =
+      currentDate.getFullYear() === today.getFullYear() &&
+      currentDate.getMonth() === today.getMonth();
+
+    if (!lineId || !isCurrentMonth) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const yearMonth = formatYearMonth(currentDate);
+        const dataRes = await userService.getDataUsage(lineId, yearMonth);
+        setDataUsage(dataRes.data);
+      } catch {
+        // polling 실패는 무시
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lineId, currentDate]);
+
   const fetchMonthData = async (newDate: Date) => {
     const yearMonth = formatYearMonth(newDate);
 
