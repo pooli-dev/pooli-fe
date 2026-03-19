@@ -1,4 +1,4 @@
-import { formatData } from "@/utils/dataFormat";
+import { formatDataLabel } from "@/utils/dataFormat";
 
 function getRemainingPercent(remaining: number, total: number): number {
   // -1은 무제한을 의미하므로 100% 표시
@@ -22,8 +22,8 @@ export default function DataBar({
   const isUnlimited = total === -1 || remaining === -1;
   const displayRemaining = isUnlimited
     ? "무제한"
-    : `${formatData(remaining)}GB`;
-  const displayTotal = total === -1 ? "무제한" : `${formatData(total)}GB`;
+    : `${formatDataLabel(remaining)}`;
+  const displayTotal = total === -1 ? "무제한" : `${formatDataLabel(total)}`;
 
   return (
     <div className="w-full">

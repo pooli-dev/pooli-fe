@@ -4,7 +4,7 @@ import GlassCard from "@/components/common/GlassCard";
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { limitService } from "@/api";
-import { formatData } from "@/utils/dataFormat";
+import { formatData, formatDataLabel } from "@/utils/dataFormat";
 import { useToastStore } from "@/store/toastStore";
 
 type SliderCardProps = {
@@ -153,7 +153,7 @@ export default function SliderCard({
 
         <div className="flex justify-between mt-1">
           <span className="text-xs text-gray-300">0GB</span>
-          <span className="text-xs text-gray-300">{maxGb}GB</span>
+          <span className="text-xs text-gray-300">{formatDataLabel(max)}</span>
         </div>
       </div>
     </GlassCard>

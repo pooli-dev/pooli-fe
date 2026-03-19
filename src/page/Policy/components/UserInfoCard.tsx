@@ -147,12 +147,12 @@ export default function UserInfo({ userData, userId }: Props) {
         {/* ── 데이터 잔여량 ── */}
         <div className="flex gap-3 mb-4">
           <DataRemainingCard
-            label="가족 공유 데이터 잔여량"
+            label={"가족 공유 데이터\n잔여량"}
             amount={userData.sharedDataRemaining}
             icon="share"
           />
           <DataRemainingCard
-            label="개인 데이터 잔여량"
+            label={"개인 데이터\n잔여량"}
             amount={userData.personalDataRemaining}
             icon="person"
           />
@@ -164,6 +164,7 @@ export default function UserInfo({ userData, userId }: Props) {
           <GradientButton
             width={12}
             height={8}
+            fontSize={0.8}
             onClick={() => navigate("/shared-data")}
           >
             <img src={PlusIcon} className="w-4 h-4" />
@@ -178,6 +179,7 @@ export default function UserInfo({ userData, userId }: Props) {
             gradientFrom="#FFFFFF"
             gradientTo="#FFA780"
             textColor="#FF5C14"
+            fontSize={0.8}
             onClick={() => navigate("/log")}
           >
             <img src={ClockIcon} className="w-4 h-4" />

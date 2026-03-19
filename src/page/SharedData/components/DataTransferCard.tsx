@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatDataLabel } from "@/utils/dataFormat";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import GradientButton from "@/components/common/GradientButton";
 import SendIcon from "@/assets/icon/send.svg";
@@ -30,33 +31,37 @@ export default function DataTransferCard({
   onTransfer,
 }: DataTransferCardProps) {
   const isUnlimited = personalDataRemaining < 0;
-  
-  const limitData = useMemo(
-    () => {
-      if (isUnlimited) {
-        return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedData));
-      }
-      
-      if (personalDataRemaining >= MAX_MONTHLY_TRANSFER) {
-        return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedData));
-      }
-      
-      return Math.max(0, Math.floor(personalDataRemaining - 1));
-    },
-    [personalDataRemaining, contributedData, isUnlimited]
-  );
+
+  const limitData = useMemo(() => {
+    const contributedGB = contributedData / GB_TO_BYTES;
+    if (isUnlimited) {
+      return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedGB));
+    }
+    if (personalDataRemaining >= MAX_MONTHLY_TRANSFER * GB_TO_BYTES) {
+      return Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedGB));
+    }
+    const personalGB = personalDataRemaining / GB_TO_BYTES;
+    return Math.min(
+      Math.max(0, Math.floor(MAX_MONTHLY_TRANSFER - contributedGB)),
+      Math.floor(personalGB),
+    );
+  }, [personalDataRemaining, contributedData, isUnlimited]);
 
   const [sharedAmount, setSharedAmount] = useState(MIN_TRANSFER_AMOUNT);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const formattedPersonalGB = isUnlimited ? "무제한" : personalDataRemaining.toFixed(2);
-  const formattedContributedGB = contributedData.toFixed(2);
+  const formattedPersonalGB = isUnlimited
+    ? "무제한"
+    : formatDataLabel(personalDataRemaining);
+  const formattedContributedGB = formatDataLabel(contributedData);
 
   const clampAmount = (value: number) =>
     Math.min(Math.max(value, MIN_TRANSFER_AMOUNT), limitData);
 
-  const handleIncrement = () => setSharedAmount((prev) => clampAmount(prev + 1));
-  const handleDecrement = () => setSharedAmount((prev) => clampAmount(prev - 1));
+  const handleIncrement = () =>
+    setSharedAmount((prev) => clampAmount(prev + 1));
+  const handleDecrement = () =>
+    setSharedAmount((prev) => clampAmount(prev - 1));
 
   const handleInputChange = (value: string) => {
     const numValue = parseInt(value) || MIN_TRANSFER_AMOUNT;
@@ -119,10 +124,7 @@ function DataCard({
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
       <PersonalDataHeader personalGB={personalGB} />
-      <DataStats
-        contributedGB={contributedGB}
-        limitData={limitData}
-      />
+      <DataStats contributedGB={contributedGB} limitData={limitData} />
       <DataInputControl
         sharedAmount={sharedAmount}
         limitData={limitData}
@@ -135,8 +137,6 @@ function DataCard({
 }
 
 function PersonalDataHeader({ personalGB }: { personalGB: string }) {
-  const isUnlimitedDisplay = personalGB === "무제한";
-  
   return (
     <div className="flex items-center gap-2 mb-6">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -150,7 +150,7 @@ function PersonalDataHeader({ personalGB }: { personalGB: string }) {
         <circle cx="12" cy="7" r="4" stroke={COLORS.primary} strokeWidth="2" />
       </svg>
       <span className="font-normal text-gray-800">
-        개인 데이터 잔여량: <span className="font-medium">{personalGB}{!isUnlimitedDisplay && "GB"}</span>
+        개인 데이터 잔여량: <span className="font-medium">{personalGB}</span>
       </span>
     </div>
   );
@@ -163,12 +163,22 @@ interface DataStatsProps {
 
 function DataStats({ contributedGB, limitData }: DataStatsProps) {
   const limitDisplay = limitData.toString();
-  
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-start mb-3">
-        <DataStatItem label="공유한 데이터" value={contributedGB} color={COLORS.primary} showUnit={true} />
-        <DataStatItem label="한도 데이터" value={limitDisplay} color={COLORS.textGray} showUnit={true} />
+        <DataStatItem
+          label="공유한 데이터"
+          value={contributedGB}
+          color={COLORS.primary}
+          showUnit={true}
+        />
+        <DataStatItem
+          label="한도 데이터"
+          value={limitDisplay}
+          color={COLORS.textGray}
+          showUnit={true}
+        />
       </div>
     </div>
   );
@@ -181,14 +191,14 @@ interface DataStatItemProps {
   showUnit?: boolean;
 }
 
-function DataStatItem({ label, value, color, showUnit = true }: DataStatItemProps) {
+function DataStatItem({ label, value, color }: DataStatItemProps) {
   return (
     <div className="flex-1 text-center">
       <div className="text-sm mb-1" style={{ color: COLORS.textLight }}>
         {label}
       </div>
       <div className="text-2xl font-medium" style={{ color }}>
-        {value} {showUnit && "GB"}
+        {value}
       </div>
     </div>
   );
@@ -222,7 +232,13 @@ function DataInputControl({
   );
 }
 
-function ControlButton({ onClick, label }: { onClick: () => void; label: string }) {
+function ControlButton({
+  onClick,
+  label,
+}: {
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       onClick={onClick}

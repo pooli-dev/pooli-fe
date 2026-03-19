@@ -37,7 +37,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     // 1. 전체 화면을 고정하고 스크롤을 막기
     <div
-      className={`flex justify-center h-[100dvh] overflow-hidden bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
+      className={`flex justify-center h-[100dvh] min-h-[600px] overflow-hidden bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
     >
       <div
         className={`relative w-[480px] max-w-full min-w-[330px] h-full flex flex-col bg-no-repeat bg-top transition-all duration-300 ${darkMode ? "invert" : ""} ${largeTextMode ? "large-text-content" : ""}`}

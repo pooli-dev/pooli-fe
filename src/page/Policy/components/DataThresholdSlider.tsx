@@ -3,7 +3,7 @@ import GlassCard from "../../../components/common/GlassCard";
 import Toggle from "@/components/common/Toggle";
 import RangeSlider from "@/components/common/RangeSlider";
 import type { LineThreshold, SharedPoolThreshold } from "@/types/threshold";
-import { formatData } from "@/utils/dataFormat";
+import { formatData, formatDataLabel } from "@/utils/dataFormat";
 import { thresholdService } from "@/api";
 import { useToastStore } from "@/store/toastStore";
 
@@ -64,13 +64,13 @@ export default function DataThresholdSlider({
   const familyGB = toGB(familyBytes);
   const individualGB = toGB(individualBytes);
 
-  const familyMin = toGB(sharedPoolThreshold?.minThreshold ?? 0);
+  const familyMin = 0;
   const familyMax =
     sharedPoolThreshold?.maxThreshold === -1
       ? null
       : toGB(sharedPoolThreshold?.maxThreshold ?? 0);
 
-  const individualMin = toGB(lineThreshold?.thresholdMinValue ?? 0);
+  const individualMin = 0;
   const individualMax =
     lineThreshold?.thresholdMaxValue === -1
       ? null
@@ -195,7 +195,9 @@ export default function DataThresholdSlider({
           <div className="flex justify-between mt-1">
             <span className="text-xs text-gray-300">{familyMin}GB</span>
             <span className="text-xs text-gray-300">
-              {familyMax === null ? "무제한" : `${familyMax}GB`}
+              {familyMax === null
+                ? "무제한"
+                : formatDataLabel(toBytes(familyMax))}
             </span>
           </div>
         </div>
@@ -250,7 +252,9 @@ export default function DataThresholdSlider({
           <div className="flex justify-between mt-1">
             <span className="text-xs text-gray-300">{individualMin}GB</span>
             <span className="text-xs text-gray-300">
-              {individualMax === null ? "무제한" : `${individualMax}GB`}
+              {individualMax === null
+                ? "무제한"
+                : formatDataLabel(toBytes(individualMax))}
             </span>
           </div>
         </div>

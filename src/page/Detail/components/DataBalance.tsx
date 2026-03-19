@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import GlassCard from "@/components/common/GlassCard";
+import { formatDataLabel } from "@/utils/dataFormat";
 
 interface DataBalanceProps {
   personalUsed: number;
@@ -26,7 +27,7 @@ export default function DataBalance({
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     const currentRef = ref.current;
@@ -46,30 +47,36 @@ export default function DataBalance({
 
   // null 처리: null이면 50GB 기준으로 표시 (이전 달)
   const REFERENCE_GB = 50 * 1024 * 1024 * 1024; // 50GB in bytes
-  
+
   const safePersonalTotal = personalTotal ?? REFERENCE_GB;
   const safeSharedTotal = sharedTotal ?? REFERENCE_GB;
 
   // 무제한일 때는 사용량만 표시, 아닐 때는 잔여량 계산
   const personalRemaining = safePersonalTotal - personalUsed;
   const sharedRemaining = safeSharedTotal - sharedUsed;
-  
+
   // 퍼센트 계산: null이면 50GB 기준, 무제한이면 100%, 아니면 사용량/총량
-  const personalPercentage = personalTotal === null 
-    ? Math.min((personalUsed / REFERENCE_GB) * 100, 100)
-    : isUnlimitedPersonal 
-      ? 100 
-      : (safePersonalTotal > 0 ? (personalUsed / safePersonalTotal) * 100 : 0);
-      
-  const sharedPercentage = sharedTotal === null
-    ? Math.min((sharedUsed / REFERENCE_GB) * 100, 100)
-    : isUnlimitedShared 
-      ? 100 
-      : (safeSharedTotal > 0 ? (sharedUsed / safeSharedTotal) * 100 : 0);
+  const personalPercentage =
+    personalTotal === null
+      ? Math.min((personalUsed / REFERENCE_GB) * 100, 100)
+      : isUnlimitedPersonal
+        ? 100
+        : safePersonalTotal > 0
+          ? (personalUsed / safePersonalTotal) * 100
+          : 0;
+
+  const sharedPercentage =
+    sharedTotal === null
+      ? Math.min((sharedUsed / REFERENCE_GB) * 100, 100)
+      : isUnlimitedShared
+        ? 100
+        : safeSharedTotal > 0
+          ? (sharedUsed / safeSharedTotal) * 100
+          : 0;
 
   const formatGB = (bytes: number | null) => {
     if (bytes === null || bytes < 0) return "무제한";
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
+    return formatDataLabel(bytes);
   };
 
   return (
@@ -94,8 +101,8 @@ export default function DataBalance({
               {isUnlimitedPersonal
                 ? `${formatGB(personalUsed)} 사용 / 무제한`
                 : personalTotal === null
-                ? `${formatGB(personalUsed)} 사용`
-                : `${formatGB(personalRemaining)} / ${formatGB(personalTotal)}`}
+                  ? `${formatGB(personalUsed)} 사용`
+                  : `${formatGB(personalRemaining)} / ${formatGB(personalTotal)}`}
             </span>
           </div>
           <div
@@ -105,7 +112,9 @@ export default function DataBalance({
             <div
               className="h-full rounded-full transition-all duration-1000 ease-out"
               style={{
-                width: animated ? `${Math.min(personalPercentage, 100)}%` : "0%",
+                width: animated
+                  ? `${Math.min(personalPercentage, 100)}%`
+                  : "0%",
                 background:
                   "linear-gradient(to right, rgba(33, 155, 228, 0.4) 0%, rgba(33, 155, 228, 0.6) 50%, rgba(33, 155, 228, 1) 100%)",
                 boxShadow: "0 2px 4px rgba(33, 155, 228, 0.3)",
@@ -123,8 +132,8 @@ export default function DataBalance({
               {isUnlimitedShared
                 ? `${formatGB(sharedUsed)} 사용 / 무제한`
                 : sharedTotal === null
-                ? `${formatGB(sharedUsed)} 사용`
-                : `${formatGB(sharedRemaining)} / ${formatGB(sharedTotal)}`}
+                  ? `${formatGB(sharedUsed)} 사용`
+                  : `${formatGB(sharedRemaining)} / ${formatGB(sharedTotal)}`}
             </span>
           </div>
           <div

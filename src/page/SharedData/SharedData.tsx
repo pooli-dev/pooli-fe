@@ -27,6 +27,10 @@ export default function SharedData() {
   const [loading, setLoading] = useState(true);
   const { show: showToast } = useToastStore();
 
+  useEffect(() => {
+    console.log("myData:", myData);
+  }, [myData]);
+
   const fetchSharedPoolData = useCallback(async () => {
     try {
       const [mainResponse, myResponse] = await Promise.all([

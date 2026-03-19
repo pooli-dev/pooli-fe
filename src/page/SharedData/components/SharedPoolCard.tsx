@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { formatDataLabel } from "@/utils/dataFormat";
 import { useNavigate } from "react-router-dom";
 import GradientButton from "@/components/common/GradientButton";
 import ClockIcon from "@/assets/icon/clock2.svg";
@@ -34,11 +35,11 @@ export default function SharedPoolCard({
 
   const formattedData = useMemo(
     () => ({
-      total: totalData.toFixed(2),
-      base: baseData.toFixed(2),
-      contribution: contributionData.toFixed(2),
-      usage: usageAmount.toFixed(2),
-      remaining: remainingData.toFixed(2),
+      total: formatDataLabel(totalData),
+      base: formatDataLabel(baseData),
+      contribution: formatDataLabel(contributionData),
+      usage: formatDataLabel(usageAmount),
+      remaining: formatDataLabel(remainingData),
     }),
     [totalData, baseData, contributionData, usageAmount, remainingData],
   );
@@ -106,7 +107,7 @@ function DataSummary({
           className="text-2xl sm:text-[30px] font-semibold"
           style={{ color: COLORS.primary }}
         >
-          {totalGB} GB
+          {totalGB}
         </div>
         <GradientButton
           onClick={onViewLog}
@@ -133,7 +134,7 @@ function DataItem({ label, value }: { label: string; value: string }) {
     <div>
       <span style={{ color: COLORS.textLight }}>{label}</span>
       <div className="font-medium text-base" style={{ color: COLORS.textDark }}>
-        {value} GB
+        {value}
       </div>
     </div>
   );
@@ -178,7 +179,7 @@ function UsageProgress({
           />
         </div>
         <span className="whitespace-nowrap">
-          사용 {usageGB}GB / 잔여 {remainingGB}GB
+          사용 {usageGB} / 잔여 {remainingGB}
         </span>
       </div>
     </div>
