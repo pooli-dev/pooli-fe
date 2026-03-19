@@ -33,15 +33,7 @@ export const sharedPoolService = {
     const response = await apiClient.get<SharedPoolMainData>(
       "/shared-pools/main/remaining-amount",
     );
-    const data = response.data;
-
-    // Bytes를 GB로 변환
-    return {
-      sharedPoolBaseData: bytesToGb(data.sharedPoolBaseData),
-      sharedPoolAdditionalData: bytesToGb(data.sharedPoolAdditionalData),
-      sharedPoolRemainingData: bytesToGb(data.sharedPoolRemainingData),
-      sharedPoolTotalData: bytesToGb(data.sharedPoolTotalData),
-    };
+    return response.data; // 변환 없이 바이트 그대로
   },
 
   // [어드민] 공유풀 조회 (파라미터 없음)
@@ -92,7 +84,7 @@ export const sharedPoolService = {
   getMainRemainingAmountByLine: async (lineId: number) => {
     const response = await apiClient.get<SharedPoolMainData>(
       "/shared-pools/main/remaining-amount",
-      { params: { lineId } }
+      { params: { lineId } },
     );
     const data = response.data;
 
@@ -108,12 +100,7 @@ export const sharedPoolService = {
   // 내 공유 데이터 조회
   getMySharedPool: async () => {
     const response = await apiClient.get<MySharedPoolData>("/shared-pools/my");
-    const data = response.data;
-
-    return {
-      remainingData: bytesToGb(data.remainingData),
-      contributionAmount: bytesToGb(data.contributionAmount),
-    };
+    return response.data;
   },
 
   // 공유 데이터 담기

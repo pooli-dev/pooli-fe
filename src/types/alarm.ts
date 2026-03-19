@@ -10,11 +10,16 @@ export type AlarmCode =
 
 export type AlarmCategory = "all" | "data" | "policy" | "permission" | "etc";
 
+export type NotificationValue = {
+  type: string;
+  message?: string; // OTHERS 등에서 직접 내려오는 경우
+};
+
 export type Notification = {
   alarmHistoryId: number;
   lineId: number;
   alarmCode: AlarmCode;
-  value: { type: string };
+  value: NotificationValue;
   isRead: boolean;
   createdAt: string;
 };

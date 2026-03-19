@@ -234,7 +234,7 @@ export default function Policy() {
             />
             <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[201] bg-white rounded-2xl p-6 max-w-sm mx-auto">
               <h3 className="text-base font-bold text-gray-800 mb-4">
-                권한 양도
+                대표자 권한 양도
               </h3>
 
               {/* 구성원 선택 */}
@@ -261,7 +261,9 @@ export default function Policy() {
                       />{" "}
                       <span className="text-sm font-medium text-gray-800">
                         {member.userName}
-                        {lineIndexMap.size > 0 && (
+                        {familyMembers.filter(
+                          (m) => m.userName === member.userName,
+                        ).length > 1 && (
                           <span className="text-xs font-normal text-gray-400 ml-1">
                             ({member.phone.slice(-4)})
                           </span>

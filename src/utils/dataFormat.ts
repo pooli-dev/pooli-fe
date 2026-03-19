@@ -17,6 +17,13 @@ export const formatData = (bytes: number): number => {
   return Math.round((bytes / 1e9) * 10) / 10;
 };
 
+export const formatDataLabel = (bytes: number): string => {
+  const gb = Math.round((bytes / 1e9) * 100) / 100;
+  if (gb >= 1) return `${gb}GB`;
+  const mb = Math.round(bytes / 1e6);
+  return `${mb}MB`;
+};
+
 export const DAY_MAP: Record<string, DayKey> = {
   MON: "월",
   TUE: "화",

@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import GlassCard from "../../components/common/GlassCard";
 import { sharedPoolService } from "@/api";
 import type { HistoryEntry } from "@/types/SharedData";
-import { formatData } from "@/utils/dataFormat";
+import { formatData, formatDataLabel } from "@/utils/dataFormat";
 import Avatar from "@/components/common/Avatar";
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -85,6 +85,7 @@ export default function LogPage() {
 
   const remaining = poolData?.sharedPoolRemainingData ?? 0;
   const total = poolData?.sharedPoolTotalData ?? 0;
+  const additional = poolData?.sharedPoolAdditionalData ?? 0;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -158,9 +159,9 @@ export default function LogPage() {
             <div>
               <p className="text-xs text-gray-400 mb-1">현재 공유 데이터</p>
               <p className="text-3xl font-bold text-gray-800">
-                {remaining}GB
+                {formatDataLabel(remaining)}
                 <span className="text-base font-normal text-gray-400 ml-1">
-                  / {total}GB
+                  / {formatDataLabel(total)}GB
                 </span>
               </p>
             </div>
@@ -215,7 +216,7 @@ export default function LogPage() {
               className="text-sm font-semibold"
               style={{ color: "#678BF7" }}
             >
-              {poolData?.sharedPoolAdditionalData ?? 0}GB
+              {formatDataLabel(additional)}
             </span>
           </div>
         </GlassCard>

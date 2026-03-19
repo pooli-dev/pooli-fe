@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Chip from "./Chip";
 import type { SharedData } from "@/types/SharedData";
+import { formatDataLabel } from "@/utils/dataFormat";
 
 type Props = {
   size?: number; // px, 그래프의 사이즈
@@ -181,7 +182,7 @@ export default function PieChart({
           {Math.round(clamped)}%
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          {remaining}GB / {total}GB
+          {formatDataLabel(remaining)} / {formatDataLabel(total)}
         </div>
 
         {/* 글래스모피즘 칩 */}
@@ -193,7 +194,7 @@ export default function PieChart({
             bgOpacity={0.5}
           >
             <span className="text-xs text-gray-700 whitespace-nowrap">
-              기본 {base}GB
+              기본 {formatDataLabel(base)}
             </span>
           </Chip>
           <Chip
@@ -203,7 +204,7 @@ export default function PieChart({
             bgOpacity={0.5}
           >
             <span className="text-xs text-gray-700 whitespace-nowrap">
-              추가 {additional}GB
+              추가 {formatDataLabel(additional)}
             </span>
           </Chip>
         </div>
