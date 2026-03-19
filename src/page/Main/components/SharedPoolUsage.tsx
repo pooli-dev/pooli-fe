@@ -73,9 +73,11 @@ export default function SharedPoolUsage({ users = [], className = "" }: Props) {
               />
               <span className="text-xs text-gray-700 font-light">
                 {user.name}
-                <span className="text-gray-400">
-                  ({user.phone.slice(-4)})
-                </span>{" "}
+                {users.filter((u) => u.name === user.name).length > 1 && (
+                  <span className="text-gray-400">
+                    ({user.phone.slice(-4)})
+                  </span>
+                )}
                 {Math.round(user.percentage)}%
               </span>
             </div>

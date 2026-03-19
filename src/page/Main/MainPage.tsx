@@ -32,7 +32,7 @@ export default function Main() {
     useQuery<FamilyApiResponse>({
       queryKey: ["familyMembers"],
       queryFn: () => familyService.getMembers().then((res) => res.data),
-      refetchInterval: 10000,
+      refetchInterval: 500,
       refetchIntervalInBackground: true,
       placeholderData: keepPreviousData, // ← v5 방식
     });
@@ -40,6 +40,9 @@ export default function Main() {
   const { data: usageData } = useQuery<UsageData>({
     queryKey: ["UsageData"],
     queryFn: () => sharedPoolService.getUsageData().then((res) => res.data),
+    refetchInterval: 500, // 10초마다 자동 폴링
+    refetchIntervalInBackground: true, // 백그라운드에서도 폴링
+    placeholderData: keepPreviousData,
   });
 
   // Avatar와 동일한 색상 기준 (Avatar.tsx BASE_COLORS와 동일)
@@ -92,7 +95,7 @@ export default function Main() {
     useQuery<SharedData>({
       queryKey: ["sharedPool"],
       queryFn: () => sharedPoolService.getMainRemainingAmount(),
-      refetchInterval: 10000, // 10초마다 자동 폴링
+      refetchInterval: 500, // 10초마다 자동 폴링
       refetchIntervalInBackground: true, // 백그라운드에서도 폴링
       placeholderData: keepPreviousData,
     });
@@ -104,7 +107,7 @@ export default function Main() {
     queryKey: ["blockStatus", lineId],
     queryFn: () => blockService.getBlockStatus(lineId!).then((res) => res.data),
     enabled: !!lineId,
-    refetchInterval: 10000, // 10초마다 자동 폴링
+    refetchInterval: 500, // 10초마다 자동 폴링
     refetchIntervalInBackground: true, // 백그라운드에서도 폴링
     placeholderData: keepPreviousData,
   });
