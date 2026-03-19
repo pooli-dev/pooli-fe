@@ -83,7 +83,7 @@ export default function PolicyManagement() {
     
     setConfirmModal({
       open: true,
-      message: `"${policy.policyName}" 정책을 ${action}하시겠습니까?\n\n⚠️ 처리 시간이 오래 걸릴 수 있습니다 (최대 2분)`,
+      message: `"${policy.policyName}" 정책을 ${action}하시겠습니까?`,
       onConfirm: () => {
         setConfirmModal(prev => ({ ...prev, open: false }));
         
