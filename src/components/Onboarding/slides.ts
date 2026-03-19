@@ -82,7 +82,7 @@ export const SLIDES: SlideData[] = [
     id: 8,
     muneoImg: muneo8,
     title: "권한 설정 & 양도",
-    description: "대표자 권한을 설정하고\n구성원에게 양도할 수 있어요",
+    description: "구성원 별로 권한을 설정하고\n대표자 권한을 양도할 수 있어요",
     repOnly: true,
     mockType: "permission",
   },

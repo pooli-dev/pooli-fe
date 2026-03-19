@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { PanInfo } from "framer-motion";
 import { getSlides } from "./slides";
 import type { SlideData } from "./slides";
+import { NotificationMock } from "./MockUI";
 import screenshot1 from "@/assets/img/screenshot1.png";
-import screenshot2 from "@/assets/img/screenshot1.png";
-import screenshot3 from "@/assets/img/screenshot1.png";
-import screenshot4 from "@/assets/img/screenshot1.png";
-import screenshot5 from "@/assets/img/screenshot1.png";
-import screenshot6 from "@/assets/img/screenshot1.png";
-import screenshot7 from "@/assets/img/screenshot1.png";
-import screenshot8 from "@/assets/img/screenshot1.png";
+import screenshot2 from "@/assets/img/screenshot2.png";
+import screenshot3 from "@/assets/img/screenshot3.png";
+import screenshot4 from "@/assets/img/screenshot4.png";
+import screenshot5 from "@/assets/img/screenshot5.png";
+import screenshot7 from "@/assets/img/screenshot7.png";
+import screenshot8 from "@/assets/img/screenshot8.png";
 
 const SCREENSHOT_PATHS: Record<number, string> = {
   2: screenshot1,
@@ -18,7 +18,7 @@ const SCREENSHOT_PATHS: Record<number, string> = {
   4: screenshot3,
   5: screenshot4,
   6: screenshot5,
-  7: screenshot6,
+  // 7번은 NotificationMock으로 대체 — 여기서 제거
   8: screenshot7,
   9: screenshot8,
 };
@@ -52,7 +52,6 @@ function useSequentialTyping(title: string, desc: string) {
   const [titleDone, setTitleDone] = useState(false);
 
   useEffect(() => {
-    // mount될 때 한 번만 실행
     let cancelled = false;
     let i = 0;
 
@@ -79,7 +78,7 @@ function useSequentialTyping(title: string, desc: string) {
       clearInterval(titleTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ← 빈 배열: mount 시 1회만
+  }, []);
 
   return { typedTitle, typedDesc, titleDone };
 }
@@ -189,7 +188,7 @@ function PoolDeco() {
   );
 }
 
-// ── 커서 컴포넌트 (SlideContent 밖에 선언) ───────────────────────────────────
+// ── 커서 컴포넌트 ─────────────────────────────────────────────────────────────
 function Cursor({
   height = "h-5",
   color = "bg-white",
@@ -206,7 +205,7 @@ function Cursor({
   );
 }
 
-// ── 슬라이드 컨텐츠 (타이핑을 여기서 시작) ───────────────────────────────────
+// ── 슬라이드 컨텐츠 ───────────────────────────────────────────────────────────
 function SlideContent({
   slide,
   direction,
@@ -216,12 +215,12 @@ function SlideContent({
 }) {
   const muneoConfig = MUNEO_CONFIGS[slide.id] ?? MUNEO_CONFIGS[1];
   const screenshotSrc = SCREENSHOT_PATHS[slide.id];
+  const isNotificationSlide = slide.id === 7;
   const isCentered = muneoConfig.left === "50%";
 
   const titleText = slide.title.replace(/\n/g, " ");
   const descText = slide.description.replace(/\n/g, " ");
 
-  // mount될 때 타이핑 시작 — 슬라이드마다 독립적
   const { typedTitle, typedDesc, titleDone } = useSequentialTyping(
     titleText,
     descText,
@@ -244,9 +243,9 @@ function SlideContent({
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="absolute inset-0 flex flex-col"
     >
-      {screenshotSrc ? (
+      {screenshotSrc || isNotificationSlide ? (
         <>
-          {/* 상단 3/4: 스크린샷 */}
+          {/* 상단 3/4: 스크린샷 or NotificationMock */}
           <div
             className="relative flex items-center justify-center"
             style={{
@@ -256,24 +255,44 @@ function SlideContent({
             }}
           >
             <PoolDeco />
-            <motion.img
-              src={screenshotSrc}
-              alt="화면 미리보기"
-              className="relative z-10 object-contain"
-              style={{
-                height: "90%",
-                width: "auto",
-                maxWidth: "80%",
-                borderRadius: "16px",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
-              }}
-              initial={{ opacity: 0, y: 16, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.opacity = "0";
-              }}
-            />
+
+            {/* 7번 슬라이드: NotificationMock */}
+            {isNotificationSlide ? (
+              <div
+                className="relative z-10"
+                style={{
+                  height: "90%",
+                  width: "auto",
+                  maxWidth: "80%",
+                  aspectRatio: "9 / 19.5", // 스크린샷 비율에 맞게 조정
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                }}
+              >
+                <NotificationMock />
+              </div>
+            ) : (
+              <motion.img
+                src={screenshotSrc}
+                alt="화면 미리보기"
+                className="relative z-10 object-contain"
+                style={{
+                  height: "90%",
+                  width: "auto",
+                  maxWidth: "80%",
+                  borderRadius: "16px",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                }}
+                initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.opacity = "0";
+                }}
+              />
+            )}
+
             <motion.img
               src={slide.muneoImg}
               alt="무너"
@@ -323,7 +342,7 @@ function SlideContent({
             }}
           >
             {slide.repOnly && (
-              <span className="border border-yellow-300/60 bg-yellow-300/15 text-yellow-200 text-[11px] font-semibold rounded-full px-4 py-1 mb-1">
+              <span className="border border-yellow-300/60 bg-yellow-300/15 text-yellow-500 text-[11px] font-semibold rounded-full px-4 py-1 mb-1">
                 ⭐ 대표자 전용
               </span>
             )}

@@ -1,7 +1,37 @@
 import type { SlideData } from "./slides";
+import alarmScreen from "@/assets/img/screenshot6.png";
+import settingScreen from "@/assets/img/screenshot9.png";
+import inquiryScreen from "@/assets/img/screenshot10.png";
+import { useEffect, useState } from "react";
 
 interface MockUIProps {
   mockType: SlideData["mockType"];
+}
+
+export function NotificationMock() {
+  const screens = [alarmScreen, settingScreen, inquiryScreen];
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % screens.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full overflow-hidden rounded-xl">
+      {screens.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          style={{ opacity: i === current ? 1 : 0 }}
+        />
+      ))}
+    </div>
+  );
 }
 
 export default function MockUI({ mockType }: MockUIProps) {
@@ -110,18 +140,7 @@ export default function MockUI({ mockType }: MockUIProps) {
       );
 
     case "notification":
-      return (
-        <div className="flex flex-col items-center gap-3 p-5 w-full">
-          <div className="w-12 h-12 rounded-full bg-white/35 flex items-center justify-center text-2xl">
-            🔔
-          </div>
-          <div className="w-full flex flex-col gap-2">
-            <div className="h-2.5 bg-white/30 rounded-full w-[90%]" />
-            <div className="h-2.5 bg-white/30 rounded-full w-[75%]" />
-            <div className="h-2.5 bg-white/30 rounded-full w-[60%]" />
-          </div>
-        </div>
-      );
+      return <NotificationMock />;
 
     case "permission":
       return (
