@@ -41,6 +41,14 @@ const appColorMap: Record<string, string> = {
 const getAppColor = (appName: string, index: number) =>
   appColorMap[appName] || defaultColors[index % defaultColors.length];
 
+/** 바이트 → GB/MB 자동 변환 (1GB 미만이면 MB) */
+const formatBytes = (bytes: number): string => {
+  const gb = (bytes || 0) / (1024 * 1024 * 1024);
+  if (gb >= 1) return `${gb.toFixed(1)}GB`;
+  const mb = (bytes || 0) / (1024 * 1024);
+  return `${mb.toFixed(0)}MB`;
+};
+
 export default function AppUsageChart({
   apps,
   totalUsedAmount,
@@ -143,7 +151,7 @@ export default function AppUsageChart({
                     {hoveredIndex !== null && displayApps[hoveredIndex] && (
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#333333] text-white px-3 py-1.5 rounded text-sm font-medium z-30 whitespace-nowrap">
                         {appNameMap[displayApps[hoveredIndex].appName] || displayApps[hoveredIndex].appName}:{" "}
-                        {((displayApps[hoveredIndex].usedAmount || 0) / (1024 * 1024 * 1024)).toFixed(1)}GB
+                        {formatBytes(displayApps[hoveredIndex].usedAmount)}
                         <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]"></div>
                       </div>
                     )}
@@ -180,7 +188,7 @@ export default function AppUsageChart({
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-[#999999]" style={{ fontSize: "0.875em" }}>총합</span>
                       <span className="text-[#333333] font-bold text-3xl">
-                        {((totalUsedAmount || 0) / (1024 * 1024 * 1024)).toFixed(1)}GB
+                        {formatBytes(totalUsedAmount)}
                       </span>
                     </div>
                   </div>
@@ -196,7 +204,7 @@ export default function AppUsageChart({
                         </span>
                       </div>
                       <span className="text-[#666666]" style={{ fontSize: "1em" }}>
-                        {((app.usedAmount || 0) / (1024 * 1024 * 1024)).toFixed(1)}GB
+                        {formatBytes(app.usedAmount)}
                       </span>
                     </div>
                   ))}
