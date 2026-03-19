@@ -12,6 +12,7 @@ const getCategoryName = (id: number) => CATEGORY_MAP[id] || `카테고리 ${id}`
 
 interface InquiryListProps {
   inquiries: QuestionListItem[];
+  totalElements: number;
   isLoading: boolean;
   selectedId?: number;
   onSelect: (item: QuestionListItem) => void;
@@ -24,6 +25,7 @@ interface InquiryListProps {
 
 export default function InquiryList({
   inquiries,
+  totalElements,
   isLoading,
   selectedId,
   onSelect,
@@ -39,12 +41,12 @@ export default function InquiryList({
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="p-6 border-b border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      <div className="p-6 border-b border-gray-200 shrink-0">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold">문의 목록</h2>
-            <p className="text-sm text-gray-600 mt-1">{inquiries.length}건 표시</p>
+            <p className="text-sm text-gray-600 mt-1">총 {totalElements}건 중 {inquiries.length}건 표시</p>
           </div>
           <select
             value={sortOrder}
@@ -57,7 +59,7 @@ export default function InquiryList({
         </div>
       </div>
 
-      <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
+      <div className="divide-y divide-gray-200 overflow-y-auto flex-1">
         {isLoading ? (
           <div className="p-8 text-center text-gray-400">불러오는 중...</div>
         ) : sortedInquiries.length === 0 ? (

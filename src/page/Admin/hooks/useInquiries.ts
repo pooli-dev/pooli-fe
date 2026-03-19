@@ -11,16 +11,17 @@ const PAGE_SIZE = 20;
 const isHtmlResponse = (data: unknown): boolean =>
   typeof data === 'string' && data.includes('<!doctype');
 
-export function useInquiries(statusFilter: StatusFilter, page: number) {
+export function useInquiries(statusFilter: StatusFilter, page: number, searchQuery: string = '') {
   const queryClient = useQueryClient();
+  const isSearching = searchQuery.trim().length > 0;
 
   // 문의 목록 조회
   const { data, isLoading, error } = useQuery({
-    queryKey: ['adminInquiries', statusFilter, page],
+    queryKey: ['adminInquiries', statusFilter, page, searchQuery],
     queryFn: async () => {
       const params: Parameters<typeof questionService.getAdminQuestions>[0] = {
-        pageNumber: page,
-        pageSize: PAGE_SIZE,
+        pageNumber: isSearching ? 0 : page,
+        pageSize: isSearching ? 1000 : PAGE_SIZE,
       };
 
       if (statusFilter === 'pending') params.isAnswered = false;
@@ -32,10 +33,18 @@ export function useInquiries(statusFilter: StatusFilter, page: number) {
         throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
       }
 
+      let inquiries = data.content || [];
+
+      // 검색어가 있으면 프론트에서 필터링
+      if (isSearching) {
+        const query = searchQuery.toLowerCase();
+        inquiries = inquiries.filter((i) => i.title.toLowerCase().includes(query));
+      }
+
       return {
-        inquiries: data.content || [],
-        totalPages: data.totalPages || 0,
-        totalElements: data.totalElements || 0,
+        inquiries,
+        totalPages: isSearching ? 1 : (data.totalPages || 0),
+        totalElements: isSearching ? inquiries.length : (data.totalElements || 0),
       };
     },
   });

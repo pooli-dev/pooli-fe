@@ -56,7 +56,7 @@ export default function InquiryDetail({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 max-h-[700px] overflow-y-auto">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
       <div className="p-6 border-b border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">문의 상세</h2>

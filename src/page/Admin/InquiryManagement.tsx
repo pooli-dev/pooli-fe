@@ -43,7 +43,7 @@ export default function InquiryManagement() {
     deleteAnswer,
     deleteQuestion,
     isSending,
-  } = useInquiries(statusFilter, page);
+  } = useInquiries(statusFilter, page, searchQuery);
 
   const handleFilterChange = (filter: StatusFilter) => {
     setStatusFilter(filter);
@@ -142,10 +142,6 @@ export default function InquiryManagement() {
     });
   };
 
-  const filteredInquiries = searchQuery
-    ? inquiries.filter((i) => i.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    : inquiries;
-
   return (
     <div className="p-8">
       <AdminHeader
@@ -178,7 +174,8 @@ export default function InquiryManagement() {
 
       <div className="grid grid-cols-2 gap-6">
         <InquiryList
-          inquiries={filteredInquiries}
+          inquiries={inquiries}
+          totalElements={totalElements}
           isLoading={isLoading}
           selectedId={selectedDetail?.questionId}
           onSelect={handleSelectInquiry}
