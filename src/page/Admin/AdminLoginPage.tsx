@@ -60,13 +60,10 @@ export default function AdminLoginPage() {
         setError(response.message || "로그인에 실패했습니다.");
       }
     } catch (err) {
-      const msg = getErrorMessage(err);
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 401) setError("이메일 또는 비밀번호가 올바르지 않습니다.");
-        else if (err.response?.status === 403) setError("관리자 권한이 없는 계정입니다.");
-        else setError(msg || "로그인에 실패했습니다.");
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        setError("관리자 권한이 없는 계정입니다.");
       } else {
-        setError(msg || "로그인에 실패했습니다.");
+        setError(getErrorMessage(err));
       }
     } finally {
       setIsLoading(false);
