@@ -12,7 +12,7 @@ import naverIcon from "../assets/img/app/naver.jpeg";
 import coupangIcon from "../assets/img/app/coupang.jpeg";
 import tossIcon from "../assets/img/app/toss.jpeg";
 import zoomIcon from "../assets/img/app/zoom.jpeg";
-import whatsappIcon from "../assets/img/app/whatsapp.png";
+import whatsappIcon from "../assets/img/app/whatsapp.svg";
 import wechatIcon from "../assets/img/app/wechat.png";
 import udemyIcon from "../assets/img/app/udemy.png";
 import twitchIcon from "../assets/img/app/twitch.png";
@@ -169,11 +169,16 @@ export const APP_ICONS: { [key: string]: string } = {
 };
 
 export const getAppIcon = (appName: string): string => {
-  return APP_ICONS[appName] || logo;
+  if (APP_ICONS[appName]) return APP_ICONS[appName];
+  // 대소문자 무시 매칭
+  const key = Object.keys(APP_ICONS).find(k => k.toLowerCase() === appName.toLowerCase());
+  return key ? APP_ICONS[key] : logo;
 };
 
 export const getDisplayAppName = (appName: string): string => {
-  return APP_NAME_KR_MAP[appName] || appName;
+  if (APP_NAME_KR_MAP[appName]) return APP_NAME_KR_MAP[appName];
+  const key = Object.keys(APP_NAME_KR_MAP).find(k => k.toLowerCase() === appName.toLowerCase());
+  return key ? APP_NAME_KR_MAP[key] : appName;
 };
 
 // 영어/한글 검색 지원
