@@ -51,10 +51,6 @@ export default function DataBalance({
   const safePersonalTotal = personalTotal ?? REFERENCE_GB;
   const safeSharedTotal = sharedTotal ?? REFERENCE_GB;
 
-  // 무제한일 때는 사용량만 표시, 아닐 때는 잔여량 계산
-  const personalRemaining = safePersonalTotal - personalUsed;
-  const sharedRemaining = safeSharedTotal - sharedUsed;
-
   // 퍼센트 계산: null이면 50GB 기준, 무제한이면 100%, 아니면 사용량/총량
   const personalPercentage =
     personalTotal === null
@@ -82,7 +78,7 @@ export default function DataBalance({
   return (
     <div ref={ref}>
       <GlassCard
-        title="데이터 잔여량"
+        title="데이터 사용량"
         gradientFrom="#FFFFFF"
         gradientTo="#CCCCCC"
         bgGradientFrom="#FFFFFF"
@@ -102,7 +98,7 @@ export default function DataBalance({
                 ? `${formatGB(personalUsed)} 사용 / 무제한`
                 : personalTotal === null
                   ? `${formatGB(personalUsed)} 사용`
-                  : `${formatGB(personalRemaining)} / ${formatGB(personalTotal)}`}
+                  : `${formatGB(personalUsed)} / ${formatGB(personalTotal)}`}
             </span>
           </div>
           <div
@@ -133,7 +129,7 @@ export default function DataBalance({
                 ? `${formatGB(sharedUsed)} 사용 / 무제한`
                 : sharedTotal === null
                   ? `${formatGB(sharedUsed)} 사용`
-                  : `${formatGB(sharedRemaining)} / ${formatGB(sharedTotal)}`}
+                  : `${formatGB(sharedUsed)} / ${formatGB(sharedTotal)}`}
             </span>
           </div>
           <div

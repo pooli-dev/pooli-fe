@@ -167,6 +167,7 @@ export default function Detail() {
         ]);
 
         setDataUsage(dataRes.data);
+        console.log('[월별 사용량 API 응답]', monthlyRes.data);
         setMonthlyUsage(monthlyRes.data);
 
         const fallback = loading ? true : globalIsPublic;
@@ -359,6 +360,7 @@ export default function Detail() {
         <UsageTrend
           usages={monthlyUsage.usages}
           averageAmount={monthlyUsage.averageAmount}
+          currentYearMonth={formatYearMonth(currentDate)}
         />
       </motion.div>
 
