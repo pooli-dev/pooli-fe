@@ -3,16 +3,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { PanInfo } from "framer-motion";
 import { getSlides } from "./slides";
 import type { SlideData } from "./slides";
+import screenshot1 from "@/assets/img/screenshot1.png";
+import screenshot2 from "@/assets/img/screenshot1.png";
+import screenshot3 from "@/assets/img/screenshot1.png";
+import screenshot4 from "@/assets/img/screenshot1.png";
+import screenshot5 from "@/assets/img/screenshot1.png";
+import screenshot6 from "@/assets/img/screenshot1.png";
+import screenshot7 from "@/assets/img/screenshot1.png";
+import screenshot8 from "@/assets/img/screenshot1.png";
 
 const SCREENSHOT_PATHS: Record<number, string> = {
-  2: "/src/assets/img/screenshot1.png",
-  3: "/src/assets/img/screenshot2.png",
-  4: "/src/assets/img/screenshot3.png",
-  5: "/src/assets/img/screenshot4.png",
-  6: "/src/assets/img/screenshot5.png",
-  7: "/src/assets/img/screenshot6.png",
-  8: "/src/assets/img/screenshot7.png",
-  9: "/src/assets/img/screenshot8.png",
+  2: screenshot1,
+  3: screenshot2,
+  4: screenshot3,
+  5: screenshot4,
+  6: screenshot5,
+  7: screenshot6,
+  8: screenshot7,
+  9: screenshot8,
 };
 
 const MUNEO_CONFIGS: Record<
@@ -89,7 +97,7 @@ function OceanWave() {
         style={{ width: "100%", height: "36px", display: "block" }}
       >
         <motion.path
-          fill="#0369a1"
+          fill="#b3dcff"
           animate={{
             d: [
               "M0,18 C80,36 160,0 240,18 C320,36 400,0 480,18 L480,36 L0,36 Z",
@@ -100,7 +108,7 @@ function OceanWave() {
           transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
         />
         <motion.path
-          fill="#075985"
+          fill="#bfe2ff"
           animate={{
             d: [
               "M0,26 C120,12 240,34 360,22 C420,16 460,28 480,26 L480,36 L0,36 Z",
@@ -126,35 +134,35 @@ function PoolDeco() {
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
       <motion.div
         className="absolute text-4xl"
-        style={{ top: "4%", right: "4%", opacity: 0.22 }}
-        animate={{ rotate: [0, 10, -8, 0], y: [0, -7, 0] }}
+        style={{ top: "12%", right: "4%", opacity: 0.5 }}
+        animate={{ rotate: [0, 10, -8, 0], y: [0, -20, 0] }}
         transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
       >
-        🏊
+        🐳
       </motion.div>
       <motion.div
         className="absolute text-3xl"
-        style={{ top: "3%", left: "6%", opacity: 0.18 }}
+        style={{ top: "3%", left: "6%", opacity: 0.5 }}
         animate={{ rotate: [0, 360], y: [0, -8, 0] }}
         transition={{
           rotate: { repeat: Infinity, duration: 10, ease: "linear" },
           y: { repeat: Infinity, duration: 3.5, ease: "easeInOut" },
         }}
       >
-        🏐
+        🪸
       </motion.div>
       <motion.div
         className="absolute text-sm"
-        style={{ top: "28%", left: "3%", opacity: 0.22 }}
-        animate={{ y: [0, -10, 0], opacity: [0.15, 0.3, 0.15] }}
+        style={{ top: "28%", left: "3%", opacity: 1 }}
+        animate={{ y: [0, -10, 0], opacity: [0.3, 0.5, 0.2] }}
         transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
       >
         💧
       </motion.div>
       <motion.div
         className="absolute text-sm"
-        style={{ top: "52%", right: "3%", opacity: 0.22 }}
-        animate={{ y: [0, -10, 0], opacity: [0.15, 0.3, 0.15] }}
+        style={{ top: "52%", right: "3%", opacity: 1 }}
+        animate={{ y: [0, -10, 0], opacity: [0.5, 0.3, 0.5] }}
         transition={{
           repeat: Infinity,
           duration: 5,
@@ -163,6 +171,19 @@ function PoolDeco() {
         }}
       >
         🫧
+      </motion.div>
+      <motion.div
+        className="absolute text-sm"
+        style={{ top: "98%", left: "12%", opacity: 1 }}
+        animate={{ y: [0, -10, 0], opacity: [0.3, 0.5, 0.3] }}
+        transition={{
+          repeat: Infinity,
+          duration: 5,
+          delay: 0.8,
+          ease: "easeInOut",
+        }}
+      >
+        🦀
       </motion.div>
     </div>
   );
@@ -231,7 +252,7 @@ function SlideContent({
             style={{
               height: "75%",
               background:
-                "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 60%, #bae6fd 100%)",
+                "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 60%, #d4eeff 100%)",
             }}
           >
             <PoolDeco />
@@ -296,18 +317,21 @@ function SlideContent({
           {/* 하단: 텍스트 */}
           <div
             className="flex-1 flex flex-col items-center justify-start px-6 gap-1 pt-4 pb-[120px]"
-            style={{ background: "#075985" }}
+            style={{
+              background:
+                "linear-gradient(180deg, #bfe2ff 0%, #b3dcff 40%, #b3dcff 100%)",
+            }}
           >
             {slide.repOnly && (
               <span className="border border-yellow-300/60 bg-yellow-300/15 text-yellow-200 text-[11px] font-semibold rounded-full px-4 py-1 mb-1">
                 ⭐ 대표자 전용
               </span>
             )}
-            <p className="text-white text-[20px] font-bold text-center leading-snug min-h-[52px]">
+            <p className="text-[#0284c7] text-[20px] font-bold text-center leading-snug min-h-[40px]">
               {typedTitle}
               {!titleDone && <Cursor height="h-5" color="bg-white" />}
             </p>
-            <p className="text-sky-200 text-[13px] text-center leading-relaxed min-h-[38px] mt-1">
+            <p className="text-white text-[13px] text-center leading-relaxed min-h-[38px] mt-1">
               {typedDesc}
               {titleDone && typedDesc.length < descText.length && (
                 <Cursor height="h-[13px]" color="bg-sky-300" />
@@ -322,7 +346,7 @@ function SlideContent({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 35%, #bae6fd 65%, #0369a1 85%, #075985 100%)",
+                "linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 35%, #bae6fd 65%, #bfe2ff 85%, #97cefc 100%)",
             }}
           />
           <PoolDeco />
@@ -446,8 +470,7 @@ export default function OnboardingModal({
       transition={{ duration: 0.35 }}
       className="absolute inset-0 z-[200] flex flex-col overflow-hidden"
       style={{
-        background:
-          "linear-gradient(180deg, #e0f2fe 0%, #bae6fd 30%, #0369a1 60%, #075985 80%, #0c4a6e 100%)",
+        background: "#d4eeff",
       }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
@@ -483,10 +506,7 @@ export default function OnboardingModal({
       </AnimatePresence>
 
       {/* 하단 고정 바 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-30 px-6 pb-8 pt-4 flex flex-col items-center gap-3"
-        style={{ background: "#0c4a6e" }}
-      >
+      <div className="absolute bottom-0 left-0 right-0 z-30 px-6 pb-8 pt-4 flex flex-col items-center gap-3">
         <div className="flex items-center gap-2">
           {slides.map((_, i) => (
             <motion.button
@@ -508,7 +528,7 @@ export default function OnboardingModal({
           whileHover={{ scale: 1.01 }}
           className="w-full h-[52px] rounded-2xl font-bold text-[16px] text-white relative overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, #38bdf8, #0ea5e9)",
+            background: "linear-gradient(135deg, #0282c4, #0ea5e9)",
             boxShadow: "0 4px 18px rgba(14,165,233,0.4)",
           }}
         >
