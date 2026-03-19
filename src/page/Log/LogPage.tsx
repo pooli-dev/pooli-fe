@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import GlassCard from "../../components/common/GlassCard";
 import { sharedPoolService } from "@/api";
 import type { HistoryEntry } from "@/types/SharedData";
-import { formatData, formatDataLabel } from "@/utils/dataFormat";
+import { formatDataLabel } from "@/utils/dataFormat";
 import Avatar from "@/components/common/Avatar";
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -29,8 +29,8 @@ function getPrevYearMonth(yearMonth: string): string {
 }
 
 function formatAmount(entry: HistoryEntry): string {
-  const gb = formatData(Math.abs(entry.amount));
-  return entry.eventType === "USAGE" ? `- ${gb}GB` : `+ ${gb}GB`;
+  const gb = formatDataLabel(Math.abs(entry.amount));
+  return entry.eventType === "USAGE" ? `- ${gb}` : `+ ${gb}`;
 }
 
 function getRemainingPercent(remaining: number, total: number): number {
@@ -161,7 +161,7 @@ export default function LogPage() {
               <p className="text-3xl font-bold text-gray-800">
                 {formatDataLabel(remaining)}
                 <span className="text-base font-normal text-gray-400 ml-1">
-                  / {formatDataLabel(total)}GB
+                  / {formatDataLabel(total)}
                 </span>
               </p>
             </div>
