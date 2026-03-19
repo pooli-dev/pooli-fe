@@ -205,7 +205,7 @@ export default function Detail() {
       } catch {
         // polling 실패는 무시
       }
-    }, 10000);
+    }, 1000);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
