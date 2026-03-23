@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import SliderCard from "./SliderCard";
 import { limitService } from "@/api";
 
-const LimitPolicyTab = ({ 
-  lineId, 
-  onPolicyChange 
-}: { 
+const LimitPolicyTab = ({
+  lineId,
+  onPolicyChange,
+}: {
   lineId?: number;
   onPolicyChange?: () => void;
 }) => {
@@ -16,7 +16,7 @@ const LimitPolicyTab = ({
   });
 
   return (
-    <div className="flex flex-col gap-3 py-4 text-center text-gray-500">
+    <div className="flex flex-row gap-3 py-4 items-start text-center text-gray-500">
       <SliderCard
         title="월 공유 데이터 사용량 제한"
         type="shared"

@@ -112,8 +112,12 @@ export default function AdminLoginPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <h1 className="text-2xl font-semibold text-gray-900">관리자 로그인</h1>
-            <p className="text-gray-600 text-sm mt-1">관리자 계정으로 로그인해주세요</p>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              관리자 로그인
+            </h1>
+            <p className="text-gray-600 text-sm mt-1">
+              관리자 계정으로 로그인해주세요
+            </p>
           </motion.div>
 
           {/* 입력 폼 */}
@@ -124,7 +128,9 @@ export default function AdminLoginPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-3">이메일</label>
+              <label className="block text-lg font-medium text-gray-700 mb-3">
+                이메일
+              </label>
               <input
                 type="email"
                 value={email}
@@ -136,7 +142,9 @@ export default function AdminLoginPage() {
               />
             </div>
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-3">비밀번호</label>
+              <label className="block text-lg font-medium text-gray-700 mb-3">
+                비밀번호
+              </label>
               <input
                 type="password"
                 value={password}
@@ -157,19 +165,20 @@ export default function AdminLoginPage() {
 
           {/* 로그인 버튼 */}
           <motion.div
-            className="max-w-sm mt-12"
+            className="max-w-sm mt-12 w-full"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <GradientButton
+              fullWidth
               onClick={handleLogin}
               bgColor="#678BF7"
               gradientFrom="#A8C8FF"
               gradientTo="#678BF7"
-              width={120}
-              height={16}
               disabled={isLoading}
+              buttonClassName="py-4"
+              borderRadius={15}
             >
               <span className="text-lg font-semibold">
                 {isLoading ? "로그인 중..." : "관리자 로그인"}

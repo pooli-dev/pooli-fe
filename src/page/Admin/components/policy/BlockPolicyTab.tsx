@@ -9,11 +9,17 @@ type Props = {
 
 const BlockPolicyTab = ({ onBlockApply, lineId, onPolicyChange }: Props) => {
   if (!lineId) return null;
-  
+
   return (
-    <div className="flex flex-col gap-3 py-4 text-center text-gray-500">
+    <div className="flex flex-row gap-3 py-4 items-start">
       <BlockPolicyManager lineId={lineId} onPolicyChange={onPolicyChange} />
-      <ImmediateBlockPolicy lineId={lineId} onApply={onBlockApply} onPolicyChange={onPolicyChange} />
+      <ImmediateBlockPolicy
+        lineId={lineId}
+        onApply={(blockEndAt) => {
+          onBlockApply?.(blockEndAt);
+          onPolicyChange?.();
+        }}
+      />
     </div>
   );
 };

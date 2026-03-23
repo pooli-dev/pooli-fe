@@ -186,6 +186,7 @@ export default function LoginPage() {
               gradientTo="#678BF7"
               disabled={isLoading}
               buttonClassName="py-4 text-lg font-semibold"
+              borderRadius={15}
             >
               {isLoading ? "로그인 중..." : "로그인"}
             </GradientButton>
