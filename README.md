@@ -244,31 +244,24 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 
 ## 🔄 핵심 기능 플로우
 
-<p align="center">
-  <img src="docs/flow/core-flow.png" alt="핵심 기능 플로우" width="800" />
-</p>
+<img width="1044" height="501" alt="image" src="https://github.com/user-attachments/assets/ef9a0c26-8f63-4831-8077-a08058aa447a" />
 
-<!-- 플로우 이미지를 docs/flow/ 폴더에 추가해주세요 -->
-
-> 📒 [핵심 기능 플로우 상세 보기 (Notion)](https://notion-link.example.com)
 
 
 <br>
 
 ## 📐 인프라 아키텍처
 
-<p align="center">
-  <img src="docs/architecture/infra-architecture.png" alt="인프라 아키텍처" width="800" />
-</p>
+<img width="612" height="428" alt="image" src="https://github.com/user-attachments/assets/ed84976f-7ded-42c4-b0e5-7e6f5bace3f8" />
+
 
 
 <br>
 
 ## 📊 ERD
 
-<p align="center">
-  <img src="docs/architecture/erd.png" alt="ERD" width="800" />
-</p>
+<img width="614" height="425" alt="image" src="https://github.com/user-attachments/assets/b2da9094-22ef-4e12-9f20-3cdee359ee58" />
+
 
 
 <br>
