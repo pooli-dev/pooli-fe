@@ -149,12 +149,7 @@ export default function PolicyScroll({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2
-          className="font-semibold text-[#333333]"
-          style={{ fontSize: "1.125em" }}
-        >
-          {title}
-        </h2>
+        <h2 className="font-semibold text-[#333333] text-lg">{title}</h2>
       </div>
 
       <div
@@ -178,10 +173,10 @@ export default function PolicyScroll({
             >
               {getPolicyIcon(policy.type)}
             </div>
-            <div className="text-[#999999] mb-1" style={{ fontSize: "0.75em" }}>
-              [{policy.type}]
+            <div className="text-[#999999] mb-1 text-xs">[{policy.type}]</div>
+            <div className="text-[#333333] font-medium text-base">
+              {policy.title}
             </div>
-            <div className="text-[#333333] font-medium">{policy.title}</div>
           </div>
         ))}
       </div>

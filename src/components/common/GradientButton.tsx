@@ -8,12 +8,11 @@ type Props = {
   gradientTo?: string;
   textColor?: string;
   borderWidth?: number;
-  width?: number;
-  height?: number;
   borderRadius?: number;
-  fontSize?: number;
   className?: string;
+  buttonClassName?: string;
   disabled?: boolean;
+  fullWidth?: boolean;
 };
 
 export default function GradientButton({
@@ -24,34 +23,30 @@ export default function GradientButton({
   gradientTo = "#678BF7",
   textColor = "#FFFFFF",
   borderWidth = 3,
-  width = 40,
-  height = 12,
   borderRadius,
-  fontSize,
   className = "",
+  buttonClassName = "",
   disabled = false,
+  fullWidth = false,
 }: Props) {
   return (
-    // 바깥 div: 그라데이션 배경 (테두리 역할)
     <div
-      className={`rounded-full ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+      className={`rounded-full ${fullWidth ? "w-full" : ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       style={{
-        borderRadius: `${borderRadius}px`,
+        borderRadius: borderRadius ? `${borderRadius}px` : undefined,
         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
         padding: borderWidth,
       }}
     >
-      {/* 안쪽 버튼: 단색 배경 */}
       <button
         onClick={onClick}
         disabled={disabled}
-        className={`flex items-center justify-center gap-2 rounded-full font-semibold text-base transition-opacity ${disabled ? "cursor-not-allowed" : "active:opacity-80"}`}
+        className={`gradient-btn flex items-center justify-center gap-2 rounded-full font-semibold transition-opacity ${fullWidth ? "w-full" : ""} ${disabled ? "cursor-not-allowed" : "active:opacity-80"} ${buttonClassName}`}
         style={{
-          borderRadius: `${borderRadius}px`,
+          borderRadius: borderRadius ? `${borderRadius}px` : undefined,
           backgroundColor: bgColor,
-          padding: `${height}px ${width}px`, // 세로 가로
-          color: `${textColor}`,
-          fontSize: `${fontSize}rem`,
+          padding: "10px 24px",
+          color: textColor,
         }}
       >
         {children}

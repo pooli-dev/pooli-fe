@@ -18,12 +18,14 @@ import {
   pageTransition,
   pageVariants,
 } from "@/utils/pageAnimation";
+import { usePieChartSize } from "@/hooks/usePieChartSize";
 
 export default function Main() {
   const navigate = useNavigate();
   const lineId = useUserStore((state) => state.userInfo?.lineId);
   // store에 저장된 user 정보 가져오기
   const userData = useUserStore((state) => state.userInfo);
+  const { size: pieSize, strokeWidth: pieStrokeWidth } = usePieChartSize();
 
   // 현재 로그인한 사용자가 대표자인가
   const isOwner = userData?.role === "OWNER";
@@ -184,14 +186,23 @@ export default function Main() {
         transition={{ ...pageTransition, delay: 0.1 }}
         className="flex flex-col items-center gap-4 pt-5"
       >
-        <PieChart sharedPoolData={sharedPoolData} />
+        <PieChart
+          sharedPoolData={sharedPoolData}
+          size={pieSize}
+          strokeWidth={pieStrokeWidth}
+        />{" "}
       </motion.div>
       {/* 공유 데이터 담기 페이지 이동 버튼 */}
       <motion.div
         variants={itemVariants}
         transition={{ ...pageTransition, delay: 0.2 }}
+        className="w-auto tablet:w-[40vw] desktop:w-auto"
       >
-        <GradientButton onClick={() => navigate("/shared-data")}>
+        <GradientButton
+          fullWidth
+          buttonClassName="text-xl"
+          onClick={() => navigate("/shared-data")}
+        >
           <img src={PlusIcon} className="w-5 h-5" />
           가족 공유 데이터 담기
         </GradientButton>
@@ -201,7 +212,7 @@ export default function Main() {
       <motion.div
         variants={itemVariants}
         transition={{ ...pageTransition, delay: 0.3 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md tablet:max-w-[60vw] desktop:max-w-md"
       >
         <SharedPoolUsage users={usageUsers} />
       </motion.div>

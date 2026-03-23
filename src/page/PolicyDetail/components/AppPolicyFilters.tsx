@@ -1,6 +1,8 @@
 interface AppPolicyFiltersProps {
   policyFilter: "전체" | "정책없음" | "정책적용" | "정책예외";
-  setPolicyFilter: (filter: "전체" | "정책없음" | "정책적용" | "정책예외") => void;
+  setPolicyFilter: (
+    filter: "전체" | "정책없음" | "정책적용" | "정책예외",
+  ) => void;
   conditionFilters: Set<"사용량 제한" | "속도 제한">;
   toggleConditionFilter: (condition: "사용량 제한" | "속도 제한") => void;
   showPolicyDropdown: boolean;
@@ -16,83 +18,80 @@ const AppPolicyFilters = ({
   setShowPolicyDropdown,
 }: AppPolicyFiltersProps) => {
   return (
-    <div
-      className="flex gap-6 px-2 pb-2 flex-wrap relative"
-      style={{ fontSize: "11px" }}
-    >
+    <div className="flex gap-4 px-2 pb-2 flex-wrap relative items-center text-sm">
       <div className="flex items-center gap-2 relative flex-shrink-0 whitespace-nowrap">
-        <span className="text-gray-700 whitespace-nowrap">정책</span>
-        <button
-          onClick={() => setShowPolicyDropdown(!showPolicyDropdown)}
-          className={`px-3 py-1 rounded-full border flex items-center justify-between whitespace-nowrap flex-shrink-0 transition-all min-w-[80px] ${
-            showPolicyDropdown 
-              ? "bg-[#678BF7] text-white border-[#678BF7]" 
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
-          style={{ fontSize: "11px" }}
-        >
-          {policyFilter}
-          <svg 
-            width="12" 
-            height="12" 
-            viewBox="0 0 12 12" 
-            fill="none"
-            className={`transition-transform ${showPolicyDropdown ? "rotate-180" : ""}`}
+        <span className="text-gray-700 whitespace-nowrap text-sm">정책</span>
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setShowPolicyDropdown(!showPolicyDropdown)}
+            className={`px-3 py-1 xs:py-2 text-xs rounded-full border flex items-center justify-between whitespace-nowrap flex-shrink-0 transition-all min-w-[80px] ${
+              showPolicyDropdown
+                ? "bg-[#678BF7] text-white border-[#678BF7]"
+                : "bg-white text-gray-700 border-gray-300"
+            }`}
           >
-            <path
-              d="M3 4.5L6 7.5L9 4.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            {policyFilter}
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className={`transition-transform ${showPolicyDropdown ? "rotate-180" : ""}`}
+            >
+              <path
+                d="M3 4.5L6 7.5L9 4.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
-        {showPolicyDropdown && (
-          <>
-            <div 
-              className="fixed inset-0 z-[90]" 
-              onClick={() => setShowPolicyDropdown(false)}
-            />
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-[100] w-[90px] flex flex-col">
-              {(["전체", "정책없음", "정책적용", "정책예외"] as const).map(
-                (filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => {
-                      setPolicyFilter(filter);
-                      setShowPolicyDropdown(false);
-                    }}
-                    className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 whitespace-nowrap transition-colors block ${
-                      policyFilter === filter
-                        ? "text-[#678BF7] font-semibold bg-blue-50"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ),
-              )}
-            </div>
-          </>
-        )}
+          {showPolicyDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-[90]"
+                onClick={() => setShowPolicyDropdown(false)}
+              />
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-[100] w-[90px] flex flex-col">
+                {(["전체", "정책없음", "정책적용", "정책예외"] as const).map(
+                  (filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => {
+                        setPolicyFilter(filter);
+                        setShowPolicyDropdown(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-50 whitespace-nowrap transition-colors block ${
+                        policyFilter === filter
+                          ? "text-[#678BF7] font-semibold bg-blue-50"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {filter}
+                    </button>
+                  ),
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
-        <span className="text-gray-700 whitespace-nowrap">조건</span>
+        <span className="text-gray-700 whitespace-nowrap text-sm">조건</span>
         <div className="flex gap-1 flex-wrap">
           {(["사용량 제한", "속도 제한"] as const).map((condition) => (
             <button
               key={condition}
               onClick={() => toggleConditionFilter(condition)}
-              className={`relative px-2.5 py-1 rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
+              className={`relative text-xs px-2.5 py-1 xs:py-2 rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
                 conditionFilters.has(condition)
                   ? "text-[#003458]"
                   : "text-gray-600"
               }`}
               style={{
-                fontSize: "11px",
                 backgroundColor: conditionFilters.has(condition)
                   ? "rgba(223, 248, 254, 0.6)"
                   : "transparent",

@@ -173,23 +173,22 @@ export default function LoginPage() {
 
           {/* 로그인 버튼 */}
           <motion.div
-            className="max-w-sm mt-12"
+            className="max-w-sm mt-12 w-full"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <GradientButton
+              fullWidth
               onClick={handleLogin}
               bgColor="#678BF7"
               gradientFrom="#A8C8FF"
               gradientTo="#678BF7"
-              width={120}
-              height={16}
               disabled={isLoading}
+              buttonClassName="py-4 text-lg font-semibold"
+              borderRadius={15}
             >
-              <span className="text-lg font-semibold">
-                {isLoading ? "로그인 중..." : "로그인"}
-              </span>
+              {isLoading ? "로그인 중..." : "로그인"}
             </GradientButton>
           </motion.div>
         </div>

@@ -145,9 +145,9 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 데이터 잔여량 ── */}
-        <div className="flex gap-3 mb-4">
+        <div className="flex gap-3 mb-4 items-start overflow-hidden">
           <DataRemainingCard
-            label={"가족 공유 데이터\n잔여량"}
+            label={"공유 데이터\n잔여량"}
             amount={userData.sharedDataRemaining}
             icon="share"
           />
@@ -159,31 +159,22 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 액션 버튼 ── */}
-        <div className="flex justify-center gap-3">
-          {/* 공유 데이터 담기 */}
-          <GradientButton
-            width={12}
-            height={8}
-            fontSize={0.8}
-            onClick={() => navigate("/shared-data")}
-          >
-            <img src={PlusIcon} className="w-4 h-4" />
+        <div className="flex flex-col tablet-lg:flex-row desktop:flex-col gap-2">
+          {" "}
+          <GradientButton fullWidth onClick={() => navigate("/shared-data")}>
+            <img src={PlusIcon} className="w-4 h-4 flex-shrink-0" />
             가족 공유 데이터 담기
           </GradientButton>
-
-          {/* 사용 로그 보기 */}
           <GradientButton
-            width={14}
-            height={8}
+            fullWidth
             bgColor="#FED2BF"
             gradientFrom="#FFFFFF"
             gradientTo="#FFA780"
             textColor="#FF5C14"
-            fontSize={0.8}
             onClick={() => navigate("/log")}
           >
-            <img src={ClockIcon} className="w-4 h-4" />
-            사용 로그 보기
+            <img src={ClockIcon} className="w-4 h-4 flex-shrink-0" />
+            공유 데이터 로그 보기
           </GradientButton>
         </div>
       </GlassCard>
@@ -197,7 +188,7 @@ export default function UserInfo({ userData, userId }: Props) {
           />
 
           {/* 바텀시트 */}
-          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full z-[201] bg-white rounded-t-2xl p-6">
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-[201] bg-white rounded-t-2xl p-6">
             <h3 className="text-base font-semibold text-gray-800 mb-4">
               계정 전환
             </h3>

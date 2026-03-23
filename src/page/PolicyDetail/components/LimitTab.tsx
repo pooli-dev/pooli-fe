@@ -16,7 +16,7 @@ const LimitTab = ({
   });
 
   return (
-    <div className="flex flex-col gap-3 py-4 text-center text-gray-500">
+    <div className="flex flex-col gap-3 py-4 tablet:grid tablet:grid-cols-2 tablet:items-start desktop:flex desktop:flex-col">
       <SliderCard
         title="월 공유 데이터 사용량 제한"
         type="shared"

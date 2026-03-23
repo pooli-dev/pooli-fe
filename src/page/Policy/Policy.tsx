@@ -116,24 +116,27 @@ export default function Policy() {
       initial="initial"
       animate="animate"
       transition={pageTransition}
-      className="min-h-full flex flex-col gap-5 px-4 pb-[20px]"
+      className="min-h-full flex flex-col gap-5 px-4 pb-[20px]
+  tablet:grid tablet:grid-cols-2 tablet:items-start tablet:gap-6 tablet:px-8
+  desktop:flex desktop:flex-col desktop:gap-5 desktop:px-4"
     >
-      {/* 사용자 정보 영역 */}
-      {/* /api/data/usages/balances 로 사용자 정보 받아오기 */}
+      {/* 1. UserInfo - 모바일: 1번째 / 태블릿: 왼쪽 상단 */}
       {userData && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.1 }}
+          className="tablet:col-span-1 tablet:order-1 desktop:w-full desktop:order-1"
         >
           <UserInfoCard userData={userData} userId={currentUserId} />
         </motion.div>
       )}
 
-      {/* 현재 적용중인 정책 영역 */}
+      {/* 2. 현재 적용중인 정책 - 모바일: 2번째 / 태블릿: 전체 너비 3번째 행 */}
       {appliedPolicies.length > 0 && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.2 }}
+          className="tablet:col-span-2 tablet:order-3 desktop:w-full desktop:order-2"
         >
           <PolicyScroll
             policies={appliedPolicies.map((policy, index) => ({
@@ -145,15 +148,12 @@ export default function Policy() {
         </motion.div>
       )}
 
-      {/* 데이터 임계치 설정 영역(가족 공유 데이터 임계치, 개인 데이터 임계치) */}
-      {/* 가족 공유 데이터: 대표자만 접근 가능
-        /api/shared-pools/limit로 데이터 넘기기
-        개인 데이터 임계치 설정: 각자 자신의 것
-        /api/lines/thresholds로 데이터 넘기기 */}
+      {/* 3. 데이터 임계치 - 모바일: 3번째 / 태블릿: 오른쪽 상단 (UserInfo 옆) */}
       {sharedPoolThreshold && lineThreshold && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.3 }}
+          className="tablet:col-span-1 tablet:order-2 desktop:w-full desktop:order-3"
         >
           <DataThresholdSlider
             isOwner={isOwner}
@@ -163,21 +163,23 @@ export default function Policy() {
         </motion.div>
       )}
 
-      {/* 권한 관리 */}
+      {/* 4. 권한 관리 - 태블릿: 전체 너비 4번째 행 */}
       {isOwner && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.4 }}
+          className="tablet:col-span-2 tablet:order-4 desktop:w-full desktop:order-4"
         >
           <PermissionManager />
         </motion.div>
       )}
 
-      {/* 구성원별 정책 제어 버튼 */}
+      {/* 5. 구성원별 정책 제어 + 권한 양도 - 태블릿: 2컬럼 5번째 행 */}
       {isOwner && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.5 }}
+          className="tablet:col-span-1 tablet:order-5 desktop:w-full desktop:order-5"
         >
           <button
             onClick={() => navigate("/policy-detail")}
@@ -198,11 +200,11 @@ export default function Policy() {
         </motion.div>
       )}
 
-      {/* 권한 양도 버튼 */}
       {isOwner && (
         <motion.div
           variants={itemVariants}
           transition={{ ...pageTransition, delay: 0.6 }}
+          className="tablet:col-span-1 tablet:order-6 desktop:w-full desktop:order-6"
         >
           <button
             onClick={() => setIsTransferModalOpen(true)}

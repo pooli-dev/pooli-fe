@@ -226,7 +226,7 @@ function PermissionManager() {
                     className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2"
                   >
                     <span>
-                      회선 {item.lineId} · {permissionName}
+                      {row?.userName} · {permissionName}
                     </span>
                     <span
                       className="font-semibold"

@@ -118,10 +118,7 @@ export default function Header({
             className={`h-16 ${darkMode ? "invert" : ""}`}
           />
         ) : (
-          <h1
-            className="font-semibold text-[#333333] m-0"
-            style={{ fontSize: "1.2rem" }}
-          >
+          <h1 className="font-semibold text-[#333333] m-0 text-lg">
             {getPageTitle()}
           </h1>
         )}
