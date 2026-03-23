@@ -8,6 +8,7 @@ interface Permission {
   permissionId: number;
   permissionTitle: string;
   createdAt: string;
+  is_enable: boolean;
 }
 
 interface MemberPermissionsResponse {

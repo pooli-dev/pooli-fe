@@ -112,7 +112,8 @@ export default function Detail() {
       try {
         const { data } = await familyService.getMyPermissions();
         const hasPerm = data.memberPermissions.some(
-          (p) => p.permissionTitle === "앱 사용량 비공개 허용 권한",
+          (p) =>
+            p.permissionTitle === "앱 사용량 비공개 허용 권한" && p.is_enable,
         );
         setHasPrivacyPermission(hasPerm);
         if (!hasPerm) setGlobalIsPublic(true);
@@ -160,23 +161,13 @@ export default function Detail() {
         const parsed = parseAppUsageResponse(appRes, fallback);
 
         if (parsed) {
-          // 본인 + 권한 없으면 isPublic 강제 true
-          if (isOwnData && !hasPrivacyPermission) {
-            parsed.data.isPublic = true;
-          }
-          // 다른 사람 데이터: API의 isPublic 그대로 사용
-          // isPublic: false → 비공개 자물쇠 UI 표시
           setAppUsage(parsed.data);
-          if (isOwnData && !hasPrivacyPermission) {
-            setGlobalIsPublic(true);
-          } else if (parsed.updatedIsPublic != null) {
+          // API의 isPublic 값 그대로 반영 (본인/타인 모두 동일)
+          if (parsed.updatedIsPublic != null) {
             setGlobalIsPublic(parsed.updatedIsPublic);
-          } else if (loading) {
-            setGlobalIsPublic(true);
           }
         } else {
           setAppUsage(emptyAppUsage(fallback));
-          if (loading) setGlobalIsPublic(true);
         }
       } catch {
         setAppUsage(emptyAppUsage(globalIsPublic));
@@ -205,7 +196,7 @@ export default function Detail() {
       } catch {
         // polling 실패는 무시
       }
-    }, 1000);
+    }, 10000);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -381,7 +372,8 @@ export default function Detail() {
           isPublic={appUsage.isPublic}
           onPublicToggle={handleVisibilityToggle}
           disableToggle={!hasPrivacyPermission}
-          showToggle={isOwnData}
+          showToggle={isOwnData && hasPrivacyPermission}
+          isOwnData={isOwnData}
         />
       </motion.div>
     </motion.div>

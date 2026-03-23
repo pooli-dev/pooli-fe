@@ -5,6 +5,7 @@ import Toggle from "@/components/common/Toggle";
 import { permissionService } from "@/api/services/permissionService";
 import type { PatchPermissionRequest } from "@/types/permission";
 import { useToastStore } from "@/store/toastStore";
+import { familyService } from "@/api";
 
 const PERMISSION_VIEW_DETAIL = "상세페이지 열람 권한";
 const PERMISSION_HIDE_APP_USAGE = "앱 사용량 비공개 허용 권한";
@@ -128,6 +129,17 @@ function PermissionManager() {
     patchPermissions(changedPayload);
   };
 
+  // 이미 캐시에 있는 데이터 가져오기
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["familyMembersSimple"],
+    queryFn: () => familyService.getMembersSimple().then((res) => res.data),
+    staleTime: Infinity, // 이미 있으면 재요청 안함
+  });
+
+  // lineId로 phone 찾기
+  const getPhone = (lineId: number) =>
+    familyMembers.find((m) => m.lineId === lineId)?.phone;
+
   return (
     <>
       <GlassCard
@@ -178,7 +190,16 @@ function PermissionManager() {
             {rows.map((row, index) => (
               <div key={row.lineId}>
                 <div className="grid grid-cols-3 items-center py-3 px-2">
-                  <span className="text-sm text-gray-700">{row.userName}</span>
+                  <span className="text-sm text-gray-700">
+                    {row.userName}
+                    {/* 같은 이름이 여러 명이면 번호 표시 */}
+                    {rows.filter((r) => r.userName === row.userName).length >
+                      1 && (
+                      <span className="text-xs text-gray-400 ml-1">
+                        ({getPhone(row.lineId)?.slice(-4)})
+                      </span>
+                    )}
+                  </span>
                   <div className="flex justify-center">
                     <Toggle
                       checked={row.canViewDetail}
@@ -226,7 +247,15 @@ function PermissionManager() {
                     className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2"
                   >
                     <span>
-                      {row?.userName} · {permissionName}
+                      {row?.userName}
+                      {rows.filter((r) => r.userName === row?.userName).length >
+                        1 && (
+                        <span className="text-xs text-gray-400 ml-1">
+                          ({getPhone(row!.lineId)?.slice(-4)})
+                        </span>
+                      )}
+                      {" · "}
+                      {permissionName}
                     </span>
                     <span
                       className="font-semibold"

@@ -15,6 +15,7 @@ interface AppUsageChartProps {
   onPublicToggle: (value: boolean) => void;
   disableToggle?: boolean;
   showToggle?: boolean;
+  isOwnData?: boolean;
 }
 
 const appNameMap: Record<string, string> = {
@@ -56,6 +57,7 @@ export default function AppUsageChart({
   onPublicToggle,
   disableToggle = false,
   showToggle = true,
+  isOwnData = false,
 }: AppUsageChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [animated, setAnimated] = useState(false);
@@ -63,6 +65,8 @@ export default function AppUsageChart({
 
   // apps가 null이거나 undefined일 경우 빈 배열로 처리
   const safeApps = apps || [];
+  // 본인이면 isPublic=false여도 데이터 보여주기
+  const shouldShowData = isOwnData || isPublic;
 
   // 10개 초과 시 상위 10개 + 나머지를 "기타"로 묶기
   const MAX_DISPLAY = 7;
@@ -133,7 +137,7 @@ export default function AppUsageChart({
         </div>
 
         <div className="relative">
-          {!isPublic ? (
+          {!shouldShowData ? (
             <div className="flex flex-col items-center justify-center py-16">
               <svg
                 width="48"

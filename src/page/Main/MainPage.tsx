@@ -34,7 +34,7 @@ export default function Main() {
     useQuery<FamilyApiResponse>({
       queryKey: ["familyMembers"],
       queryFn: () => familyService.getMembers().then((res) => res.data),
-      refetchInterval: 1000,
+      refetchInterval: 10000,
       refetchIntervalInBackground: true,
       placeholderData: keepPreviousData, // ← v5 방식
     });
@@ -42,7 +42,7 @@ export default function Main() {
   const { data: usageData } = useQuery<UsageData>({
     queryKey: ["UsageData"],
     queryFn: () => sharedPoolService.getUsageData().then((res) => res.data),
-    refetchInterval: 1000, // 10초마다 자동 폴링
+    refetchInterval: 10000, // 10초마다 자동 폴링
     refetchIntervalInBackground: true, // 백그라운드에서도 폴링
     placeholderData: keepPreviousData,
   });
@@ -97,7 +97,7 @@ export default function Main() {
     useQuery<SharedData>({
       queryKey: ["sharedPool"],
       queryFn: () => sharedPoolService.getMainRemainingAmount(),
-      refetchInterval: 1000, // 10초마다 자동 폴링
+      refetchInterval: 10000, // 10초마다 자동 폴링
       refetchIntervalInBackground: true, // 백그라운드에서도 폴링
       placeholderData: keepPreviousData,
     });
@@ -109,7 +109,7 @@ export default function Main() {
     queryKey: ["blockStatus", lineId],
     queryFn: () => blockService.getBlockStatus(lineId!).then((res) => res.data),
     enabled: !!lineId,
-    refetchInterval: 1000, // 10초마다 자동 폴링
+    refetchInterval: 10000, // 10초마다 자동 폴링
     refetchIntervalInBackground: true, // 백그라운드에서도 폴링
     placeholderData: keepPreviousData,
   });
