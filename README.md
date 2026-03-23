@@ -4,9 +4,9 @@
   <img src="src/assets/img/muneo1.png" alt="POOLI Character" width="200" />
 </p>
 
-### 🏆 LG 유플러스 유레카 SW 아카데미 2기 융합프로젝트 🏅
+### 🏆 LG 유플러스 유레카 SW 아카데미 3기 최종 융합프로젝트 🏅
 
-> [POOLI 바로가기](https://www.pooliapp.com) | [POOLI Admin 바로가기](https://office.pooliapp.com) | [📒 Notion](https://notion-link.example.com)
+> [POOLI 바로가기](https://www.pooliapp.com) | [POOLI Admin 바로가기](https://office.pooliapp.com) | [📒 Notion](https://www.notion.so/yerin1412/1-2c3389b3e03981e2a56bdaa42ff24264)
 
 ---
 
@@ -33,7 +33,7 @@
 | 프로젝트명 | POOLI |
 | 팀명 | 1조 무너팸 |
 | 주제 | LG U+ 가족 데이터 사용량 관리 및 정책 제어 서비스 |
-| 개발 기간 | 2025.02.24 - 2025.03.21 |
+| 개발 기간 | 2025.02.24 - 2025.03.24 |
 
 ---
 
