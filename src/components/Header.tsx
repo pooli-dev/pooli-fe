@@ -2,8 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useSettingStore } from "../store/settingStore";
 import { useUserStore } from "../store/userStore";
 import logo from "../assets/img/logo.svg";
-import alarmIcon from "../assets/icon/alarm-icon.png";
-import settingIcon from "../assets/icon/setting-icon.png";
+import alarmIcon from "../assets/icon/alarm-icon.svg";
+import settingIcon from "../assets/icon/setting-icon.svg";
 import { useQuery } from "@tanstack/react-query";
 import { notificationService } from "@/api";
 
@@ -129,7 +129,9 @@ export default function Header({
           <button
             type="button"
             aria-label="알림"
-            className={`relative cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
+            className="relative cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white bg-gradient-to-b from-white/0 to-white/100 to-42%
+        transition-all duration-200 hover:scale-[1.08] hover:shadow-lg active:scale-[0.95]"
+            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             onClick={() => navigate("/alarm")}
           >
             <img src={alarmIcon} alt="" className="w-6 h-6" />
@@ -146,7 +148,9 @@ export default function Header({
           <button
             type="button"
             aria-label="설정"
-            className={`cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
+            className="cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white bg-gradient-to-b from-white/0 to-white/100 to-42%
+        transition-all duration-200 hover:scale-[1.08] hover:shadow-lg active:scale-[0.95]"
+            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             onClick={() => navigate("/setting")}
           >
             <img src={settingIcon} alt="" className="w-6 h-6" />

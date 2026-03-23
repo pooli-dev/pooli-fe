@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import GradientButton from "../../components/common/GradientButton";
-import { useSettingStore } from "../../store/settingStore";
 import logo from "../../assets/img/logo.svg";
 import backgroundImg from "../../assets/img/background.png";
 import loginBg1 from "../../assets/img/loginBg1.png";
@@ -22,8 +21,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const darkMode = useSettingStore((state) => state.darkMode);
-  const largeTextMode = useSettingStore((state) => state.largeTextMode);
   const navigate = useNavigate();
   const setUserInfo = useUserStore((state) => state.setUserInfo);
   const appType = getAppType();
@@ -93,12 +90,9 @@ export default function LoginPage() {
   };
 
   return (
-    // Layout과 동일한 래퍼 구조
-    <div
-      className={`flex justify-center min-h-screen bg-[#f5f5f5] font-sans ${darkMode ? "dark" : ""}`}
-    >
+    <div className="flex justify-center min-h-screen bg-[#f5f5f5] font-sans">
       <div
-        className={`relative w-[480px] max-w-full min-h-[100dvh] overflow-hidden bg-cover bg-center bg-no-repeat ${darkMode ? "invert" : ""} ${largeTextMode ? "text-[1.25em]" : ""}`}
+        className="relative w-full desktop:w-[480px] max-w-full min-h-[100dvh] overflow-hidden bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${backgroundImg})` }}
       >
         {/* 슬라이딩 배경 */}
@@ -116,7 +110,6 @@ export default function LoginPage() {
 
         {/* 콘텐츠 */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] px-8">
-          {/* 로고 */}
           <motion.div
             className="mb-16"
             initial={{ opacity: 0, y: -30 }}
@@ -126,7 +119,6 @@ export default function LoginPage() {
             <img src={logo} alt="Pooli" className="w-32 h-32" />
           </motion.div>
 
-          {/* 입력 폼 */}
           <motion.div
             className="w-full max-w-sm space-y-6"
             initial={{ opacity: 0, y: 30 }}
@@ -163,7 +155,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* 에러 메시지 */}
             {error && (
               <div className="text-red-600 text-sm text-center bg-red-50 py-2 px-4 rounded-lg">
                 {error}
@@ -171,7 +162,6 @@ export default function LoginPage() {
             )}
           </motion.div>
 
-          {/* 로그인 버튼 */}
           <motion.div
             className="max-w-sm mt-12 w-full"
             initial={{ opacity: 0, y: 30 }}

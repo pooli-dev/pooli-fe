@@ -58,32 +58,44 @@ export default function RangeSlider({
         }}
       />
       <style>{`
-        input[type="range"]::-webkit-slider-thumb {
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: rgba(217, 217, 217, 0.2);
-          border: 2px solid white;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        input[type="range"]::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: rgba(217, 217, 217, 0.2);
-          border: 2px solid white;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        input[type="range"]:disabled::-webkit-slider-thumb {
-          background: #9CA3AF;
-        }
-        input[type="range"]:disabled::-moz-range-thumb {
-          background: #9CA3AF;
-        }
-      `}</style>
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(217, 217, 217, 0.2);
+    border: 2px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: width 0.15s, height 0.15s, box-shadow 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover {
+    width: 26px;
+    height: 26px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(217, 217, 217, 0.2);
+    border: 2px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: width 0.15s, height 0.15s, box-shadow 0.15s;
+  }
+  input[type="range"]::-moz-range-thumb:hover {
+    width: 26px;
+    height: 26px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  input[type="range"]:disabled::-webkit-slider-thumb {
+    background: #9CA3AF;
+  }
+  input[type="range"]:disabled::-moz-range-thumb {
+    background: #9CA3AF;
+  }
+`}</style>
     </div>
   );
 }
