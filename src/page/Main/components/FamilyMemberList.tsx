@@ -40,7 +40,6 @@ export default function FamilyMemberList({
     <div className="w-full flex flex-col gap-3">
       <h2 className="text-lg font-bold text-black">가족 구성원</h2>
       <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-1 gap-3">
-        {" "}
         {members.map((member) => (
           <FamilyMemberCard
             key={member.lineId}
