@@ -183,7 +183,8 @@ export default function Policy() {
         >
           <button
             onClick={() => navigate("/policy-detail")}
-            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100
+  transition-all duration-200 hover:bg-white/80 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
           >
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
               <img src={SettingIcon} />
@@ -208,7 +209,8 @@ export default function Policy() {
         >
           <button
             onClick={() => setIsTransferModalOpen(true)}
-            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100"
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/60 rounded-2xl shadow-sm border border-gray-100
+  transition-all duration-200 hover:bg-white/80 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
           >
             <div className="w-12 h-12 rounded-xl bg-lime-100 flex items-center justify-center flex-shrink-0">
               <img src={AssignIcon} />
