@@ -164,7 +164,7 @@ export default function UserInfo({ userData, userId }: Props) {
           {/* 공유 데이터 담기 */}
           <GradientButton
             fullWidth
-            height={10}
+            height={8}
             width={16} // 좁은 화면에서 줄어들도록 width 줄이기
             fontSize={0.8}
             onClick={() => navigate("/shared-data")}
@@ -177,7 +177,7 @@ export default function UserInfo({ userData, userId }: Props) {
           {/* 사용 로그 보기 */}
           <GradientButton
             fullWidth // ← 추가
-            height={10}
+            height={8}
             width={16}
             bgColor="#FED2BF"
             gradientFrom="#FFFFFF"
