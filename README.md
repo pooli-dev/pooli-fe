@@ -244,7 +244,9 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 
 ## 🔄 핵심 기능 플로우
 
-<img width="1044" height="501" alt="image" src="https://github.com/user-attachments/assets/ef9a0c26-8f63-4831-8077-a08058aa447a" />
+<p align="center">
+  <img width="1044" height="501" src="https://github.com/user-attachments/assets/ef9a0c26-8f63-4831-8077-a08058aa447a" />
+</p>
 
 
 
@@ -252,7 +254,9 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 
 ## 📐 인프라 아키텍처
 
-<img width="612" height="428" alt="image" src="https://github.com/user-attachments/assets/ed84976f-7ded-42c4-b0e5-7e6f5bace3f8" />
+<p align="center">
+  <img width="612" height="428" src="https://github.com/user-attachments/assets/ed84976f-7ded-42c4-b0e5-7e6f5bace3f8" />
+</p>
 
 
 
@@ -260,7 +264,9 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 
 ## 📊 ERD
 
-<img width="614" height="425" alt="image" src="https://github.com/user-attachments/assets/b2da9094-22ef-4e12-9f20-3cdee359ee58" />
+<p align="center">
+  <img width="614" height="425" src="https://github.com/user-attachments/assets/b2da9094-22ef-4e12-9f20-3cdee359ee58" />
+</p>
 
 
 
