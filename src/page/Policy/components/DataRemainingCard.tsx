@@ -24,7 +24,7 @@ export default function DataRemainingCard({
       bgOpacity={0.8}
       borderWidth={1}
       borderRadius={20}
-      className="flex-1"
+      className="flex-1 overflow-hidden"
     >
       <div className="flex items-start justify-between">
         <div>

@@ -13,7 +13,9 @@ type Props = {
   borderRadius?: number;
   fontSize?: number;
   className?: string;
+  buttonClassName?: string; // ← 추가: 안쪽 button에 적용할 className
   disabled?: boolean;
+  fullWidth?: boolean; // ← 추가: 부모 너비 꽉 채우기
 };
 
 export default function GradientButton({
@@ -29,29 +31,29 @@ export default function GradientButton({
   borderRadius,
   fontSize,
   className = "",
+  buttonClassName = "",
   disabled = false,
+  fullWidth = false,
 }: Props) {
   return (
-    // 바깥 div: 그라데이션 배경 (테두리 역할)
     <div
-      className={`rounded-full ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+      className={`rounded-full ${fullWidth ? "w-full" : ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       style={{
         borderRadius: `${borderRadius}px`,
         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
         padding: borderWidth,
       }}
     >
-      {/* 안쪽 버튼: 단색 배경 */}
       <button
         onClick={onClick}
         disabled={disabled}
-        className={`flex items-center justify-center gap-2 rounded-full font-semibold text-base transition-opacity ${disabled ? "cursor-not-allowed" : "active:opacity-80"}`}
+        className={`flex items-center justify-center gap-2 rounded-full font-semibold text-base transition-opacity ${fullWidth ? "w-full" : ""} ${disabled ? "cursor-not-allowed" : "active:opacity-80"} ${buttonClassName}`}
         style={{
           borderRadius: `${borderRadius}px`,
           backgroundColor: bgColor,
-          padding: `${height}px ${width}px`, // 세로 가로
-          color: `${textColor}`,
-          fontSize: `${fontSize}rem`,
+          padding: `${height}px ${width}px`,
+          color: textColor,
+          fontSize: fontSize ? `${fontSize}rem` : undefined,
         }}
       >
         {children}

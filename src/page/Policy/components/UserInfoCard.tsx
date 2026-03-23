@@ -145,9 +145,10 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 데이터 잔여량 ── */}
-        <div className="flex gap-3 mb-4">
+        {/* ── 데이터 잔여량 ── */}
+        <div className="flex gap-3 mb-4 items-start overflow-hidden">
           <DataRemainingCard
-            label={"가족 공유 데이터\n잔여량"}
+            label={"공유 데이터\n잔여량"}
             amount={userData.sharedDataRemaining}
             icon="share"
           />
@@ -159,22 +160,25 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 액션 버튼 ── */}
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-2 sm:gap-3 items-start">
           {/* 공유 데이터 담기 */}
           <GradientButton
-            width={12}
-            height={8}
+            fullWidth
+            height={10}
+            width={16} // 좁은 화면에서 줄어들도록 width 줄이기
             fontSize={0.8}
             onClick={() => navigate("/shared-data")}
           >
-            <img src={PlusIcon} className="w-4 h-4" />
-            가족 공유 데이터 담기
+            <img src={PlusIcon} className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden xs:inline">공유 데이터 담기</span>
+            <span className="xs:hidden">데이터 담기</span>
           </GradientButton>
 
           {/* 사용 로그 보기 */}
           <GradientButton
-            width={14}
-            height={8}
+            fullWidth // ← 추가
+            height={10}
+            width={16}
             bgColor="#FED2BF"
             gradientFrom="#FFFFFF"
             gradientTo="#FFA780"
@@ -182,8 +186,9 @@ export default function UserInfo({ userData, userId }: Props) {
             fontSize={0.8}
             onClick={() => navigate("/log")}
           >
-            <img src={ClockIcon} className="w-4 h-4" />
-            사용 로그 보기
+            <img src={ClockIcon} className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden xs:inline">사용 로그 보기</span>
+            <span className="xs:hidden">로그 보기</span>
           </GradientButton>
         </div>
       </GlassCard>
