@@ -183,12 +183,12 @@ export default function UserInfo({ userData, userId }: Props) {
         <>
           {/* 딤 배경 */}
           <div
-            className="fixed inset-0 bg-black/30 z-[200]"
+            className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full desktop:w-[480px] bg-black/30 z-[200]"
             onClick={() => setIsBottomSheetOpen(false)}
           />
 
           {/* 바텀시트 */}
-          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-[201] bg-white rounded-t-2xl p-6">
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full desktop:w-[480px] z-[201] bg-white rounded-t-2xl p-6">
             <h3 className="text-base font-semibold text-gray-800 mb-4">
               계정 전환
             </h3>

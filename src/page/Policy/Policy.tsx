@@ -233,10 +233,10 @@ export default function Policy() {
         createPortal(
           <>
             <div
-              className="fixed inset-0 bg-black/40 z-[200]"
+              className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full desktop:w-[480px] bg-black/40 z-[200]"
               onClick={handleCloseModal}
             />
-            <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[201] bg-white rounded-2xl p-6 max-w-sm mx-auto">
+            <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-[201] bg-white rounded-2xl p-6 w-[calc(100%-2rem)] max-w-sm">
               <h3 className="text-base font-bold text-gray-800 mb-4">
                 대표자 권한 양도
               </h3>
