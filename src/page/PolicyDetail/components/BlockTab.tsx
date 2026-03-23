@@ -9,7 +9,7 @@ type Props = {
 
 const BlockTab = ({ onBlockApply, lineId, onPolicyChange }: Props) => {
   return (
-    <div className="flex flex-col gap-3 py-4">
+    <div className="flex flex-col gap-3 py-4 tablet:grid tablet:grid-cols-2 tablet:items-start desktop:flex desktop:flex-col">
       <BlockPolicyManager lineId={lineId} onPolicyChange={onPolicyChange} />
       <ImmediateBlockPolicy
         lineId={lineId}
