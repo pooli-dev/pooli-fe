@@ -132,7 +132,8 @@ export default function Support() {
   return (
     <div className="py-5 pb-[20px]">
       {/* 탭 */}
-      <div className="bg-[#E8E8E8] rounded-2xl p-1 mx-9 mb-6 flex gap-1 justify-center">
+      <div className="bg-[#E8E8E8] rounded-2xl p-1 w-full max-w-[300px] mx-auto mb-6 flex gap-1 justify-center">
+        {" "}
         <button
           onClick={() => setActiveTab("inquiry")}
           className={`flex-1 max-w-[200px] py-2 rounded-2xl font-medium transition-colors text-sm ${

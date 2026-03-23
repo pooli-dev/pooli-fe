@@ -7,6 +7,7 @@ export default {
       screens: {
         xs: "400px", // 소형 모바일 이하
         tablet: "768px", // 태블릿 → 2컬럼 레이아웃
+        "tablet-lg": "1146px",
         desktop: "1400px", // 데스크톱 → 앱뷰(480px 고정) 복귀
       },
       fontFamily: {
@@ -68,8 +69,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("@tailwindcss/container-queries"),
-  ],
+  plugins: [require("tailwindcss-animate")],
 };

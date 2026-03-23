@@ -346,28 +346,30 @@ export default function Detail() {
         />
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        transition={{ ...pageTransition, delay: 0.2 }}
-      >
-        <DataBalance
-          personalUsed={dataUsage.personalUsedAmount}
-          personalTotal={dataUsage.personalTotalAmount}
-          sharedUsed={dataUsage.sharedPoolUsedAmount}
-          sharedTotal={dataUsage.sharedPoolTotalAmount}
-        />
-      </motion.div>
+      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-1 gap-4">
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.2 }}
+        >
+          <DataBalance
+            personalUsed={dataUsage.personalUsedAmount}
+            personalTotal={dataUsage.personalTotalAmount}
+            sharedUsed={dataUsage.sharedPoolUsedAmount}
+            sharedTotal={dataUsage.sharedPoolTotalAmount}
+          />
+        </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        transition={{ ...pageTransition, delay: 0.3 }}
-      >
-        <UsageTrend
-          usages={monthlyUsage.usages}
-          averageAmount={monthlyUsage.averageAmount}
-          currentYearMonth={formatYearMonth(currentDate)}
-        />
-      </motion.div>
+        <motion.div
+          variants={itemVariants}
+          transition={{ ...pageTransition, delay: 0.3 }}
+        >
+          <UsageTrend
+            usages={monthlyUsage.usages}
+            averageAmount={monthlyUsage.averageAmount}
+            currentYearMonth={formatYearMonth(currentDate)}
+          />
+        </motion.div>
+      </div>
 
       <motion.div
         variants={itemVariants}

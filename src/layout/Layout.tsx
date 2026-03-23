@@ -65,7 +65,7 @@ export default function Layout({ children }: LayoutProps) {
         {/* 3. 메인 스크롤 영역: min-h-0이 중요!!! flex 자식의 최소 높이를 0으로 풀어야 내부 스크롤이 잡힘 */}
         <main
           ref={mainRef}
-          className="flex-1 overflow-y-auto relative px-2 custom-scrollbar min-h-0 @container"
+          className="flex-1 overflow-y-auto relative px-2 tablet:px-8 desktop:px-2 custom-scrollbar min-h-0"
         >
           {/* pt-10 정도로 늘려서 차트가 헤더를 침범하지 못하게 물리적 공간을 확보하세요. */}
           <div className="pt-5 pb-10">{children}</div>
