@@ -1,6 +1,6 @@
 import GradientButton from "@/components/common/GradientButton";
 import GlassCard from "../../../components/common/GlassCard";
-import ClockIcon from "../../../assets/icon/clock.png";
+import ClockIcon from "../../../assets/icon/clock.svg";
 import PlusIcon from "../../../assets/icon/plus.svg";
 import { useNavigate } from "react-router-dom";
 import Avatar from "@/components/common/Avatar";

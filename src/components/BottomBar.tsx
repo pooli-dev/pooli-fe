@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSettingStore } from "../store/settingStore";
-import homeOn from "../assets/icon/home-on.png";
-import homeOff from "../assets/icon/home-off.png";
-import supportOn from "../assets/icon/support-on.png";
-import supportOff from "../assets/icon/support-off.png";
-import policyOn from "../assets/icon/policy-on.png";
-import policyOff from "../assets/icon/policy-off.png";
+import homeOn from "../assets/icon/home-on.svg";
+import homeOff from "../assets/icon/home-off.svg";
+import supportOn from "../assets/icon/support-on.svg";
+import supportOff from "../assets/icon/support-off.svg";
+import policyOn from "../assets/icon/policy-on.svg";
+import policyOff from "../assets/icon/policy-off.svg";
 
 const navItems = [
   {
