@@ -5,7 +5,9 @@ export default {
   theme: {
     extend: {
       screens: {
-        xs: "400px",
+        xs: "400px", // 소형 모바일 이하
+        tablet: "768px", // 태블릿 → 2컬럼 레이아웃
+        desktop: "1400px", // 데스크톱 → 앱뷰(480px 고정) 복귀
       },
       fontFamily: {
         sans: ["A2G", "sans-serif"],
@@ -57,11 +59,7 @@ export default {
           5: "hsl(var(--chart-5))",
         },
       },
-      screens: {
-        xs: "400px", // 새로운 브레이크포인트 추가
-      },
       fontSize: {
-        // 반응형 텍스트 크기 정의
         "responsive-xs": ["0.65rem", { lineHeight: "1rem" }],
         "responsive-sm": ["0.75rem", { lineHeight: "1.25rem" }],
         "responsive-base": ["0.8rem", { lineHeight: "1.5rem" }],
@@ -70,5 +68,8 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/container-queries"),
+  ],
 };
