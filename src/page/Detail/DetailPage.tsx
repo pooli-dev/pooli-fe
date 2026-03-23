@@ -276,6 +276,10 @@ export default function Detail() {
     try {
       await familyService.updateVisibility({ lineId, isPublic: newValue });
       setGlobalIsPublic(newValue);
+      showToast(
+        newValue ? "공개로 전환되었습니다." : "비공개로 전환되었습니다.",
+        "success",
+      ); // ← 추가
 
       const yearMonth = formatYearMonth(currentDate);
       const appData = await fetchAppUsage(lineId, yearMonth, newValue);
