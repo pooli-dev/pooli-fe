@@ -8,7 +8,8 @@
 
 > [POOLI 바로가기](https://www.pooliapp.com) | [POOLI Admin 바로가기](https://office.pooliapp.com) | [📒 Notion](https://www.notion.so/yerin1412/1-2c3389b3e03981e2a56bdaa42ff24264) | [🎨 Figma](https://www.figma.com/design/f3JZPIcAe7kLYvRe8DZVG5/%EC%B5%9C%EC%A2%85%EC%9C%B5%ED%95%A9%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?node-id=826-8237&t=ZDAB0VHd8TpTtPXp-0)
 
----
+
+<br>
 
 ## 🗺 프로젝트 소개
 
@@ -24,7 +25,8 @@
 - 🔔 알림 발송 및 문의 관리 (관리자)
 - 👨‍👩‍👧‍👦 가족 구성원 권한 및 역할 관리
 
----
+
+<br>
 
 ## 🚩 프로젝트 개요
 
@@ -35,7 +37,8 @@
 | 주제 | LG U+ 가족 데이터 사용량 관리 및 정책 제어 서비스 |
 | 개발 기간 | 2025.02.24 - 2025.03.24 |
 
----
+
+<br>
 
 ## 👩🏻‍🤝‍🧑🏻 MEMBERS
 
@@ -47,6 +50,7 @@
 ### Frontend Common Roles
 - 🟢 피그마 와이어프레임 및 UI 설계
 - 🟢 공통 UI 컴포넌트 라이브러리 및 디자인 시스템 구축
+<br />
 
 | | 이승현 | 김미수 | 김민수 |
 |:---:|:---:|:---:|:---:|
@@ -63,7 +67,8 @@
 | 역할 | `FE LEADER` | `FE` |
 | 담당 | 메인, 알림, 정책, 구성원별 정책, 사용로그, UI 구현 및 API 연동, TanStack Query 도입 | 공유풀, 상세페이지, 설정, 문의, 어드민 UI 구현 및 API 연동, 깃허브 세팅 및 도메인 분기처리 |
 
----
+
+<br>
 
 ## 🛠 Tech Stack
 
@@ -106,7 +111,8 @@
 <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" />
 </p>
 
----
+
+<br>
 
 ## 📸 서비스 화면
 
@@ -161,17 +167,26 @@
   </tr>
 </table>
 
+### 📱 반응형 UI
+
+> 모바일 · 태블릿 · 데스크톱 환경에 최적화된 반응형 레이아웃을 제공합니다.
+
+<p align="center">
+  <img src="docs/screenshots/responsive.gif" alt="반응형 UI" width="700" />
+</p>
+
 ### 관리자 페이지
 
 | 화면 | 기능 |
 |:---:|:---|
-| <img src="docs/screenshots/admin-policy.png" width="250" /> | **정책 관리** <br> 카테고리별 정책 생성·수정·삭제 및 앱별 사용량/속도 제한, 차단 정책을 설정합니다. |
-| <img src="docs/screenshots/admin-users.png" width="250" /> | **사용자 관리** <br> 가족 구성원 목록 조회, 권한 관리, 대표자 양도 기능을 제공합니다. |
-| <img src="docs/screenshots/admin-user-policy.png" width="250" /> | **사용자별 정책 관리** <br> 개별 구성원에게 앱 정책, 사용량 제한, 즉시 차단 등을 적용합니다. |
-| <img src="docs/screenshots/admin-inquiry.png" width="250" /> | **문의 관리** <br> 사용자 문의 목록 조회 및 답변 처리를 합니다. |
-| <img src="docs/screenshots/admin-notification.png" width="250" /> | **알림 발송** <br> 특정 구성원 또는 전체 대상으로 알림을 발송합니다. |
+| <img src="https://github.com/user-attachments/assets/affab383-8173-4a0b-b46d-8700f52c22d0" width="1000" /> | **정책 관리** <br> 카테고리별 정책 생성·수정·삭제 및 앱별 사용량/속도 제한, 차단 정책을 설정합니다. |
+| <img src="https://github.com/user-attachments/assets/a032fbda-bf48-479b-ba0f-dea9fcc1d3c9" width="1000" /> | **사용자 관리** <br> 가족 구성원 목록 조회, 권한 관리, 대표자 양도 기능을 제공합니다. |
+| <img src="https://github.com/user-attachments/assets/1b113f08-fe54-4990-8081-af8a70908b31" width="1000" /> | **사용자별 정책 관리** <br> 개별 구성원에게 앱 정책, 사용량 제한, 즉시 차단 등을 적용합니다. |
+| <img src="https://github.com/user-attachments/assets/8427064b-9f4a-4395-b60e-5511510955c6" width="1000" /> | **문의 관리** <br> 사용자 문의 목록 조회 및 답변 처리를 합니다. |
+| <img src="https://github.com/user-attachments/assets/13c2e414-00d8-4c81-b578-56cabe09da59" width="1000" /> | **알림 발송** <br> 특정 구성원 또는 전체 대상으로 알림을 발송합니다. |
 
----
+
+<br>
 
 ## 🔄 Frontend Architecture & Data Flow
 
@@ -193,7 +208,8 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 - API 요청과 UI 로직을 분리하여 유지보수성 확보
 - 페이지별 필요한 데이터만 선택적으로 갱신하는 구조
 
----
+
+<br>
 
 ## 💡 Frontend Design Decisions
 
@@ -223,7 +239,8 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 - 서버 상태 → TanStack Query  
 - 클라이언트 상태 → Zustand  
 
----
+
+<br>
 
 ## 🔄 핵심 기능 플로우
 
@@ -235,7 +252,8 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
 
 > 📒 [핵심 기능 플로우 상세 보기 (Notion)](https://notion-link.example.com)
 
----
+
+<br>
 
 ## 📐 인프라 아키텍처
 
@@ -243,7 +261,8 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
   <img src="docs/architecture/infra-architecture.png" alt="인프라 아키텍처" width="800" />
 </p>
 
----
+
+<br>
 
 ## 📊 ERD
 
@@ -251,7 +270,8 @@ POOLI는 실시간 데이터 처리와 정책 기반 제어를 중심으로
   <img src="docs/architecture/erd.png" alt="ERD" width="800" />
 </p>
 
----
+
+<br>
 
 ## 📂 Frontend Folder Structure
 
@@ -318,7 +338,8 @@ src
 │     └─ components
 ```
 
----
+
+<br>
 
 ## 🗂 Repositories
 
@@ -327,7 +348,8 @@ src
 | Frontend | [pooli-fe](https://github.com/pooli-dev/pooli-fe) |
 | Backend | [pooli-be](https://github.com/pooli-dev/pooli-be) |
 
----
+
+<br>
 
 ## 🚀 Getting Started
 
