@@ -109,12 +109,7 @@ function DataSummary({
         >
           {totalGB}
         </div>
-        <GradientButton
-          onClick={onViewLog}
-          width={20}
-          height={8}
-          borderRadius={15}
-        >
+        <GradientButton onClick={onViewLog} borderRadius={15}>
           <img src={ClockIcon} className="w-4 h-4 sm:w-5 sm:h-5" alt="clock" />
           <span className="text-xs sm:text-sm whitespace-nowrap">
             사용 로그 보기

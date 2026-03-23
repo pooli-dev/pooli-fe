@@ -26,20 +26,20 @@ export default function DataRemainingCard({
       borderRadius={20}
       className="flex-1 overflow-hidden"
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-gray-400 mb-1 whitespace-pre-wrap">
-            {label}
-          </p>
-          <p className="text-xl font-bold text-gray-800">{displayAmount}</p>
+      <div className="flex flex-col gap-1">
+        {/* label + 아이콘 */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-400 whitespace-pre-wrap">{label}</p>
+          <div className="w-8 h-8 rounded-full bg-[#EEF0FF] flex items-center justify-center flex-shrink-0">
+            {icon === "share" ? (
+              <img src={shareIcon} />
+            ) : (
+              <img src={personIcon} />
+            )}
+          </div>
         </div>
-        <div className="w-8 h-8 rounded-full bg-[#EEF0FF] flex items-center justify-center flex-shrink-0">
-          {icon === "share" ? (
-            <img src={shareIcon} />
-          ) : (
-            <img src={personIcon} />
-          )}
-        </div>
+        {/* 금액 */}
+        <p className="text-xl font-bold text-gray-800">{displayAmount}</p>
       </div>
     </GlassCard>
   );

@@ -302,11 +302,10 @@ function ShareButton({ onClick }: { onClick: () => void }) {
   return (
     <div className="flex items-center justify-center px-8">
       <GradientButton
-        onClick={onClick}
-        width={120}
-        height={15}
+        fullWidth
         borderRadius={20}
-        fontSize={1.5}
+        buttonClassName="text-xl font-semibold"
+        onClick={onClick}
       >
         <img src={SendIcon} className="w-7 h-7 flex-shrink-0" alt="send" />
         <span className="whitespace-nowrap">공유하기</span>

@@ -145,7 +145,6 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 데이터 잔여량 ── */}
-        {/* ── 데이터 잔여량 ── */}
         <div className="flex gap-3 mb-4 items-start overflow-hidden">
           <DataRemainingCard
             label={"공유 데이터\n잔여량"}
@@ -160,35 +159,22 @@ export default function UserInfo({ userData, userId }: Props) {
         </div>
 
         {/* ── 액션 버튼 ── */}
-        <div className="flex justify-center gap-2 sm:gap-3 items-start">
-          {/* 공유 데이터 담기 */}
+        <div className="flex flex-col tablet-lg:flex-row desktop:flex-col gap-2">
+          {" "}
+          <GradientButton fullWidth onClick={() => navigate("/shared-data")}>
+            <img src={PlusIcon} className="w-4 h-4 flex-shrink-0" />
+            가족 공유 데이터 담기
+          </GradientButton>
           <GradientButton
             fullWidth
-            height={8}
-            width={16} // 좁은 화면에서 줄어들도록 width 줄이기
-            fontSize={0.8}
-            onClick={() => navigate("/shared-data")}
-          >
-            <img src={PlusIcon} className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden xs:inline">공유 데이터 담기</span>
-            <span className="xs:hidden">데이터 담기</span>
-          </GradientButton>
-
-          {/* 사용 로그 보기 */}
-          <GradientButton
-            fullWidth // ← 추가
-            height={8}
-            width={16}
             bgColor="#FED2BF"
             gradientFrom="#FFFFFF"
             gradientTo="#FFA780"
             textColor="#FF5C14"
-            fontSize={0.8}
             onClick={() => navigate("/log")}
           >
             <img src={ClockIcon} className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden xs:inline">사용 로그 보기</span>
-            <span className="xs:hidden">로그 보기</span>
+            공유 데이터 로그 보기
           </GradientButton>
         </div>
       </GlassCard>
@@ -202,7 +188,7 @@ export default function UserInfo({ userData, userId }: Props) {
           />
 
           {/* 바텀시트 */}
-          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-[480px] max-w-full z-[201] bg-white rounded-t-2xl p-6">
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-[201] bg-white rounded-t-2xl p-6">
             <h3 className="text-base font-semibold text-gray-800 mb-4">
               계정 전환
             </h3>
