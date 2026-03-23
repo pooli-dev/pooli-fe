@@ -118,18 +118,18 @@ export default function Header({
             className={`h-16 ${darkMode ? "invert" : ""}`}
           />
         ) : (
-          <h1 className="font-semibold text-[#333333] m-0 text-lg">
+          <h1 className="h-16 flex items-center font-semibold text-[#333333] m-0 text-lg">
             {getPageTitle()}
           </h1>
         )}
       </div>
 
-      <div className="flex items-center gap-3 w-20 justify-end">
+      <div className="flex items-center gap-2 w-20 justify-end">
         {showAlarmIcon && (
           <button
             type="button"
             aria-label="알림"
-            className={`relative cursor-pointer flex items-center justify-center w-12 h-12 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
+            className={`relative cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
             onClick={() => navigate("/alarm")}
           >
             <img src={alarmIcon} alt="" className="w-6 h-6" />
@@ -146,7 +146,7 @@ export default function Header({
           <button
             type="button"
             aria-label="설정"
-            className={`cursor-pointer flex items-center justify-center w-12 h-12 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
+            className={`cursor-pointer flex items-center justify-center w-11 h-11 rounded-full shrink-0 border-[3px] border-white ${darkMode ? "bg-white invert" : "bg-gradient-to-b from-white/0 to-white/100 to-42%"}`}
             onClick={() => navigate("/setting")}
           >
             <img src={settingIcon} alt="" className="w-6 h-6" />
