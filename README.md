@@ -4,7 +4,7 @@
   <img src="src/assets/img/intro.svg" alt="POOLI Character" width="800" />
 </p>
 
-### 🏆 LG 유플러스 유레카 SW 아카데미 3기 최종 융합프로젝트 🏅
+### 🏆 LG 유플러스 유레카 SW 프론트/백엔드 비대면 3기 최종 융합프로젝트 최우수상 1등🏅
 
 > [POOLI 바로가기](https://www.pooliapp.com) | [POOLI Admin 바로가기](https://office.pooliapp.com) | [📒 Notion](https://www.notion.so/yerin1412/1-2c3389b3e03981e2a56bdaa42ff24264) | [🎨 Figma](https://www.figma.com/design/f3JZPIcAe7kLYvRe8DZVG5/%EC%B5%9C%EC%A2%85%EC%9C%B5%ED%95%A9%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?node-id=826-8237&t=ZDAB0VHd8TpTtPXp-0)
 
@@ -13,7 +13,7 @@
 
 ## 🗺 프로젝트 소개
 
-**POOLI**는 LG유플러스 가족 결합 상품 사용자를 위한 **데이터 사용량 관리 및 정책 제어 서비스**입니다.
+**POOLI**는 LG유플러스 가족 결합 상품 사용자를 위한 **실시간 가족 데이터 통합 관리 및 스마트 제약 시스템**입니다.
 
 가족 구성원별 데이터 사용량을 실시간으로 모니터링하고, 앱별 사용량 제한·속도 제한·차단 정책을 설정할 수 있습니다. 공유 데이터풀 관리, 알림 발송, 문의 관리 등 관리자 기능도 함께 제공하여 가족 단위의 체계적인 데이터 관리를 지원합니다.
 
